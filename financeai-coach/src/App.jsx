@@ -1,13 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from '@solana/web3.js'
+import ChatInterface from './components/ChatInterface'
+import RewardsModal from './components/RewardsModal'
 import './App.css'
 
 function App() {
-  const { publicKey, connected } = useWallet()
+  const { publicKey, connected, sendTransaction } = useWallet()
   const { connection } = useConnection()
   const [balance, setBalance] = useState(null)
+  const [totalEarned, setTotalEarned] = useState(0)
+  const [habitsCompleted, setHabitsCompleted] = useState(0)
+  const [currentReward, setCurrentReward] = useState(null)
+  const [showRewardModal, setShowRewardModal] = useState(false)
+  const [rewardHistory, setRewardHistory] = useState([])
 
   // Get wallet balance when connected
   const getBalance = async () => {
@@ -18,8 +25,70 @@ function App() {
   }
 
   // Fetch balance when wallet connects
-  if (connected && publicKey && balance === null) {
-    getBalance()
+  useEffect(() => {
+    if (connected && publicKey) {
+      getBalance()
+    }
+  }, [connected, publicKey])
+
+  // Handle habit completion and rewards
+  const handleHabitCompleted = async (habitResult) => {
+    console.log('Habit completed:', habitResult)
+
+    // Update stats
+    setHabitsCompleted(prev => prev + 1)
+    setTotalEarned(prev => prev + habitResult.reward)
+
+    // Add to history
+    const rewardEntry = {
+      ...habitResult,
+      timestamp: new Date(),
+      txSignature: null
+    }
+
+    setRewardHistory(prev => [rewardEntry, ...prev])
+
+    // Show reward modal
+    setCurrentReward(habitResult)
+    setShowRewardModal(true)
+
+    // Simulate reward payment (in production, this would be actual SOL transfer)
+    // For demo purposes, we're just showing the UI
+    console.log(`Would send ${habitResult.reward} SOL for completing: ${habitResult.habit}`)
+
+    // Note: Uncomment below for actual SOL transfers on devnet
+    // await sendReward(habitResult.reward)
+  }
+
+  // Function to send actual SOL reward (currently commented out for safety)
+  const sendReward = async (amount) => {
+    if (!publicKey || !connected) return
+
+    try {
+      // This would be the reward sender wallet (in production, this would be a server wallet)
+      // For demo, we're just logging the intent
+      console.log(`Sending ${amount} SOL reward to ${publicKey.toBase58()}`)
+
+      /* Actual implementation would look like:
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: rewardWalletPublicKey,
+          toPubkey: publicKey,
+          lamports: amount * LAMPORTS_PER_SOL,
+        })
+      )
+
+      const signature = await sendTransaction(transaction, connection)
+      await connection.confirmTransaction(signature, 'confirmed')
+      */
+
+      // Refresh balance after reward
+      setTimeout(() => {
+        getBalance()
+      }, 1000)
+    } catch (error) {
+      console.error('Error sending reward:', error)
+    }
   }
 
   return (
@@ -82,19 +151,31 @@ function App() {
               </div>
             </div>
 
-            <div className="coming-soon">
-              <h3>Chat Interface Coming Soon!</h3>
-              <p>We're building the AI chat interface where you'll:</p>
-              <ul>
-                <li>✅ Chat with your AI finance coach</li>
-                <li>✅ Complete financial habit challenges</li>
-                <li>✅ Earn instant SOL rewards</li>
-                <li>✅ Track your progress and streaks</li>
-              </ul>
-              <p className="dev-note">
-                🚧 Currently in development for Solana x402 Hackathon
-              </p>
+            <div className="stats-cards">
+              <div className="stat-card">
+                <div className="stat-icon">🏆</div>
+                <div className="stat-content">
+                  <div className="stat-value">{habitsCompleted}</div>
+                  <div className="stat-label">Habits Completed</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">💰</div>
+                <div className="stat-content">
+                  <div className="stat-value">{totalEarned.toFixed(3)} SOL</div>
+                  <div className="stat-label">Total Earned</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">🔥</div>
+                <div className="stat-content">
+                  <div className="stat-value">{habitsCompleted > 0 ? '1' : '0'} day</div>
+                  <div className="stat-label">Current Streak</div>
+                </div>
+              </div>
             </div>
+
+            <ChatInterface onHabitCompleted={handleHabitCompleted} />
           </div>
         )}
       </main>
@@ -111,6 +192,12 @@ function App() {
           </a>
         </p>
       </footer>
+
+      <RewardsModal
+        isOpen={showRewardModal}
+        reward={currentReward}
+        onClose={() => setShowRewardModal(false)}
+      />
     </div>
   )
 }
