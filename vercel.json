@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd financeai-coach && npm install && npm run build",
+  "outputDirectory": "financeai-coach/dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
