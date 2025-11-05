@@ -89,44 +89,30 @@ export default function ChatInterface({ onHabitCompleted }) {
     setIsLoading(true)
 
     try {
-      // Call OpenAI API
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Get backend API URL from environment or use default
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+      // Call backend API
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a friendly and encouraging personal finance coach. Your role is to:
-- Help users set and achieve financial goals
-- Provide practical money management advice
-- Celebrate small wins and progress
-- Keep responses conversational, warm, and motivating
-- Ask follow-up questions to understand their situation better
-- Encourage good financial habits like budgeting, saving, and tracking expenses
-- Keep responses concise (2-3 sentences usually)
-- Be enthusiastic and supportive`
-            },
-            ...messages.map(m => ({ role: m.role, content: m.content })),
-            { role: userMessage.role, content: userMessage.content }
-          ],
-          max_tokens: 150,
-          temperature: 0.7
+          messages: messages.map(m => ({ role: m.role, content: m.content }))
+            .concat({ role: userMessage.role, content: userMessage.content })
         })
       })
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to get AI response')
       }
 
       const data = await response.json()
       const aiMessage = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: data.message,
         timestamp: new Date()
       }
 
@@ -140,9 +126,20 @@ export default function ChatInterface({ onHabitCompleted }) {
 
     } catch (error) {
       console.error('Error sending message:', error)
+
+      let errorText = 'Sorry, I encountered an error. '
+
+      if (error.message.includes('API key')) {
+        errorText += 'Please make sure the backend server is running and OpenAI API key is configured in backend/.env'
+      } else if (error.message.includes('fetch')) {
+        errorText += 'Cannot connect to the backend server. Make sure it\'s running on http://localhost:3001'
+      } else {
+        errorText += error.message
+      }
+
       const errorMessage = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please make sure your OpenAI API key is configured correctly.',
+        content: errorText,
         timestamp: new Date(),
         isError: true
       }
