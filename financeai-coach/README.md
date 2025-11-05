@@ -22,6 +22,8 @@ An innovative web application built for the Solana x402 Hackathon that combines 
 
 ## Installation
 
+### Frontend Setup
+
 1. **Clone the repository**
    ```bash
    git clone https://github.com/heyhewi/Solanax402-Hackathon.git
@@ -38,20 +40,58 @@ An innovative web application built for the Solana x402 Hackathon that combines 
    cp .env.example .env
    ```
 
-4. **Add your OpenAI API key to `.env`**
-   ```bash
-   VITE_OPENAI_API_KEY=your_openai_api_key_here
+   The `.env` file should look like:
+   ```env
+   VITE_API_URL=http://localhost:3001
+   VITE_SOLANA_NETWORK=devnet
+   VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
    ```
 
-5. **Start the development server**
+### Backend Setup (Required for AI Chat)
+
+4. **Navigate to backend directory**
    ```bash
+   cd ../backend
+   ```
+
+5. **Install backend dependencies**
+   ```bash
+   npm install
+   ```
+
+6. **Configure OpenAI API key**
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `backend/.env` and add your OpenAI API key:
+   ```env
+   OPENAI_API_KEY=sk-your-openai-api-key-here
+   PORT=3001
+   ```
+
+   **Get your OpenAI API key at:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+
+7. **Start the backend server**
+   ```bash
+   npm start
+   ```
+
+   Keep this terminal open - the backend must be running for the chat to work.
+
+### Start the Frontend
+
+8. **Open a new terminal and start the frontend**
+   ```bash
+   cd financeai-coach
    npm run dev
    ```
 
-6. **Open your browser**
+9. **Open your browser**
    - Navigate to `http://localhost:5173`
    - Connect your Phantom wallet
    - Switch Phantom to Devnet mode
+   - Start chatting with the AI coach!
 
 ## Usage
 
@@ -87,20 +127,27 @@ An innovative web application built for the Solana x402 Hackathon that combines 
 ## Project Structure
 
 ```
-financeai-coach/
-├── src/
-│   ├── components/
-│   │   ├── ChatInterface.jsx      # AI chat component
-│   │   ├── ChatInterface.css
-│   │   ├── RewardsModal.jsx       # Reward celebration modal
-│   │   └── RewardsModal.css
-│   ├── App.jsx                     # Main app component
-│   ├── App.css
-│   ├── main.jsx                    # App entry point
-│   └── index.css
-├── .env.example                    # Environment variables template
-├── package.json
-└── README.md
+Solanax402-Hackathon/
+├── financeai-coach/               # Frontend React app
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ChatInterface.jsx      # AI chat component
+│   │   │   ├── ChatInterface.css
+│   │   │   ├── RewardsModal.jsx       # Reward celebration modal
+│   │   │   └── RewardsModal.css
+│   │   ├── App.jsx                     # Main app component
+│   │   ├── App.css
+│   │   ├── main.jsx                    # App entry point
+│   │   └── index.css
+│   ├── .env.example                    # Frontend environment variables
+│   ├── package.json
+│   └── README.md
+├── backend/                        # Backend Express server
+│   ├── server.js                   # Express API server
+│   ├── .env.example                # Backend environment variables
+│   ├── package.json
+│   └── README.md
+└── README.md                       # Main project README
 ```
 
 ## Building for Production
