@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import OpenAI from 'openai'
+import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl } from '@solana/web3.js'
 
 // Load environment variables
 dotenv.config()
@@ -14,17 +15,97 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
+// Initialize Solana connection (Devnet)
+const connection = new Connection(
+  process.env.SOLANA_RPC_URL || clusterApiUrl('devnet'),
+  'confirmed'
+)
+
 // Middleware
 app.use(cors())
 app.use(express.json())
+
+// Rate limiting for faucet (simple in-memory storage)
+const faucetRateLimits = new Map()
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     message: 'FinanceAI Coach API is running',
-    openaiConfigured: !!process.env.OPENAI_API_KEY
+    openaiConfigured: !!process.env.OPENAI_API_KEY,
+    solanaConnected: true
   })
+})
+
+// Faucet endpoint - Airdrop SOL to user's wallet
+app.post('/api/faucet', async (req, res) => {
+  try {
+    const { walletAddress } = req.body
+
+    if (!walletAddress) {
+      return res.status(400).json({
+        error: 'Wallet address is required'
+      })
+    }
+
+    // Validate wallet address format
+    let publicKey
+    try {
+      publicKey = new PublicKey(walletAddress)
+    } catch (err) {
+      return res.status(400).json({
+        error: 'Invalid wallet address format'
+      })
+    }
+
+    // Rate limiting: 1 airdrop per wallet per hour
+    const now = Date.now()
+    const lastRequest = faucetRateLimits.get(walletAddress)
+    const ONE_HOUR = 60 * 60 * 1000
+
+    if (lastRequest && (now - lastRequest) < ONE_HOUR) {
+      const timeLeft = Math.ceil((ONE_HOUR - (now - lastRequest)) / 1000 / 60)
+      return res.status(429).json({
+        error: `Rate limit exceeded. Please try again in ${timeLeft} minutes.`
+      })
+    }
+
+    // Request airdrop from Solana devnet
+    console.log(`🚰 Requesting airdrop for ${walletAddress}`)
+    const airdropAmount = 1 * LAMPORTS_PER_SOL // 1 SOL
+
+    const signature = await connection.requestAirdrop(publicKey, airdropAmount)
+
+    // Wait for confirmation
+    await connection.confirmTransaction(signature, 'confirmed')
+
+    // Update rate limit
+    faucetRateLimits.set(walletAddress, now)
+
+    console.log(`✅ Airdrop successful: ${signature}`)
+
+    res.json({
+      success: true,
+      signature,
+      amount: 1.0,
+      message: 'Successfully airdropped 1 SOL to your wallet!'
+    })
+
+  } catch (error) {
+    console.error('Faucet error:', error)
+
+    // Handle specific errors
+    if (error.message?.includes('airdrop request failed')) {
+      return res.status(503).json({
+        error: 'Devnet faucet is currently unavailable. Please try again in a moment.'
+      })
+    }
+
+    res.status(500).json({
+      error: error.message || 'Failed to airdrop SOL. Please try again.'
+    })
+  }
 })
 
 // Chat endpoint
