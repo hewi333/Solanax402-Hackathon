@@ -7,7 +7,7 @@ import RewardsModal from './components/RewardsModal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
-import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw } from 'lucide-react'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction } = useWallet()
@@ -139,11 +139,11 @@ function App() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center text-2xl">
-                🎓
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
-                Solana x402 Academy
+                Solana x402 Learn & Earn
               </h1>
             </div>
             <WalletMultiButton />
@@ -158,7 +158,7 @@ function App() {
               <h2 className="text-4xl md:text-5xl font-bold">
                 Welcome to{' '}
                 <span className="bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
-                  Solana x402 Academy
+                  Solana x402 Learn & Earn
                 </span>
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -169,8 +169,8 @@ function App() {
             <div className="grid md:grid-cols-3 gap-6 mt-12">
               <Card className="border-2 hover:border-solana-purple transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center text-3xl mx-auto mb-2">
-                    🤖
+                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center mx-auto mb-2">
+                    <Bot className="w-6 h-6 text-solana-purple" />
                   </div>
                   <CardTitle>AI-Powered Learning</CardTitle>
                 </CardHeader>
@@ -181,8 +181,8 @@ function App() {
 
               <Card className="border-2 hover:border-solana-green transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-solana-green/10 flex items-center justify-center text-3xl mx-auto mb-2">
-                    ⚡
+                  <div className="w-12 h-12 rounded-full bg-solana-green/10 flex items-center justify-center mx-auto mb-2">
+                    <Zap className="w-6 h-6 text-solana-green" />
                   </div>
                   <CardTitle>Earn While Learning</CardTitle>
                 </CardHeader>
@@ -193,8 +193,8 @@ function App() {
 
               <Card className="border-2 hover:border-solana-purple transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center text-3xl mx-auto mb-2">
-                    📊
+                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center mx-auto mb-2">
+                    <BarChart3 className="w-6 h-6 text-solana-purple" />
                   </div>
                   <CardTitle>Track Progress</CardTitle>
                 </CardHeader>
@@ -324,8 +324,8 @@ function App() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base font-medium">Modules Completed</CardTitle>
-                        <div className="w-10 h-10 rounded-full bg-solana-purple/10 flex items-center justify-center text-xl">
-                          🏆
+                        <div className="w-10 h-10 rounded-full bg-solana-purple/10 flex items-center justify-center">
+                          <Trophy className="w-5 h-5 text-solana-purple" />
                         </div>
                       </div>
                     </CardHeader>
@@ -340,8 +340,8 @@ function App() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base font-medium">Earned Back</CardTitle>
-                        <div className="w-10 h-10 rounded-full bg-solana-green/10 flex items-center justify-center text-xl">
-                          💰
+                        <div className="w-10 h-10 rounded-full bg-solana-green/10 flex items-center justify-center">
+                          <Coins className="w-5 h-5 text-solana-green" />
                         </div>
                       </div>
                     </CardHeader>
@@ -356,8 +356,8 @@ function App() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base font-medium">Remaining to Earn</CardTitle>
-                        <div className="w-10 h-10 rounded-full bg-solana-purple/10 flex items-center justify-center text-xl">
-                          🎯
+                        <div className="w-10 h-10 rounded-full bg-solana-purple/10 flex items-center justify-center">
+                          <Target className="w-5 h-5 text-solana-purple" />
                         </div>
                       </div>
                     </CardHeader>

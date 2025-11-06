@@ -1,4 +1,4 @@
-# Solana x402 Academy 🎓
+# Solana x402 Learn & Earn
 
 > Learn about Solana x402 AI agents and earn SOL as you progress through interactive modules
 
