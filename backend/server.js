@@ -349,7 +349,8 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
 
     // Create a Solana account using CDP v2 API
     // Use getOrCreateAccount to reuse existing account if available
-    const accountName = `user_${userId}`
+    // CDP requires: alphanumeric and hyphens only, 2-36 chars (no underscores!)
+    const accountName = userId.replace(/_/g, '-')
     console.log('📝 Account name:', accountName)
     console.log('🔄 Calling cdpClient.solana.getOrCreateAccount()...')
 
