@@ -14,7 +14,7 @@ function App() {
   const { connection } = useConnection()
   const [balance, setBalance] = useState(null)
   const [totalEarned, setTotalEarned] = useState(0)
-  const [habitsCompleted, setHabitsCompleted] = useState(0)
+  const [modulesCompleted, setModulesCompleted] = useState(0)
   const [currentReward, setCurrentReward] = useState(null)
   const [showRewardModal, setShowRewardModal] = useState(false)
   const [rewardHistory, setRewardHistory] = useState([])
@@ -94,7 +94,7 @@ function App() {
       setHasPaid(true)
       getBalance()
 
-      alert(`Payment successful! 🎉\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the AI Coach.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
+      alert(`Payment successful! 🎉\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 Academy.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
 
     } catch (error) {
       console.error('Payment error:', error)
@@ -106,7 +106,7 @@ function App() {
 
   const handleSessionComplete = () => {
     setHasPaid(false)
-    setHabitsCompleted(0)
+    setModulesCompleted(0)
     setTotalEarned(0)
     setRewardHistory([])
     setCurrentReward(null)
@@ -116,21 +116,21 @@ function App() {
     console.log('Session complete - ready for new session')
   }
 
-  const handleHabitCompleted = async (habitResult) => {
-    console.log('Habit completed:', habitResult)
-    setHabitsCompleted(prev => prev + 1)
-    setTotalEarned(prev => prev + habitResult.reward)
+  const handleModuleCompleted = async (moduleResult) => {
+    console.log('Module completed:', moduleResult)
+    setModulesCompleted(prev => prev + 1)
+    setTotalEarned(prev => prev + moduleResult.reward)
 
     const rewardEntry = {
-      ...habitResult,
+      ...moduleResult,
       timestamp: new Date(),
       txSignature: null
     }
 
     setRewardHistory(prev => [rewardEntry, ...prev])
-    setCurrentReward(habitResult)
+    setCurrentReward(moduleResult)
     setShowRewardModal(true)
-    console.log(`Would send ${habitResult.reward} SOL for completing: ${habitResult.habit}`)
+    console.log(`Would send ${moduleResult.reward} SOL for completing: ${moduleResult.module}`)
   }
 
   return (
@@ -140,10 +140,10 @@ function App() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center text-2xl">
-                💰
+                🎓
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
-                FinanceAI Coach
+                Solana x402 Academy
               </h1>
             </div>
             <WalletMultiButton />
@@ -158,11 +158,11 @@ function App() {
               <h2 className="text-4xl md:text-5xl font-bold">
                 Welcome to{' '}
                 <span className="bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
-                  FinanceAI Coach
+                  Solana x402 Academy
                 </span>
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Your AI-powered finance coach that rewards good habits with instant crypto
+                Learn about Solana x402 AI agents and earn SOL as you progress through interactive modules
               </p>
             </div>
 
@@ -172,10 +172,10 @@ function App() {
                   <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center text-3xl mx-auto mb-2">
                     🤖
                   </div>
-                  <CardTitle>AI-Powered Coaching</CardTitle>
+                  <CardTitle>AI-Powered Learning</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>Chat naturally about your financial goals</CardDescription>
+                  <CardDescription>Learn about Solana x402 AI agents through interactive lessons</CardDescription>
                 </CardContent>
               </Card>
 
@@ -184,10 +184,10 @@ function App() {
                   <div className="w-12 h-12 rounded-full bg-solana-green/10 flex items-center justify-center text-3xl mx-auto mb-2">
                     ⚡
                   </div>
-                  <CardTitle>Instant Rewards</CardTitle>
+                  <CardTitle>Earn While Learning</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>Earn SOL for completing financial habits</CardDescription>
+                  <CardDescription>Earn SOL rewards for completing each learning module</CardDescription>
                 </CardContent>
               </Card>
 
@@ -199,7 +199,7 @@ function App() {
                   <CardTitle>Track Progress</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>See your streaks and achievements grow</CardDescription>
+                  <CardDescription>Monitor your learning journey and earnings in real-time</CardDescription>
                 </CardContent>
               </Card>
             </div>
@@ -263,17 +263,17 @@ function App() {
                   <div className="w-16 h-16 rounded-full bg-solana-purple/10 flex items-center justify-center text-4xl mx-auto mb-4">
                     <Lock className="w-8 h-8 text-solana-purple" />
                   </div>
-                  <CardTitle className="text-3xl">Unlock AI Financial Coach</CardTitle>
+                  <CardTitle className="text-3xl">Unlock Learning Platform</CardTitle>
                   <CardDescription className="text-base">
-                    Pay <strong className="text-solana-green">{PAYMENT_AMOUNT} SOL</strong> to access personalized financial coaching.
-                    Complete 5 learning modules to earn your payment back!
+                    Pay <strong className="text-solana-green">{PAYMENT_AMOUNT} SOL</strong> to access the Solana x402 learning modules.
+                    Complete all 5 modules to earn your payment back!
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <Sparkles className="w-6 h-6 text-solana-purple" />
-                      <span className="text-sm">Learn 5 financial concepts</span>
+                      <span className="text-sm">Learn 5 Solana x402 concepts</span>
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <TrendingUp className="w-6 h-6 text-solana-green" />
@@ -331,7 +331,7 @@ function App() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-solana-purple">
-                        {habitsCompleted}/5
+                        {modulesCompleted}/5
                       </div>
                     </CardContent>
                   </Card>
@@ -371,7 +371,7 @@ function App() {
 
                 <ChatInterface
                   key={sessionKey}
-                  onHabitCompleted={handleHabitCompleted}
+                  onModuleCompleted={handleModuleCompleted}
                   onSessionComplete={handleSessionComplete}
                 />
               </>

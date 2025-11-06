@@ -65,7 +65,7 @@ export default function RewardsModal({ isOpen, reward, onClose }) {
 
             <div className="text-center">
               <p className="text-lg font-semibold text-foreground">
-                {reward.habit}
+                {reward.module}
               </p>
             </div>
 
