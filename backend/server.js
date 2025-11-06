@@ -53,16 +53,29 @@ if (process.env.TREASURY_WALLET_KEYPAIR) {
 // Add your CDP credentials to .env: CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY
 let cdpConfigured = false
 if (process.env.CDP_API_KEY_NAME && process.env.CDP_API_KEY_PRIVATE_KEY) {
-  try {
-    Coinbase.configure({
-      apiKeyName: process.env.CDP_API_KEY_NAME,
-      privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
-    })
-    cdpConfigured = true
-    console.log('🏦 Coinbase CDP SDK initialized')
-  } catch (error) {
-    console.error('⚠️  Failed to initialize CDP SDK:', error.message)
-    console.warn('⚠️  CDP embedded wallets will not be available')
+  // Validate API key name format
+  const apiKeyName = process.env.CDP_API_KEY_NAME
+  if (!apiKeyName.startsWith('organizations/') || !apiKeyName.includes('/apiKeys/')) {
+    console.error('❌ Invalid CDP_API_KEY_NAME format!')
+    console.error('Current value:', apiKeyName)
+    console.error('Expected format: organizations/{org_id}/apiKeys/{key_id}')
+    console.error('Example: organizations/8f1ac569-ed29-48ae-b989-6798a975afab/apiKeys/87d98ae9-f31f-42ee-9b69-723d3ff9dd77')
+    console.warn('⚠️  CDP embedded wallets will not be available due to invalid API key format')
+  } else {
+    try {
+      Coinbase.configure({
+        apiKeyName: process.env.CDP_API_KEY_NAME,
+        privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
+      })
+      cdpConfigured = true
+      console.log('🏦 Coinbase CDP SDK initialized successfully')
+      console.log('Organization ID:', apiKeyName.split('/')[1])
+      console.log('API Key ID:', apiKeyName.split('/')[3])
+    } catch (error) {
+      console.error('⚠️  Failed to initialize CDP SDK:', error.message)
+      console.error('Full error:', error)
+      console.warn('⚠️  CDP embedded wallets will not be available')
+    }
   }
 } else {
   console.warn('⚠️  CDP credentials not configured. Set CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY to enable embedded wallets')
