@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import OpenAI from 'openai'
-import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl } from '@solana/web3.js'
+import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl, Keypair, SystemProgram, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
 
 // Load environment variables
 dotenv.config()
@@ -20,6 +20,18 @@ const connection = new Connection(
   process.env.SOLANA_RPC_URL || clusterApiUrl('devnet'),
   'confirmed'
 )
+
+// Initialize Treasury Wallet
+let treasuryWallet = null
+if (process.env.TREASURY_WALLET_KEYPAIR) {
+  try {
+    const keypairArray = JSON.parse(process.env.TREASURY_WALLET_KEYPAIR)
+    treasuryWallet = Keypair.fromSecretKey(Uint8Array.from(keypairArray))
+    console.log(`💰 Treasury wallet loaded: ${treasuryWallet.publicKey.toBase58()}`)
+  } catch (error) {
+    console.warn('⚠️  Treasury wallet not configured properly')
+  }
+}
 
 // Middleware
 app.use(cors())
@@ -104,6 +116,85 @@ app.post('/api/faucet', async (req, res) => {
 
     res.status(500).json({
       error: error.message || 'Failed to airdrop SOL. Please try again.'
+    })
+  }
+})
+
+// Reward payout endpoint - Agent sends SOL rewards from treasury
+app.post('/api/reward', async (req, res) => {
+  try {
+    const { walletAddress, amount, moduleId } = req.body
+
+    if (!walletAddress || !amount) {
+      return res.status(400).json({
+        error: 'Wallet address and amount are required'
+      })
+    }
+
+    if (!treasuryWallet) {
+      return res.status(500).json({
+        error: 'Treasury wallet not configured. Cannot send rewards.'
+      })
+    }
+
+    // Validate wallet address
+    let recipientPublicKey
+    try {
+      recipientPublicKey = new PublicKey(walletAddress)
+    } catch (err) {
+      return res.status(400).json({
+        error: 'Invalid wallet address format'
+      })
+    }
+
+    // Validate amount (max 0.5 SOL per reward for safety)
+    if (amount <= 0 || amount > 0.5) {
+      return res.status(400).json({
+        error: 'Invalid reward amount. Must be between 0 and 0.5 SOL'
+      })
+    }
+
+    console.log(`💰 Sending ${amount} SOL reward to ${walletAddress} for Module ${moduleId}`)
+
+    // Create transfer transaction
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: treasuryWallet.publicKey,
+        toPubkey: recipientPublicKey,
+        lamports: Math.floor(amount * LAMPORTS_PER_SOL),
+      })
+    )
+
+    // Send and confirm transaction
+    const signature = await sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [treasuryWallet],
+      {
+        commitment: 'confirmed'
+      }
+    )
+
+    console.log(`✅ Reward sent successfully: ${signature}`)
+
+    res.json({
+      success: true,
+      signature,
+      amount,
+      message: `Successfully sent ${amount} SOL reward!`
+    })
+
+  } catch (error) {
+    console.error('Reward payout error:', error)
+
+    if (error.message?.includes('insufficient funds')) {
+      return res.status(503).json({
+        error: 'Treasury wallet has insufficient funds. Please fund the treasury.'
+      })
+    }
+
+    res.status(500).json({
+      error: error.message || 'Failed to send reward. Please try again.'
     })
   }
 })
