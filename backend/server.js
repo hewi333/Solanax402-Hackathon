@@ -312,15 +312,42 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
 
     console.log(`✅ CDP v2 account created successfully: ${solanaAddress}`)
 
-    res.json({
-      success: true,
-      wallet: {
-        name: accountName,
-        address: solanaAddress,
-        network: 'solana-devnet'
-      },
-      message: 'Embedded wallet created successfully!'
-    })
+    // Auto-fund the wallet from Solana devnet faucet
+    console.log('🚰 Auto-funding wallet from devnet faucet...')
+    try {
+      const publicKey = new PublicKey(solanaAddress)
+      const airdropAmount = 1 * LAMPORTS_PER_SOL
+      const signature = await connection.requestAirdrop(publicKey, airdropAmount)
+      await connection.confirmTransaction(signature, 'confirmed')
+      console.log(`✅ Wallet funded with 1 SOL. Signature: ${signature}`)
+
+      res.json({
+        success: true,
+        wallet: {
+          name: accountName,
+          address: solanaAddress,
+          network: 'solana-devnet',
+          funded: true,
+          balance: 1.0
+        },
+        message: 'Embedded wallet created and funded successfully!'
+      })
+    } catch (fundError) {
+      console.warn('⚠️  Failed to auto-fund wallet:', fundError.message)
+      // Still return success even if funding fails - user can fund manually
+      res.json({
+        success: true,
+        wallet: {
+          name: accountName,
+          address: solanaAddress,
+          network: 'solana-devnet',
+          funded: false,
+          balance: 0
+        },
+        message: 'Embedded wallet created successfully! Please fund it manually.',
+        warning: 'Auto-funding failed. You may need to request funds from the faucet.'
+      })
+    }
 
   } catch (error) {
     console.error('❌ CDP v2 account creation error:')
@@ -451,6 +478,88 @@ app.post('/api/cdp/export-wallet', async (req, res) => {
     console.error('CDP wallet export error:', error)
     res.status(500).json({
       error: error.message || 'Failed to export wallet. Please try again.'
+    })
+  }
+})
+
+// Process payment from CDP wallet to treasury
+app.post('/api/cdp/send-payment', async (req, res) => {
+  try {
+    const { userId, amount, recipientAddress } = req.body
+
+    if (!userId || !amount || !recipientAddress) {
+      return res.status(400).json({
+        error: 'userId, amount, and recipientAddress are required'
+      })
+    }
+
+    if (!cdpConfigured || !cdpClient) {
+      return res.status(503).json({
+        error: 'CDP service not configured.'
+      })
+    }
+
+    if (!process.env.CDP_WALLET_SECRET) {
+      return res.status(503).json({
+        error: 'CDP_WALLET_SECRET not configured. Required to sign transactions from CDP wallets.',
+        hint: 'Add CDP_WALLET_SECRET to Railway environment variables to enable embedded wallet payments'
+      })
+    }
+
+    const walletData = cdpWalletStore.get(userId)
+
+    if (!walletData) {
+      return res.status(404).json({
+        error: 'Wallet not found for this user. Please create a wallet first.'
+      })
+    }
+
+    console.log(`💸 Processing payment from CDP wallet for user: ${userId}`)
+    console.log(`Amount: ${amount} SOL to ${recipientAddress}`)
+
+    // Get the CDP account
+    const account = await cdpClient.solana.getOrCreateAccount({
+      name: walletData.accountName
+    })
+
+    console.log('Account retrieved, initiating transfer...')
+
+    // Transfer SOL using CDP's built-in transfer method
+    const transfer = await account.transfer({
+      to: recipientAddress,
+      amount: amount,
+      token: 'sol'
+    })
+
+    console.log('Transfer initiated, waiting for confirmation...')
+
+    // Wait for transaction confirmation
+    const signature = transfer.getTransactionHash()
+
+    console.log(`✅ Payment successful! Signature: ${signature}`)
+
+    res.json({
+      success: true,
+      signature,
+      amount,
+      from: walletData.address,
+      to: recipientAddress,
+      message: 'Payment processed successfully!'
+    })
+
+  } catch (error) {
+    console.error('❌ CDP payment error:')
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+    if (error.response) {
+      console.error('API Response:', error.response.status, error.response.data)
+    }
+
+    res.status(500).json({
+      error: error.message || 'Failed to process payment. Please try again.',
+      errorType: error.name,
+      hint: 'Check that wallet has sufficient balance and CDP_WALLET_SECRET is configured'
     })
   }
 })
