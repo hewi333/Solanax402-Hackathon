@@ -97,7 +97,7 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
             color: 'white',
             padding: '12px 24px',
             borderRadius: '8px',
-            border: 'none',
+            border: '2px solid #0052FF',
             fontSize: '16px',
             fontWeight: '600',
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -105,17 +105,22 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
             transition: 'all 0.2s',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            boxShadow: '0 0 20px rgba(0, 82, 255, 0.3)'
           }}
         >
           {loading ? (
             <>
               <span className="spinner">⏳</span>
-              Creating Wallet...
+              Creating...
             </>
           ) : (
             <>
-              <span>🏦</span>
+              {/* Coinbase Logo */}
+              <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="24" r="24" fill="white"/>
+                <path d="M24 8C15.163 8 8 15.163 8 24C8 32.837 15.163 40 24 40C32.837 40 40 32.837 40 24C40 15.163 32.837 8 24 8ZM24 30C20.686 30 18 27.314 18 24C18 20.686 20.686 18 24 18C27.314 18 30 20.686 30 24C30 27.314 27.314 30 24 30Z" fill="#0052FF"/>
+              </svg>
               Create Embedded Wallet
             </>
           )}

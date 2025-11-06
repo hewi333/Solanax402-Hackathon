@@ -172,8 +172,18 @@ function App() {
             <div className="flex items-center gap-3">
               {/* Browser Wallets (Phantom, Coinbase extension) */}
               <div className="flex flex-col items-end gap-1">
-                <WalletMultiButton />
-                <span className="text-xs text-muted-foreground">Browser Wallets</span>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30">
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
+                      <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
+                      <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
+                      <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
+                    </svg>
+                  </div>
+                  <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0 }} />
+                </div>
+                <span className="text-xs text-muted-foreground">👻 Phantom & More</span>
               </div>
 
               {/* Divider */}
@@ -184,7 +194,7 @@ function App() {
                 <EmbeddedWalletButton onWalletCreated={(wallet) => {
                   console.log('CDP Wallet created:', wallet)
                 }} />
-                <span className="text-xs text-muted-foreground">Embedded Wallet</span>
+                <span className="text-xs text-muted-foreground">🏦 Coinbase CDP</span>
               </div>
             </div>
           </div>
