@@ -49,13 +49,26 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
       console.error('Error response:', err.response?.data)
 
       let errorMessage = 'Failed to create wallet. Please try again.'
+      let hints = []
 
-      if (err.response?.status === 503) {
+      if (err.response?.data) {
+        const errorData = err.response.data
+        errorMessage = errorData.error || errorMessage
+        hints = errorData.hints || []
+
+        // Log detailed error info
+        if (errorData.errorType) console.error('Error type:', errorData.errorType)
+        if (errorData.errorCode) console.error('Error code:', errorData.errorCode)
+        if (errorData.timestamp) console.error('Error timestamp:', errorData.timestamp)
+      } else if (err.response?.status === 503) {
         errorMessage = 'CDP service not configured. Please add API credentials to Railway backend.'
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error
       } else if (err.message) {
         errorMessage = err.message
+      }
+
+      // Combine error message with hints
+      if (hints.length > 0) {
+        errorMessage = `${errorMessage}\n\nTroubleshooting:\n${hints.map((h, i) => `${i + 1}. ${h}`).join('\n')}`
       }
 
       setError(errorMessage)
@@ -163,24 +176,25 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
           borderRadius: '8px',
           fontSize: '13px',
           border: '1px solid #fcc',
-          maxWidth: '400px'
+          maxWidth: '600px'
         }}>
-          <div style={{ fontWeight: '600', marginBottom: '4px' }}>⚠️ Error</div>
-          {error}
-          {error.includes('not configured') && (
-            <div style={{
-              marginTop: '8px',
-              fontSize: '12px',
-              color: '#666',
-              backgroundColor: '#fff3cd',
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ffc107'
-            }}>
-              <strong>Setup Required:</strong> To enable embedded wallets, add CDP API credentials to your Railway backend.
-              See CDP_INTEGRATION_GUIDE.md for instructions.
-            </div>
-          )}
+          <div style={{ fontWeight: '600', marginBottom: '8px' }}>⚠️ Error</div>
+          <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '12px' }}>
+            {error}
+          </div>
+          <div style={{
+            marginTop: '12px',
+            fontSize: '12px',
+            color: '#666',
+            backgroundColor: '#fff3cd',
+            padding: '8px',
+            borderRadius: '4px',
+            border: '1px solid #ffc107'
+          }}>
+            <strong>💡 Tip:</strong> Visit <code>/api/cdp/test</code> in your browser to see detailed configuration status.
+            <br />
+            Example: <code style={{ fontSize: '11px' }}>https://your-railway-app.up.railway.app/api/cdp/test</code>
+          </div>
         </div>
       )}
     </div>
