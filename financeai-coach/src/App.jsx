@@ -7,7 +7,7 @@ import RewardsModal from './components/RewardsModal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
-import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins } from 'lucide-react'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction } = useWallet()
@@ -94,7 +94,7 @@ function App() {
       setHasPaid(true)
       getBalance()
 
-      alert(`Payment successful! 🎉\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 Academy.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
+      alert(`Payment successful!\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
 
     } catch (error) {
       console.error('Payment error:', error)
@@ -135,6 +135,26 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Educational Project Banner */}
+      <div className="bg-solana-purple/10 border-b border-solana-purple/20">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <Info className="w-4 h-4 text-solana-purple" />
+            <span className="text-muted-foreground">
+              <strong className="text-solana-purple">Educational Project</strong> - Solana x402 Hackathon submission using Devnet (test network)
+              <a
+                href="https://github.com/heyhewi/Solanax402-Hackathon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-2 text-solana-green hover:underline"
+              >
+                View Source Code
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -207,7 +227,7 @@ function App() {
             <div className="mt-12 space-y-4">
               <p className="text-lg text-muted-foreground">Connect your Phantom wallet to get started</p>
               <Badge variant="solana" className="text-base px-4 py-2">
-                🔗 Using Solana Devnet
+                Using Solana Devnet
               </Badge>
             </div>
           </div>
@@ -288,7 +308,7 @@ function App() {
                   {balance !== null && balance < PAYMENT_AMOUNT ? (
                     <div className="text-center space-y-4 p-6 bg-destructive/10 rounded-lg border border-destructive/20">
                       <p className="text-destructive font-semibold">
-                        ⚠️ Insufficient balance. You need {PAYMENT_AMOUNT} SOL to start.
+                        Insufficient balance. You need {PAYMENT_AMOUNT} SOL to start.
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Your balance: {balance.toFixed(4)} SOL
@@ -312,7 +332,7 @@ function App() {
                       disabled={isPaymentProcessing || balance === null}
                       className="w-full"
                     >
-                      {isPaymentProcessing ? 'Processing Payment...' : `💳 Pay ${PAYMENT_AMOUNT} SOL to Start`}
+                      {isPaymentProcessing ? 'Processing Payment...' : `Pay ${PAYMENT_AMOUNT} SOL to Start`}
                     </Button>
                   )}
                 </CardContent>
@@ -383,7 +403,7 @@ function App() {
       <footer className="border-t bg-card py-6 mt-12">
         <div className="container mx-auto px-4 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
-            Built with <span className="text-red-500">❤️</span> for Solana x402 Hackathon
+            Built for Solana x402 Hackathon
           </p>
           <p className="text-sm text-muted-foreground space-x-2">
             <a
