@@ -51,13 +51,14 @@ if (process.env.TREASURY_WALLET_KEYPAIR) {
 
 // Initialize Coinbase CDP SDK
 // Add your CDP credentials to .env: CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY
-let coinbaseClient = null
+let cdpConfigured = false
 if (process.env.CDP_API_KEY_NAME && process.env.CDP_API_KEY_PRIVATE_KEY) {
   try {
-    coinbaseClient = new Coinbase({
+    Coinbase.configure({
       apiKeyName: process.env.CDP_API_KEY_NAME,
       privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
     })
+    cdpConfigured = true
     console.log('🏦 Coinbase CDP SDK initialized')
   } catch (error) {
     console.error('⚠️  Failed to initialize CDP SDK:', error.message)
@@ -251,7 +252,7 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
       })
     }
 
-    if (!coinbaseClient) {
+    if (!cdpConfigured) {
       return res.status(503).json({
         error: 'CDP service not configured. Please add CDP credentials to environment variables.'
       })
@@ -259,32 +260,37 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
 
     console.log(`🏦 Creating CDP wallet for user: ${userId}`)
 
-    // Create a new wallet on Solana network
-    const wallet = await coinbaseClient.createWallet({
-      networkId: 'solana-devnet'
+    // Create a new wallet on Solana Devnet
+    // Note: Wallet.create() defaults to Base Sepolia, but we can specify network
+    const wallet = await CoinbaseWallet.create({
+      networkId: Coinbase.networks.SolanaDevnet
     })
 
     // Get the default address
     const address = await wallet.getDefaultAddress()
     const solanaAddress = address.getId()
 
+    // Export wallet data for persistence (in production, use secure storage)
+    const walletData = await wallet.export()
+
     // Store wallet data (in production, use a secure database)
-    const walletData = {
+    const storedData = {
       walletId: wallet.getId(),
       userId,
       address: solanaAddress,
       network: 'solana-devnet',
+      seed: walletData.seed, // Store securely in production!
       createdAt: new Date().toISOString()
     }
 
-    cdpWalletStore.set(userId, walletData)
+    cdpWalletStore.set(userId, storedData)
 
     console.log(`✅ CDP wallet created: ${solanaAddress}`)
 
     res.json({
       success: true,
       wallet: {
-        id: walletData.walletId,
+        id: storedData.walletId,
         address: solanaAddress,
         network: 'solana-devnet'
       },
@@ -304,7 +310,7 @@ app.get('/api/cdp/wallet/:userId', async (req, res) => {
   try {
     const { userId } = req.params
 
-    if (!coinbaseClient) {
+    if (!cdpConfigured) {
       return res.status(503).json({
         error: 'CDP service not configured.'
       })
@@ -379,7 +385,7 @@ app.post('/api/cdp/export-wallet', async (req, res) => {
       })
     }
 
-    if (!coinbaseClient) {
+    if (!cdpConfigured) {
       return res.status(503).json({
         error: 'CDP service not configured.'
       })
@@ -395,15 +401,14 @@ app.post('/api/cdp/export-wallet', async (req, res) => {
 
     console.log(`🔐 Exporting wallet for user: ${userId}`)
 
-    // Fetch wallet from CDP
-    const wallet = await coinbaseClient.getWallet(walletData.walletId)
-
-    // Export wallet data (includes seed phrase)
-    const exportedData = await wallet.export()
-
+    // Return the stored seed (in production, this should be heavily secured)
     res.json({
       success: true,
-      walletData: exportedData,
+      walletData: {
+        seed: walletData.seed,
+        address: walletData.address,
+        network: walletData.network
+      },
       message: 'Wallet exported successfully. Keep this information secure!',
       warning: '⚠️ Store this seed phrase safely. Anyone with access can control your funds.'
     })
