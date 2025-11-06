@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import OpenAI from 'openai'
 import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl, Keypair, SystemProgram, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
+import { Coinbase, Wallet as CoinbaseWallet } from '@coinbase/coinbase-sdk'
 
 // Load environment variables
 dotenv.config()
@@ -47,6 +48,27 @@ if (process.env.TREASURY_WALLET_KEYPAIR) {
     console.warn('⚠️  Treasury wallet not configured properly. Please check TREASURY_WALLET_KEYPAIR in .env')
   }
 }
+
+// Initialize Coinbase CDP SDK
+// Add your CDP credentials to .env: CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY
+let coinbaseClient = null
+if (process.env.CDP_API_KEY_NAME && process.env.CDP_API_KEY_PRIVATE_KEY) {
+  try {
+    coinbaseClient = new Coinbase({
+      apiKeyName: process.env.CDP_API_KEY_NAME,
+      privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
+    })
+    console.log('🏦 Coinbase CDP SDK initialized')
+  } catch (error) {
+    console.error('⚠️  Failed to initialize CDP SDK:', error.message)
+    console.warn('⚠️  CDP embedded wallets will not be available')
+  }
+} else {
+  console.warn('⚠️  CDP credentials not configured. Set CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY to enable embedded wallets')
+}
+
+// In-memory storage for CDP wallet data (in production, use a database)
+const cdpWalletStore = new Map()
 
 // Middleware
 app.use(cors())
@@ -213,6 +235,190 @@ app.post('/api/reward', async (req, res) => {
     })
   }
 })
+
+// =====================================================
+// CDP EMBEDDED WALLET ENDPOINTS
+// =====================================================
+
+// Create a new embedded wallet via Coinbase CDP
+app.post('/api/cdp/create-wallet', async (req, res) => {
+  try {
+    const { userId } = req.body
+
+    if (!userId) {
+      return res.status(400).json({
+        error: 'User ID is required'
+      })
+    }
+
+    if (!coinbaseClient) {
+      return res.status(503).json({
+        error: 'CDP service not configured. Please add CDP credentials to environment variables.'
+      })
+    }
+
+    console.log(`🏦 Creating CDP wallet for user: ${userId}`)
+
+    // Create a new wallet on Solana network
+    const wallet = await coinbaseClient.createWallet({
+      networkId: 'solana-devnet'
+    })
+
+    // Get the default address
+    const address = await wallet.getDefaultAddress()
+    const solanaAddress = address.getId()
+
+    // Store wallet data (in production, use a secure database)
+    const walletData = {
+      walletId: wallet.getId(),
+      userId,
+      address: solanaAddress,
+      network: 'solana-devnet',
+      createdAt: new Date().toISOString()
+    }
+
+    cdpWalletStore.set(userId, walletData)
+
+    console.log(`✅ CDP wallet created: ${solanaAddress}`)
+
+    res.json({
+      success: true,
+      wallet: {
+        id: walletData.walletId,
+        address: solanaAddress,
+        network: 'solana-devnet'
+      },
+      message: 'Embedded wallet created successfully!'
+    })
+
+  } catch (error) {
+    console.error('CDP wallet creation error:', error)
+    res.status(500).json({
+      error: error.message || 'Failed to create embedded wallet. Please try again.'
+    })
+  }
+})
+
+// Get wallet details for a user
+app.get('/api/cdp/wallet/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    if (!coinbaseClient) {
+      return res.status(503).json({
+        error: 'CDP service not configured.'
+      })
+    }
+
+    const walletData = cdpWalletStore.get(userId)
+
+    if (!walletData) {
+      return res.status(404).json({
+        error: 'Wallet not found for this user'
+      })
+    }
+
+    res.json({
+      success: true,
+      wallet: {
+        id: walletData.walletId,
+        address: walletData.address,
+        network: walletData.network,
+        createdAt: walletData.createdAt
+      }
+    })
+
+  } catch (error) {
+    console.error('CDP wallet fetch error:', error)
+    res.status(500).json({
+      error: error.message || 'Failed to fetch wallet details.'
+    })
+  }
+})
+
+// Get wallet balance
+app.get('/api/cdp/wallet/:userId/balance', async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const walletData = cdpWalletStore.get(userId)
+
+    if (!walletData) {
+      return res.status(404).json({
+        error: 'Wallet not found for this user'
+      })
+    }
+
+    // Get balance from Solana
+    const publicKey = new PublicKey(walletData.address)
+    const balance = await connection.getBalance(publicKey)
+
+    res.json({
+      success: true,
+      address: walletData.address,
+      balance: balance / LAMPORTS_PER_SOL,
+      balanceLamports: balance
+    })
+
+  } catch (error) {
+    console.error('CDP wallet balance error:', error)
+    res.status(500).json({
+      error: error.message || 'Failed to fetch wallet balance.'
+    })
+  }
+})
+
+// Export wallet seed phrase (use with caution!)
+app.post('/api/cdp/export-wallet', async (req, res) => {
+  try {
+    const { userId, confirmExport } = req.body
+
+    if (!userId || !confirmExport) {
+      return res.status(400).json({
+        error: 'User ID and export confirmation required'
+      })
+    }
+
+    if (!coinbaseClient) {
+      return res.status(503).json({
+        error: 'CDP service not configured.'
+      })
+    }
+
+    const walletData = cdpWalletStore.get(userId)
+
+    if (!walletData) {
+      return res.status(404).json({
+        error: 'Wallet not found for this user'
+      })
+    }
+
+    console.log(`🔐 Exporting wallet for user: ${userId}`)
+
+    // Fetch wallet from CDP
+    const wallet = await coinbaseClient.getWallet(walletData.walletId)
+
+    // Export wallet data (includes seed phrase)
+    const exportedData = await wallet.export()
+
+    res.json({
+      success: true,
+      walletData: exportedData,
+      message: 'Wallet exported successfully. Keep this information secure!',
+      warning: '⚠️ Store this seed phrase safely. Anyone with access can control your funds.'
+    })
+
+  } catch (error) {
+    console.error('CDP wallet export error:', error)
+    res.status(500).json({
+      error: error.message || 'Failed to export wallet. Please try again.'
+    })
+  }
+})
+
+// =====================================================
+// END CDP ENDPOINTS
+// =====================================================
 
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {

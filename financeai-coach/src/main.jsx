@@ -2,7 +2,7 @@ import { StrictMode, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
-import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
+import { PhantomWalletAdapter, CoinbaseWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import { SolanaMobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile'
 import { clusterApiUrl } from '@solana/web3.js'
@@ -23,6 +23,7 @@ function Root() {
   }, [network])
 
   // Setup wallets - Mobile wallet adapter should be first for mobile device detection
+  // Supporting multiple wallet providers: Phantom and Coinbase for best user experience
   const wallets = useMemo(
     () => [
       new SolanaMobileWalletAdapter({
@@ -35,6 +36,7 @@ function Root() {
         },
       }),
       new PhantomWalletAdapter(),
+      new CoinbaseWalletAdapter(),
     ],
     []
   )
