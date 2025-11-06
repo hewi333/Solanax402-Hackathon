@@ -9,7 +9,7 @@ import { Badge } from './ui/badge'
 import { Bot, User, Send, Loader2, Trophy } from 'lucide-react'
 import { cn } from '../lib/utils'
 
-export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
+export default function ChatInterface({ onModuleCompleted, onSessionComplete }) {
   const { publicKey } = useWallet()
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
@@ -153,9 +153,9 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
           const newTotalEarned = totalEarned + currentModule.reward
           setTotalEarned(newTotalEarned)
 
-          onHabitCompleted({
+          onModuleCompleted({
             detected: true,
-            habit: currentModule.title,
+            module: currentModule.title,
             reward: currentModule.reward,
             signature: signature
           })

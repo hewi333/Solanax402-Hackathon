@@ -1,24 +1,33 @@
-# FinanceAI Coach 💰
+# Solana x402 Academy 🎓
 
-> Your AI-powered finance coach that rewards good habits with instant crypto
+> Learn about Solana x402 AI agents and earn SOL as you progress through interactive modules
 
-An innovative web application built for the Solana x402 Hackathon that combines AI coaching with instant cryptocurrency rewards to help users build better financial habits.
+An innovative Learn-to-Earn platform built for the Solana x402 Hackathon. Users pay 0.5 SOL to unlock 5 interactive learning modules about Solana x402 AI agents, and earn their payment back by completing the modules. The entire experience is managed by an autonomous AI agent.
 
 ## Features
 
-- **AI-Powered Coaching**: Natural language conversations with an AI finance coach powered by OpenAI
-- **Habit Detection**: Automatically recognizes financial milestones and good habits
-- **Instant Rewards**: Earn SOL tokens for completing financial habits
+- **AI-Powered Learning**: Interactive lessons guided by an autonomous AI agent
+- **Learn & Earn Model**: Pay 0.5 SOL upfront, earn it back by completing modules (0.1 SOL per module)
+- **5 Learning Modules**: Comprehensive curriculum covering Solana x402 AI agents
+- **Autonomous Agent**: AI evaluates answers, provides hints, and distributes rewards automatically
 - **Wallet Integration**: Seamless Phantom wallet connection on Solana Devnet
-- **Progress Tracking**: Dashboard showing habits completed, total earned, and current streaks
-- **Beautiful UI**: Modern, responsive design with Solana-inspired aesthetics
+- **Progress Tracking**: Real-time dashboard showing modules completed and earnings
+- **Beautiful UI**: Modern, responsive design with Solana brand colors and shadcn/ui components
+
+## What is x402?
+
+This project demonstrates the Solana x402 AI agent framework - autonomous AI agents that can manage cryptocurrency payments without human intervention. The AI agent in this app:
+- Evaluates your learning progress
+- Decides when to reward you
+- Sends SOL payments automatically
+- Manages the entire learn-to-earn experience
 
 ## Prerequisites
 
 - Node.js 18 or higher
 - Phantom wallet browser extension
 - OpenAI API key (get one at [platform.openai.com](https://platform.openai.com))
-- Solana Devnet SOL (get free from [solfaucet.com](https://solfaucet.com))
+- Solana Devnet SOL (use the built-in faucet or get from [solfaucet.com](https://solfaucet.com))
 
 ## Installation
 
@@ -45,9 +54,10 @@ An innovative web application built for the Solana x402 Hackathon that combines 
    VITE_API_URL=http://localhost:3001
    VITE_SOLANA_NETWORK=devnet
    VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
+   VITE_TREASURY_WALLET=<your-treasury-wallet-public-key>
    ```
 
-### Backend Setup (Required for AI Chat)
+### Backend Setup (Required for AI Agent)
 
 4. **Navigate to backend directory**
    ```bash
@@ -59,153 +69,130 @@ An innovative web application built for the Solana x402 Hackathon that combines 
    npm install
    ```
 
-6. **Configure OpenAI API key**
+6. **Generate treasury wallet**
+   ```bash
+   node generate-treasury-wallet.js
+   ```
+
+   This creates a new Solana wallet that will receive payments and distribute rewards.
+   **Important**: Save the generated keypair securely!
+
+7. **Configure environment**
    ```bash
    cp .env.example .env
    ```
 
-   Edit `backend/.env` and add your OpenAI API key:
+   Edit `backend/.env`:
    ```env
    OPENAI_API_KEY=sk-your-openai-api-key-here
    PORT=3001
+   SOLANA_NETWORK=devnet
+   TREASURY_WALLET_PATH=./treasury-wallet.json
    ```
 
    **Get your OpenAI API key at:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
-7. **Start the backend server**
+8. **Fund the treasury wallet**
+   - Copy the treasury wallet public key
+   - Get devnet SOL from [solfaucet.com](https://solfaucet.com)
+   - The wallet needs ~2-3 SOL to distribute rewards
+
+9. **Start the backend server**
    ```bash
    npm start
    ```
 
-   Keep this terminal open - the backend must be running for the chat to work.
+   Keep this terminal open - the backend must be running for the learning platform to work.
 
 ### Start the Frontend
 
-8. **Open a new terminal and start the frontend**
-   ```bash
-   cd financeai-coach
-   npm run dev
-   ```
+10. **Open a new terminal and start the frontend**
+    ```bash
+    cd financeai-coach
+    npm run dev
+    ```
 
-9. **Open your browser**
-   - Navigate to `http://localhost:5173`
-   - Connect your Phantom wallet
-   - Switch Phantom to Devnet mode
-   - Start chatting with the AI coach!
+11. **Open your browser**
+    - Navigate to `http://localhost:5173`
+    - Connect your Phantom wallet
+    - Switch Phantom to Devnet mode
+    - Start your learning journey!
 
 ## Usage
 
 1. **Connect Wallet**: Click "Connect Wallet" and approve the Phantom connection
-2. **Start Chatting**: Talk to the AI coach about your financial goals
-3. **Complete Habits**: Mention financial activities like:
-   - Creating a budget
-   - Setting savings goals
-   - Tracking expenses
-   - Daily financial check-ins
-   - Learning about finance
-4. **Earn Rewards**: Get instant SOL rewards when habits are detected
-5. **Track Progress**: View your stats on the dashboard
+2. **Get Devnet SOL**: Use the built-in faucet button to get test SOL (if needed)
+3. **Pay to Unlock**: Pay 0.5 SOL to unlock the learning modules
+4. **Learn**: Work through 5 interactive modules about Solana x402 AI agents
+5. **Earn**: Answer questions correctly to earn 0.1 SOL per module
+6. **Complete**: Finish all 5 modules to earn back your full 0.5 SOL deposit!
 
-## Financial Habits & Rewards
+## Learning Modules
 
-| Habit | Reward | Example |
-|-------|--------|---------|
-| Budget Creation | 0.05 SOL | "I want to set a budget of $2000/month" |
-| Savings Goal | 0.05 SOL | "I'm saving for a vacation" |
-| Expense Tracking | 0.02 SOL | "I spent $50 on groceries today" |
-| Daily Check-in | 0.01 SOL | "Daily check: spent $20 today" |
-| Learning Module | 0.03 SOL | "Can you teach me about investing?" |
+The platform teaches you about:
+1. What is Solana x402 and why it matters
+2. How AI agents work on Solana
+3. Real-world use cases for x402 agents
+4. The x402 agent framework and architecture
+5. Building your own x402 AI agent
+
+## Architecture
+
+### Frontend (React + Vite)
+- Modern React 19 with hooks
+- Solana wallet adapter for Phantom integration
+- shadcn/ui components with Tailwind CSS
+- Real-time progress tracking
+
+### Backend (Express + OpenAI)
+- RESTful API for AI agent interactions
+- OpenAI GPT for lesson delivery and answer evaluation
+- Autonomous reward distribution system
+- Solana Web3.js for blockchain interactions
+
+### Smart Features
+- Keyword-based answer evaluation
+- Progressive hint system for incorrect answers
+- Automatic SOL distribution on correct answers
+- Session management and progress persistence
 
 ## Tech Stack
 
-- **Frontend**: React 19 + Vite
-- **Blockchain**: Solana (Devnet)
-- **Wallet**: Solana Wallet Adapter + Phantom
+- **Frontend**: React 19, Vite, Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, Express, OpenAI API
+- **Blockchain**: Solana (Devnet), @solana/web3.js, @solana/wallet-adapter
+- **UI Components**: Radix UI, lucide-react icons
 - **AI**: OpenAI GPT-4
-- **Styling**: Custom CSS with Solana-inspired design
-
-## Project Structure
-
-```
-Solanax402-Hackathon/
-├── financeai-coach/               # Frontend React app
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatInterface.jsx      # AI chat component
-│   │   │   ├── ChatInterface.css
-│   │   │   ├── RewardsModal.jsx       # Reward celebration modal
-│   │   │   └── RewardsModal.css
-│   │   ├── App.jsx                     # Main app component
-│   │   ├── App.css
-│   │   ├── main.jsx                    # App entry point
-│   │   └── index.css
-│   ├── .env.example                    # Frontend environment variables
-│   ├── package.json
-│   └── README.md
-├── backend/                        # Backend Express server
-│   ├── server.js                   # Express API server
-│   ├── .env.example                # Backend environment variables
-│   ├── package.json
-│   └── README.md
-└── README.md                       # Main project README
-```
-
-## Building for Production
-
-```bash
-npm run build
-```
-
-The built files will be in the `dist/` directory.
 
 ## Development
 
-### Running the dev server
 ```bash
-npm run dev
+# Frontend
+cd financeai-coach
+npm run dev     # Start dev server
+npm run build   # Build for production
+npm run preview # Preview production build
+
+# Backend
+cd backend
+npm start       # Start backend server
+npm run dev     # Start with auto-reload (nodemon)
 ```
-
-### Linting
-```bash
-npm run lint
-```
-
-### Preview production build
-```bash
-npm run preview
-```
-
-## Hackathon Details
-
-- **Hackathon**: Solana x402
-- **Track**: Track 5 - x402 Agent Application
-- **Deadline**: November 11, 2025
-- **Repository**: [github.com/heyhewi/Solanax402-Hackathon](https://github.com/heyhewi/Solanax402-Hackathon)
-
-## Roadmap
-
-- ✅ Wallet integration
-- ✅ AI chat interface
-- ✅ Habit detection
-- ✅ Reward system
-- 🚧 Actual SOL transfers (currently simulated)
-- 🚧 Persistent storage
-- 🚧 Advanced habit tracking
-- 🚧 Social features
 
 ## Contributing
 
-This is a hackathon project. Contributions and feedback are welcome!
+Built for the Solana x402 Hackathon. Contributions welcome!
 
 ## License
 
-MIT License - see the [LICENSE](../LICENSE) file for details
+MIT
 
-## Contact
+## Built With ❤️ for Solana x402 Hackathon
 
-- GitHub: [@heyhewi](https://github.com/heyhewi)
-- Project: [Solanax402-Hackathon](https://github.com/heyhewi/Solanax402-Hackathon)
+This project showcases autonomous AI agents on Solana - where AI makes decisions and manages crypto without human intervention.
 
 ---
 
-**Built with ❤️ for the Solana x402 Hackathon**
+**Links:**
+- [Solana x402 Hackathon](https://solana.com/x402/hackathon)
+- [GitHub Repository](https://github.com/heyhewi/Solanax402-Hackathon)
