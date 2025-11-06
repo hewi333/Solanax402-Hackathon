@@ -19,6 +19,7 @@ function App() {
   const [hasPaid, setHasPaid] = useState(false)
   const [isRequestingFaucet, setIsRequestingFaucet] = useState(false)
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false)
+  const [sessionKey, setSessionKey] = useState(0) // Used to remount ChatInterface on new session
 
   // Treasury wallet address (you'll need to set this)
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
@@ -112,6 +113,23 @@ function App() {
     } finally {
       setIsPaymentProcessing(false)
     }
+  }
+
+  // Handle session completion (user earned back deposit)
+  const handleSessionComplete = () => {
+    // Reset all state to require new payment
+    setHasPaid(false)
+    setHabitsCompleted(0)
+    setTotalEarned(0)
+    setRewardHistory([])
+    setCurrentReward(null)
+    setShowRewardModal(false)
+    setSessionKey(prev => prev + 1) // Increment to remount ChatInterface
+
+    // Refresh balance to show updated amount
+    getBalance()
+
+    console.log('Session complete - ready for new session')
   }
 
   // Handle habit completion and rewards
@@ -317,7 +335,11 @@ function App() {
                   </div>
                 </div>
 
-                <ChatInterface onHabitCompleted={handleHabitCompleted} />
+                <ChatInterface
+                  key={sessionKey}
+                  onHabitCompleted={handleHabitCompleted}
+                  onSessionComplete={handleSessionComplete}
+                />
               </>
             )}
           </div>

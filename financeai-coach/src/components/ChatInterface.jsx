@@ -3,7 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { LEARNING_MODULES, getModuleById } from '../learningModules'
 import './ChatInterface.css'
 
-export default function ChatInterface({ onHabitCompleted }) {
+export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
   const { publicKey } = useWallet()
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
@@ -11,8 +11,12 @@ export default function ChatInterface({ onHabitCompleted }) {
   const [currentModuleId, setCurrentModuleId] = useState(1)
   const [completedModules, setCompletedModules] = useState([])
   const [attemptCount, setAttemptCount] = useState(0)
+  const [totalEarned, setTotalEarned] = useState(0)
+  const [sessionComplete, setSessionComplete] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+
+  const INITIAL_DEPOSIT = 0.5 // SOL
 
   const currentModule = getModuleById(currentModuleId)
 
@@ -93,7 +97,7 @@ export default function ChatInterface({ onHabitCompleted }) {
 
   // Send message and evaluate
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return
+    if (!inputMessage.trim() || isLoading || sessionComplete) return
 
     const userMessage = {
       role: 'user',
@@ -154,6 +158,10 @@ export default function ChatInterface({ onHabitCompleted }) {
           // Send the reward!
           const signature = await sendReward(currentModule.id, currentModule.reward)
 
+          // Update total earned
+          const newTotalEarned = totalEarned + currentModule.reward
+          setTotalEarned(newTotalEarned)
+
           // Notify parent component
           onHabitCompleted({
             detected: true,
@@ -166,9 +174,22 @@ export default function ChatInterface({ onHabitCompleted }) {
           setCompletedModules(prev => [...prev, currentModule.id])
           setAttemptCount(0)
 
-          // Move to next module (if not last)
-          if (currentModuleId < LEARNING_MODULES.length) {
-            setCurrentModuleId(prev => prev + 1)
+          // Check if user has earned back the full deposit
+          if (newTotalEarned >= INITIAL_DEPOSIT) {
+            setSessionComplete(true)
+
+            // Add final completion message
+            const completionMsg = {
+              role: 'assistant',
+              content: `🎊 **SESSION COMPLETE!** 🎊\n\nYou've earned back your full ${INITIAL_DEPOSIT} SOL deposit!\n\nTotal earned: ${newTotalEarned} SOL\n\nTo continue learning, start a new session with another ${INITIAL_DEPOSIT} SOL deposit.`,
+              timestamp: new Date()
+            }
+            setMessages(prev => [...prev, completionMsg])
+          } else {
+            // Move to next module (if not last)
+            if (currentModuleId < LEARNING_MODULES.length) {
+              setCurrentModuleId(prev => prev + 1)
+            }
           }
 
         } catch (error) {
@@ -253,8 +274,41 @@ export default function ChatInterface({ onHabitCompleted }) {
       </div>
 
       <div className="chat-input-container">
-        {currentModuleId <= LEARNING_MODULES.length ? (
+        {sessionComplete ? (
+          <div className="session-complete-container">
+            <div className="completion-message">
+              <h3>🎊 Session Complete! 🎊</h3>
+              <p className="earned-amount">Total Earned: {totalEarned} SOL</p>
+              <p className="completion-text">
+                You've earned back your {INITIAL_DEPOSIT} SOL deposit!
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (onSessionComplete) onSessionComplete()
+              }}
+              className="new-session-button"
+            >
+              Start New Session (Pay {INITIAL_DEPOSIT} SOL)
+            </button>
+            <p className="session-hint">
+              Starting a new session requires another {INITIAL_DEPOSIT} SOL deposit to unlock more learning modules.
+            </p>
+          </div>
+        ) : currentModuleId <= LEARNING_MODULES.length ? (
           <>
+            <div className="progress-bar-container">
+              <div className="progress-info">
+                <span>Earned: {totalEarned.toFixed(1)} SOL</span>
+                <span>Goal: {INITIAL_DEPOSIT} SOL</span>
+              </div>
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${(totalEarned / INITIAL_DEPOSIT) * 100}%` }}
+                ></div>
+              </div>
+            </div>
             <div className="chat-input-wrapper">
               <textarea
                 ref={inputRef}
