@@ -50,7 +50,8 @@ if (process.env.TREASURY_WALLET_KEYPAIR) {
 }
 
 // Initialize Coinbase CDP SDK v2
-// Add your CDP credentials to .env: CDP_API_KEY_ID, CDP_API_KEY_SECRET, CDP_WALLET_SECRET
+// Add your CDP credentials to .env: CDP_API_KEY_ID, CDP_API_KEY_SECRET
+// NOTE: CDP_WALLET_SECRET should NOT be set - CDP v2 manages wallet secrets internally
 let cdpClient = null
 let cdpConfigured = false
 let cdpInitError = null
@@ -59,26 +60,21 @@ console.log('\n🔧 CDP SDK v2 Initialization Starting...')
 console.log('Environment Variables Check:')
 console.log('  CDP_API_KEY_ID:', process.env.CDP_API_KEY_ID ? `✅ Set (${process.env.CDP_API_KEY_ID.substring(0, 8)}...)` : '❌ Missing')
 console.log('  CDP_API_KEY_SECRET:', process.env.CDP_API_KEY_SECRET ? `✅ Set (${process.env.CDP_API_KEY_SECRET.substring(0, 8)}...)` : '❌ Missing')
-console.log('  CDP_WALLET_SECRET:', process.env.CDP_WALLET_SECRET ? `✅ Set (${process.env.CDP_WALLET_SECRET.substring(0, 8)}...)` : '❌ Missing')
+if (process.env.CDP_WALLET_SECRET) {
+  console.warn('  ⚠️  CDP_WALLET_SECRET is set - this WILL cause errors!')
+  console.warn('  ⚠️  For CDP v2, DELETE this variable and let CDP manage wallet secrets internally')
+}
 
 if (process.env.CDP_API_KEY_ID && process.env.CDP_API_KEY_SECRET) {
   try {
-    // Initialize CDP v2 client
+    // Initialize CDP v2 client with ONLY API credentials
+    // Do NOT pass walletSecret - CDP v2 manages this internally
     const cdpConfig = {
       apiKeyId: process.env.CDP_API_KEY_ID,
       apiKeySecret: process.env.CDP_API_KEY_SECRET
     }
 
-    // Add wallet secret (required for wallet creation and signing)
-    if (process.env.CDP_WALLET_SECRET) {
-      cdpConfig.walletSecret = process.env.CDP_WALLET_SECRET
-      console.log('✅ CDP Wallet Secret configured - full wallet operations enabled')
-    } else {
-      console.warn('⚠️  CDP Wallet Secret not provided - wallet creation will fail!')
-      console.warn('   Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"')
-    }
-
-    console.log('🔄 Creating CdpClient instance...')
+    console.log('🔄 Creating CdpClient instance (CDP v2 will manage wallet secrets internally)...')
     cdpClient = new CdpClient(cdpConfig)
     cdpConfigured = true
     console.log('✅ Coinbase CDP SDK v2 initialized successfully!')
@@ -98,9 +94,8 @@ if (process.env.CDP_API_KEY_ID && process.env.CDP_API_KEY_SECRET) {
   console.warn('Required environment variables:')
   console.warn('  - CDP_API_KEY_ID: Your CDP API key ID (REQUIRED)')
   console.warn('  - CDP_API_KEY_SECRET: Your CDP API key secret (REQUIRED)')
-  console.warn('  - CDP_WALLET_SECRET: Random secret for wallet derivation (REQUIRED)')
   console.warn('\nGet API credentials from: https://portal.cdp.coinbase.com/')
-  console.warn('Generate CDP_WALLET_SECRET with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"')
+  console.warn('\n⚠️  DO NOT set CDP_WALLET_SECRET - CDP v2 manages wallet secrets internally')
 }
 console.log('🔧 CDP SDK v2 Initialization Complete\n')
 
@@ -164,8 +159,8 @@ app.get('/api/cdp/test', (req, res) => {
   if (!envVarsStatus.CDP_API_KEY_SECRET.present) {
     testResult.issues.push('CDP_API_KEY_SECRET is missing')
   }
-  if (!envVarsStatus.CDP_WALLET_SECRET.present) {
-    testResult.issues.push('CDP_WALLET_SECRET is missing (required for wallet creation)')
+  if (envVarsStatus.CDP_WALLET_SECRET.present) {
+    testResult.issues.push('⚠️ CDP_WALLET_SECRET is set but should NOT be! DELETE this variable - CDP v2 manages wallet secrets internally')
   }
   if (cdpInitError) {
     testResult.issues.push(`Initialization failed: ${cdpInitError.message}`)
@@ -344,7 +339,7 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
       return res.status(503).json({
         error: 'CDP service not configured. Please add CDP_API_KEY_ID and CDP_API_KEY_SECRET to environment variables on Railway.',
         details: 'See CDP_INTEGRATION_GUIDE.md for setup instructions',
-        note: 'CDP_WALLET_SECRET is optional - only needed if CDP wallets need to sign transactions'
+        note: 'Do NOT set CDP_WALLET_SECRET - CDP v2 manages wallet secrets internally'
       })
     }
 
@@ -455,9 +450,9 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
 
     // Add specific hints based on error type
     if (error.message?.includes('Wallet Secret')) {
-      errorResponse.hints.push('CDP_WALLET_SECRET is required but not configured')
-      errorResponse.hints.push('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"')
-      errorResponse.hints.push('Add it to Railway environment variables')
+      errorResponse.hints.push('Error mentions "Wallet Secret" - CDP_WALLET_SECRET should NOT be set!')
+      errorResponse.hints.push('DELETE CDP_WALLET_SECRET from Railway environment variables')
+      errorResponse.hints.push('CDP v2 manages wallet secrets internally - manual secrets cause errors')
     } else if (error.message?.includes('API key')) {
       errorResponse.hints.push('Check that CDP_API_KEY_ID and CDP_API_KEY_SECRET are correct')
       errorResponse.hints.push('Verify credentials at https://portal.cdp.coinbase.com/')
@@ -603,13 +598,6 @@ app.post('/api/cdp/send-payment', async (req, res) => {
     if (!cdpConfigured || !cdpClient) {
       return res.status(503).json({
         error: 'CDP service not configured.'
-      })
-    }
-
-    if (!process.env.CDP_WALLET_SECRET) {
-      return res.status(503).json({
-        error: 'CDP_WALLET_SECRET not configured. Required to sign transactions from CDP wallets.',
-        hint: 'Add CDP_WALLET_SECRET to Railway environment variables to enable embedded wallet payments'
       })
     }
 
