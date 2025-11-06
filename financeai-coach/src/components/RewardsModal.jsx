@@ -8,7 +8,7 @@ import {
 } from './ui/dialog'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
-import { Sparkles, Coins } from 'lucide-react'
+import { Sparkles, Coins, CheckCircle2, ChevronRight } from 'lucide-react'
 
 export default function RewardsModal({ isOpen, reward, onClose }) {
   const [showConfetti, setShowConfetti] = useState(false)
@@ -70,8 +70,8 @@ export default function RewardsModal({ isOpen, reward, onClose }) {
             </div>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-4 py-2 rounded-lg">
-              <span>💡</span>
-              <span>Your reward will be sent to your wallet shortly!</span>
+              <CheckCircle2 className="w-4 h-4 text-solana-green" />
+              <span>Reward sent to your wallet!</span>
             </div>
           </div>
 
@@ -81,7 +81,8 @@ export default function RewardsModal({ isOpen, reward, onClose }) {
             size="lg"
             className="w-full"
           >
-            Awesome! 🚀
+            Continue
+            <ChevronRight className="w-4 h-4 ml-2" />
           </Button>
         </DialogContent>
       </Dialog>
