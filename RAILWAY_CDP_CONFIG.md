@@ -32,15 +32,11 @@ CDP_API_KEY_SECRET=<same value as CDP_API_KEY_PRIVATE_KEY>
    - `CDP_API_KEY_NAME` (no longer used)
    - `CDP_API_KEY_PRIVATE_KEY` (no longer used)
 
-4. **For CDP_WALLET_SECRET** - Try WITHOUT it first:
-   - Leave it blank for now
-   - If wallet creation works, great!
-   - If you get an error about needing it, add it as a random string:
-     ```
-     CDP_WALLET_SECRET=my_random_secret_string_123456789
-     ```
-   - This is NOT from CDP portal - you make this up yourself
-   - It's used to encrypt wallet data locally
+4. **For CDP_WALLET_SECRET** - **DO NOT SET THIS!**:
+   - ❌ **DELETE** `CDP_WALLET_SECRET` if you added it
+   - CDP v2 manages wallet secrets internally
+   - Setting this variable manually will cause errors
+   - This was incorrect advice in earlier versions
 
 5. **Redeploy** your Railway backend
 
@@ -63,10 +59,10 @@ OPENAI_API_KEY=sk-...
 TREASURY_WALLET_KEYPAIR=[1,2,3...] or base58_string
 VITE_TREASURY_WALLET=your_treasury_public_key
 
-# CDP v2 (for embedded wallets)
+# CDP v2 (for embedded wallets) - ONLY THESE TWO!
 CDP_API_KEY_ID=your_api_key_id
 CDP_API_KEY_SECRET=your_api_key_secret
-CDP_WALLET_SECRET=  # Optional - try without it first
+# DO NOT SET: CDP_WALLET_SECRET (causes errors!)
 ```
 
 ## Why This Happened
