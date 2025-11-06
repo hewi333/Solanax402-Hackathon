@@ -4,6 +4,7 @@ import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
+import { SolanaMobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile'
 import { clusterApiUrl } from '@solana/web3.js'
 import './index.css'
 import App from './App.jsx'
@@ -21,9 +22,18 @@ function Root() {
     return customRpc || clusterApiUrl(network)
   }, [network])
 
-  // Setup wallets
+  // Setup wallets - Mobile wallet adapter should be first for mobile device detection
   const wallets = useMemo(
     () => [
+      new SolanaMobileWalletAdapter({
+        appIdentity: { name: 'x402 Finance AI Coach' },
+        authorizationResultCache: {
+          // Cache authorization results on mobile for better UX
+          get: async () => null,
+          set: async () => {},
+          clear: async () => {},
+        },
+      }),
       new PhantomWalletAdapter(),
     ],
     []
