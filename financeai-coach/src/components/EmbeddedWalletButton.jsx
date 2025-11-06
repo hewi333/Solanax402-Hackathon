@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 /**
@@ -78,7 +78,7 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
   }
 
   // Try to load existing wallet on mount
-  useState(() => {
+  useEffect(() => {
     const existingUserId = localStorage.getItem('cdp_user_id')
     if (existingUserId) {
       loadExistingWallet()

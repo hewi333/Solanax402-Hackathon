@@ -4,6 +4,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction, PublicKey } from '@solana/web3.js'
 import ChatInterface from './components/ChatInterface'
 import RewardsModal from './components/RewardsModal'
+import EmbeddedWalletButton from './components/EmbeddedWalletButton'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
@@ -157,7 +158,7 @@ function App() {
 
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-white" />
@@ -166,7 +167,26 @@ function App() {
                 Solana x402 Learn & Earn
               </h1>
             </div>
-            <WalletMultiButton />
+
+            {/* Wallet Connection Options */}
+            <div className="flex items-center gap-3">
+              {/* Browser Wallets (Phantom, Coinbase extension) */}
+              <div className="flex flex-col items-end gap-1">
+                <WalletMultiButton />
+                <span className="text-xs text-muted-foreground">Browser Wallets</span>
+              </div>
+
+              {/* Divider */}
+              <div className="h-12 w-px bg-border" />
+
+              {/* Embedded Wallet (CDP) */}
+              <div className="flex flex-col items-start gap-1">
+                <EmbeddedWalletButton onWalletCreated={(wallet) => {
+                  console.log('CDP Wallet created:', wallet)
+                }} />
+                <span className="text-xs text-muted-foreground">Embedded Wallet</span>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -225,10 +245,15 @@ function App() {
             </div>
 
             <div className="mt-12 space-y-4">
-              <p className="text-lg text-muted-foreground">Connect your Phantom wallet to get started</p>
-              <Badge variant="solana" className="text-base px-4 py-2">
-                Using Solana Devnet
-              </Badge>
+              <p className="text-lg text-muted-foreground">Connect your wallet to get started</p>
+              <div className="flex flex-col items-center gap-2">
+                <Badge variant="solana" className="text-base px-4 py-2">
+                  Using Solana Devnet
+                </Badge>
+                <p className="text-sm text-muted-foreground">
+                  Choose Browser Wallets (Phantom, Coinbase) or create an Embedded Wallet
+                </p>
+              </div>
             </div>
           </div>
         ) : (
