@@ -1,20 +1,34 @@
 import { useState, useRef, useEffect } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { LEARNING_MODULES, getModuleById } from '../learningModules'
 import './ChatInterface.css'
 
 export default function ChatInterface({ onHabitCompleted }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: 'Hi! I\'m your FinanceAI Coach. I\'m here to help you build better financial habits. What are your financial goals?',
-      timestamp: new Date()
-    }
-  ])
+  const { publicKey } = useWallet()
+  const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [currentModuleId, setCurrentModuleId] = useState(1)
+  const [completedModules, setCompletedModules] = useState([])
+  const [attemptCount, setAttemptCount] = useState(0)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Auto-scroll to bottom when new messages arrive
+  const currentModule = getModuleById(currentModuleId)
+
+  // Initialize with first module lesson
+  useEffect(() => {
+    if (messages.length === 0 && currentModule) {
+      const welcomeMessage = {
+        role: 'assistant',
+        content: `Welcome to the Solana x402 Learning Journey! 🚀\n\nI'm your AI agent guide. You've paid 0.5 SOL to unlock this experience. Complete all 5 modules and earn it back!\n\n**Module ${currentModule.id}/5: ${currentModule.title}**\n\n${currentModule.lessonContent}\n\n---\n\n**Question:** ${currentModule.question}\n\nTake your time and answer in your own words!`,
+        timestamp: new Date()
+      }
+      setMessages([welcomeMessage])
+    }
+  }, [])
+
+  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -28,53 +42,56 @@ export default function ChatInterface({ onHabitCompleted }) {
     inputRef.current?.focus()
   }, [])
 
-  const detectHabit = async (userMessage, aiResponse) => {
-    // Simple keyword-based habit detection
-    const habits = {
-      'budget': {
-        keywords: ['budget', 'spending limit', 'monthly budget', 'set budget'],
-        reward: 0.05,
-        type: 'Budget Creation'
-      },
-      'savings': {
-        keywords: ['save', 'saving', 'savings goal', 'save money', 'save for'],
-        reward: 0.05,
-        type: 'Savings Goal'
-      },
-      'expense': {
-        keywords: ['spent', 'bought', 'expense', 'purchase', 'cost'],
-        reward: 0.02,
-        type: 'Expense Tracking'
-      },
-      'checkin': {
-        keywords: ['daily check', 'checking in', 'report', 'update'],
-        reward: 0.01,
-        type: 'Daily Check-in'
-      },
-      'learning': {
-        keywords: ['learn', 'understand', 'teach me', 'explain'],
-        reward: 0.03,
-        type: 'Learning Module'
-      }
+  // Evaluate user's answer
+  const evaluateAnswer = (userAnswer) => {
+    const answer = userAnswer.toLowerCase()
+    const keywords = currentModule.evaluationKeywords
+
+    // Count how many keywords are present
+    const matchedKeywords = keywords.filter(keyword =>
+      answer.includes(keyword.toLowerCase())
+    )
+
+    // Need at least 1 keyword match to pass (lenient as requested)
+    return {
+      passed: matchedKeywords.length >= 1,
+      matchedCount: matchedKeywords.length,
+      totalKeywords: keywords.length
     }
-
-    const combinedText = `${userMessage} ${aiResponse}`.toLowerCase()
-
-    for (const [habitKey, habitData] of Object.entries(habits)) {
-      for (const keyword of habitData.keywords) {
-        if (combinedText.includes(keyword)) {
-          return {
-            detected: true,
-            habit: habitData.type,
-            reward: habitData.reward
-          }
-        }
-      }
-    }
-
-    return { detected: false }
   }
 
+  // Send reward to user
+  const sendReward = async (moduleId, amount) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/reward`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          walletAddress: publicKey.toBase58(),
+          amount: amount,
+          moduleId: moduleId
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reward')
+      }
+
+      console.log(`✅ Reward sent: ${data.signature}`)
+      return data.signature
+
+    } catch (error) {
+      console.error('Reward error:', error)
+      throw error
+    }
+  }
+
+  // Send message and evaluate
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return
 
@@ -85,61 +102,91 @@ export default function ChatInterface({ onHabitCompleted }) {
     }
 
     setMessages(prev => [...prev, userMessage])
+    const userInput = inputMessage
     setInputMessage('')
     setIsLoading(true)
 
     try {
-      // Get backend API URL from environment or use default
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      // Evaluate the answer
+      const evaluation = evaluateAnswer(userInput)
 
-      // Call backend API
-      const response = await fetch(`${apiUrl}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: messages.map(m => ({ role: m.role, content: m.content }))
-            .concat({ role: userMessage.role, content: userMessage.content })
-        })
-      })
+      let aiResponse = ''
+      let moduleCompleted = false
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to get AI response')
+      if (evaluation.passed) {
+        // CORRECT ANSWER!
+        aiResponse = `🎉 **Excellent!** You got it!\n\n`
+
+        if (currentModule.correctAnswerExample) {
+          aiResponse += `Here's a complete answer: "${currentModule.correctAnswerExample}"\n\n`
+        }
+
+        aiResponse += `**Reward:** Sending you ${currentModule.reward} SOL now! 💰\n\n`
+
+        // Check if this is the last module
+        if (currentModuleId === LEARNING_MODULES.length) {
+          aiResponse += `🏆 **CONGRATULATIONS!** You've completed all 5 modules!\n\nYou've learned about the Solana x402 Hackathon, and you've earned back your 0.5 SOL!\n\nThis entire experience was managed by an autonomous AI agent - me! I evaluated your answers, decided when to reward you, and sent payments without any human intervention.\n\nThat's the power of x402 AI agents on Solana! 🚀`
+        } else {
+          const nextModule = getModuleById(currentModuleId + 1)
+          aiResponse += `---\n\n**Module ${nextModule.id}/5: ${nextModule.title}**\n\n${nextModule.lessonContent}\n\n---\n\n**Question:** ${nextModule.question}`
+        }
+
+        moduleCompleted = true
+
+      } else {
+        // INCORRECT OR INCOMPLETE
+        const hintIndex = Math.min(attemptCount, currentModule.hints.length - 1)
+        aiResponse = `Hmm, not quite there yet! 🤔\n\n**Hint:** ${currentModule.hints[hintIndex]}\n\nTry again! Remember, I'm looking for you to mention things related to: ${currentModule.evaluationKeywords.slice(0, 3).join(', ')}...`
+        setAttemptCount(prev => prev + 1)
       }
 
-      const data = await response.json()
       const aiMessage = {
         role: 'assistant',
-        content: data.message,
+        content: aiResponse,
         timestamp: new Date()
       }
 
       setMessages(prev => [...prev, aiMessage])
 
-      // Detect if a habit was completed
-      const habitResult = await detectHabit(userMessage.content, aiMessage.content)
-      if (habitResult.detected && onHabitCompleted) {
-        onHabitCompleted(habitResult)
+      // If answer was correct, send reward and move to next module
+      if (moduleCompleted) {
+        try {
+          // Send the reward!
+          const signature = await sendReward(currentModule.id, currentModule.reward)
+
+          // Notify parent component
+          onHabitCompleted({
+            detected: true,
+            habit: currentModule.title,
+            reward: currentModule.reward,
+            signature: signature
+          })
+
+          // Mark module as completed
+          setCompletedModules(prev => [...prev, currentModule.id])
+          setAttemptCount(0)
+
+          // Move to next module (if not last)
+          if (currentModuleId < LEARNING_MODULES.length) {
+            setCurrentModuleId(prev => prev + 1)
+          }
+
+        } catch (error) {
+          const errorMsg = {
+            role: 'assistant',
+            content: `⚠️ Oops! I evaluated your answer as correct, but there was an error sending your reward: ${error.message}\n\nDon't worry - you still completed the module! The issue is likely with the treasury wallet configuration.`,
+            timestamp: new Date(),
+            isError: true
+          }
+          setMessages(prev => [...prev, errorMsg])
+        }
       }
 
     } catch (error) {
-      console.error('Error sending message:', error)
-
-      let errorText = 'Sorry, I encountered an error. '
-
-      if (error.message.includes('API key')) {
-        errorText += 'Please make sure the backend server is running and OpenAI API key is configured in backend/.env'
-      } else if (error.message.includes('fetch')) {
-        errorText += 'Cannot connect to the backend server. Make sure it\'s running on http://localhost:3001'
-      } else {
-        errorText += error.message
-      }
-
+      console.error('Error:', error)
       const errorMessage = {
         role: 'assistant',
-        content: errorText,
+        content: `Sorry, I encountered an error: ${error.message}`,
         timestamp: new Date(),
         isError: true
       }
@@ -159,11 +206,13 @@ export default function ChatInterface({ onHabitCompleted }) {
   return (
     <div className="chat-interface">
       <div className="chat-header">
-        <div className="chat-header-icon">💬</div>
-        <div>
-          <h3>AI Finance Coach</h3>
+        <div className="chat-header-icon">🤖</div>
+        <div className="chat-header-info">
+          <h3>AI Agent Guide</h3>
           <p className="chat-status">
-            {isLoading ? '🤖 Thinking...' : '🟢 Ready to help'}
+            {currentModuleId <= LEARNING_MODULES.length
+              ? `Module ${currentModuleId}/${LEARNING_MODULES.length}: ${currentModule?.title || 'Loading...'}`
+              : '🎉 All Modules Complete!'}
           </p>
         </div>
       </div>
@@ -178,7 +227,7 @@ export default function ChatInterface({ onHabitCompleted }) {
               {message.role === 'assistant' ? '🤖' : '👤'}
             </div>
             <div className="message-content">
-              <p>{message.content}</p>
+              <div className="message-text">{message.content}</div>
               <span className="message-time">
                 {message.timestamp.toLocaleTimeString([], {
                   hour: '2-digit',
@@ -204,28 +253,37 @@ export default function ChatInterface({ onHabitCompleted }) {
       </div>
 
       <div className="chat-input-container">
-        <div className="chat-input-wrapper">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message... (e.g., 'I want to save for a vacation')"
-            disabled={isLoading}
-            className="chat-input"
-          />
-          <button
-            onClick={sendMessage}
-            disabled={isLoading || !inputMessage.trim()}
-            className="send-button"
-          >
-            {isLoading ? '⏳' : '📤'}
-          </button>
-        </div>
-        <p className="chat-hint">
-          💡 Tip: Tell me about your financial goals, budgets, or spending to earn rewards!
-        </p>
+        {currentModuleId <= LEARNING_MODULES.length ? (
+          <>
+            <div className="chat-input-wrapper">
+              <textarea
+                ref={inputRef}
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your answer here..."
+                disabled={isLoading}
+                className="chat-input"
+                rows="3"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={isLoading || !inputMessage.trim()}
+                className="send-button"
+              >
+                {isLoading ? '⏳' : '📤'}
+              </button>
+            </div>
+            <p className="chat-hint">
+              💡 Answer in your own words - I'll evaluate and reward you if correct!
+            </p>
+          </>
+        ) : (
+          <div className="completion-message">
+            <h3>🎉 Journey Complete!</h3>
+            <p>You've mastered the Solana x402 concepts!</p>
+          </div>
+        )}
       </div>
     </div>
   )

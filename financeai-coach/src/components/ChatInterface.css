@@ -97,6 +97,7 @@
 .message.assistant .message-content {
   background: white;
   border: 1px solid #e0e0e0;
+  color: #333; /* FIX: Make text visible! */
 }
 
 .message.error .message-content {
@@ -105,9 +106,17 @@
   color: #c33;
 }
 
+.message-text {
+  color: inherit;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
 .message-content p {
   margin: 0 0 8px 0;
   line-height: 1.5;
+  color: inherit;
 }
 
 .message-time {
@@ -168,10 +177,14 @@
   flex: 1;
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
-  border-radius: 24px;
+  border-radius: 12px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+  max-height: 150px;
 }
 
 .chat-input:focus {
@@ -258,4 +271,34 @@
     min-width: 36px;
     height: 36px;
   }
+}
+
+/* Chat header info */
+.chat-header-info {
+  flex: 1;
+}
+
+.chat-header-info h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Completion message */
+.completion-message {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.completion-message h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.completion-message p {
+  margin: 0;
+  opacity: 0.9;
 }
