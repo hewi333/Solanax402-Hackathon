@@ -330,7 +330,7 @@ function App() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                      <div className="text-3xl font-bold text-solana-purple">
                         {habitsCompleted}/5
                       </div>
                     </CardContent>
@@ -346,7 +346,7 @@ function App() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                      <div className="text-3xl font-bold text-solana-green">
                         {totalEarned.toFixed(2)} SOL
                       </div>
                     </CardContent>
@@ -362,7 +362,7 @@ function App() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                      <div className="text-3xl font-bold text-solana-purple">
                         {(PAYMENT_AMOUNT - totalEarned).toFixed(2)} SOL
                       </div>
                     </CardContent>

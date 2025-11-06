@@ -298,7 +298,7 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
               <div className="space-y-2">
                 <div className="text-4xl">🎊</div>
                 <h3 className="text-2xl font-bold">Session Complete!</h3>
-                <p className="text-xl font-semibold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                <p className="text-xl font-semibold text-solana-green">
                   Total Earned: {totalEarned} SOL
                 </p>
                 <p className="text-muted-foreground">
