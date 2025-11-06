@@ -621,10 +621,12 @@ app.post('/api/cdp/send-payment', async (req, res) => {
     console.log('Account retrieved, initiating transfer...')
 
     // Transfer SOL using CDP's built-in transfer method
+    // Network parameter is required - can be "devnet" or a Connection object
     const transfer = await account.transfer({
       to: recipientAddress,
       amount: amount,
-      token: 'sol'
+      token: 'sol',
+      network: connection  // Pass our Solana connection object for devnet
     })
 
     console.log('Transfer initiated, waiting for confirmation...')
@@ -655,7 +657,7 @@ app.post('/api/cdp/send-payment', async (req, res) => {
     res.status(500).json({
       error: error.message || 'Failed to process payment. Please try again.',
       errorType: error.name,
-      hint: 'Check that wallet has sufficient balance and CDP_WALLET_SECRET is configured'
+      hint: 'Check that wallet has sufficient balance and is connected to the correct network'
     })
   }
 })
