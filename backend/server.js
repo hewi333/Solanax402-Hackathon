@@ -59,7 +59,7 @@ const faucetRateLimits = new Map()
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'FinanceAI Coach API is running',
+    message: 'Solana x402 Learn & Earn API is running',
     openaiConfigured: !!process.env.OPENAI_API_KEY,
     solanaConnected: true
   })
@@ -231,18 +231,18 @@ app.post('/api/chat', async (req, res) => {
       })
     }
 
-    // Add system message for financial coaching
+    // Add system message for Solana x402 learning
     const systemMessage = {
       role: 'system',
-      content: `You are a friendly and encouraging personal finance coach. Your role is to:
-- Help users set and achieve financial goals
-- Provide practical money management advice
-- Celebrate small wins and progress
-- Keep responses conversational, warm, and motivating
-- Ask follow-up questions to understand their situation better
-- Encourage good financial habits like budgeting, saving, and tracking expenses
-- Keep responses concise (2-3 sentences usually)
-- Be enthusiastic and supportive`
+      content: `You are a knowledgeable and supportive Solana x402 AI learning assistant. Your role is to:
+- Help users learn about Solana x402 AI agents and blockchain technology
+- Evaluate user responses to learning module questions
+- Provide helpful hints when users struggle with questions
+- Keep responses clear, educational, and encouraging
+- Ask follow-up questions to gauge understanding
+- Encourage continued learning and exploration of Solana x402
+- Keep responses concise and focused on the learning objectives
+- Be supportive and constructive with feedback`
     }
 
     // Call OpenAI API
@@ -290,12 +290,12 @@ app.post('/api/chat', async (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 FinanceAI Coach Backend running on http://localhost:${PORT}`)
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`)
-  console.log(`🤖 OpenAI configured: ${!!process.env.OPENAI_API_KEY}`)
+  console.log(`Solana x402 Learn & Earn Backend running on http://localhost:${PORT}`)
+  console.log(`Health check: http://localhost:${PORT}/api/health`)
+  console.log(`OpenAI configured: ${!!process.env.OPENAI_API_KEY}`)
 
   if (!process.env.OPENAI_API_KEY) {
-    console.warn('⚠️  Warning: OPENAI_API_KEY not set in environment variables')
+    console.warn('Warning: OPENAI_API_KEY not set in environment variables')
   }
 })
 

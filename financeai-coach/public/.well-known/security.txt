@@ -1,0 +1,27 @@
+# Security Contact Information
+# This is an educational project for the Solana x402 Hackathon
+
+Contact: https://github.com/heyhewi/Solanax402-Hackathon/issues
+Canonical: https://solanax402-hackathon.vercel.app/.well-known/security.txt
+
+# Project Information
+# This is a Learn-to-Earn educational platform for the Solana x402 Hackathon
+# Source Code: https://github.com/heyhewi/Solanax402-Hackathon
+#
+# LEGITIMATE PROJECT NOTICE:
+# - This is NOT a phishing site
+# - This is an educational Learn & Earn platform for Solana x402 Hackathon
+# - Users pay 0.5 SOL on DEVNET (test network) to unlock learning modules
+# - Users earn back their 0.5 SOL by completing educational modules
+# - All transactions occur on Solana DEVNET (not mainnet)
+# - Open source project - full code available on GitHub
+#
+# The payment flow is part of the learning experience demonstrating:
+# - Wallet integration with Solana
+# - Smart contract interactions
+# - Autonomous AI agent reward distribution
+#
+# If you believe this site was incorrectly flagged as phishing, please contact us.
+
+Expires: 2026-12-31T23:59:59.000Z
+Preferred-Languages: en
