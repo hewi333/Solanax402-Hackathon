@@ -53,16 +53,29 @@ if (process.env.TREASURY_WALLET_KEYPAIR) {
 // Add your CDP credentials to .env: CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY
 let cdpConfigured = false
 if (process.env.CDP_API_KEY_NAME && process.env.CDP_API_KEY_PRIVATE_KEY) {
-  try {
-    Coinbase.configure({
-      apiKeyName: process.env.CDP_API_KEY_NAME,
-      privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
-    })
-    cdpConfigured = true
-    console.log('🏦 Coinbase CDP SDK initialized')
-  } catch (error) {
-    console.error('⚠️  Failed to initialize CDP SDK:', error.message)
-    console.warn('⚠️  CDP embedded wallets will not be available')
+  // Validate API key name format
+  const apiKeyName = process.env.CDP_API_KEY_NAME
+  if (!apiKeyName.startsWith('organizations/') || !apiKeyName.includes('/apiKeys/')) {
+    console.error('❌ Invalid CDP_API_KEY_NAME format!')
+    console.error('Current value:', apiKeyName)
+    console.error('Expected format: organizations/{org_id}/apiKeys/{key_id}')
+    console.error('Example: organizations/8f1ac569-ed29-48ae-b989-6798a975afab/apiKeys/87d98ae9-f31f-42ee-9b69-723d3ff9dd77')
+    console.warn('⚠️  CDP embedded wallets will not be available due to invalid API key format')
+  } else {
+    try {
+      Coinbase.configure({
+        apiKeyName: process.env.CDP_API_KEY_NAME,
+        privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
+      })
+      cdpConfigured = true
+      console.log('🏦 Coinbase CDP SDK initialized successfully')
+      console.log('Organization ID:', apiKeyName.split('/')[1])
+      console.log('API Key ID:', apiKeyName.split('/')[3])
+    } catch (error) {
+      console.error('⚠️  Failed to initialize CDP SDK:', error.message)
+      console.error('Full error:', error)
+      console.warn('⚠️  CDP embedded wallets will not be available')
+    }
   }
 } else {
   console.warn('⚠️  CDP credentials not configured. Set CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY to enable embedded wallets')
@@ -254,21 +267,27 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
 
     if (!cdpConfigured) {
       return res.status(503).json({
-        error: 'CDP service not configured. Please add CDP credentials to environment variables.'
+        error: 'CDP service not configured. Please add CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY to environment variables on Railway.',
+        details: 'See CDP_INTEGRATION_GUIDE.md for setup instructions'
       })
     }
 
     console.log(`🏦 Creating CDP wallet for user: ${userId}`)
+    console.log('Available networks:', Object.keys(Coinbase.networks))
 
     // Create a new wallet on Solana Devnet
-    // Note: Wallet.create() defaults to Base Sepolia, but we can specify network
+    console.log('Attempting to create wallet on network:', Coinbase.networks.SolanaDevnet)
     const wallet = await CoinbaseWallet.create({
       networkId: Coinbase.networks.SolanaDevnet
     })
 
+    console.log('Wallet created, getting default address...')
+
     // Get the default address
     const address = await wallet.getDefaultAddress()
     const solanaAddress = address.getId()
+
+    console.log('Address retrieved:', solanaAddress)
 
     // Export wallet data for persistence (in production, use secure storage)
     const walletData = await wallet.export()
@@ -285,7 +304,7 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
 
     cdpWalletStore.set(userId, storedData)
 
-    console.log(`✅ CDP wallet created: ${solanaAddress}`)
+    console.log(`✅ CDP wallet created successfully: ${solanaAddress}`)
 
     res.json({
       success: true,
@@ -298,9 +317,16 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
     })
 
   } catch (error) {
-    console.error('CDP wallet creation error:', error)
+    console.error('❌ CDP wallet creation error:')
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+    console.error('Full error:', JSON.stringify(error, null, 2))
+
     res.status(500).json({
-      error: error.message || 'Failed to create embedded wallet. Please try again.'
+      error: error.message || 'Failed to create embedded wallet. Please try again.',
+      errorType: error.name,
+      hint: !cdpConfigured ? 'CDP credentials may not be configured correctly' : 'Check server logs for details'
     })
   }
 })
