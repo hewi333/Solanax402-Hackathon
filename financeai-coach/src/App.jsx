@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, SystemProgram, Transaction, PublicKey } from '@solana/web3.js'
 import ChatInterface from './components/ChatInterface'
 import RewardsModal from './components/RewardsModal'
 import './App.css'
+import './App-payment.css'
 
 function App() {
   const { publicKey, connected, sendTransaction } = useWallet()
@@ -15,6 +16,13 @@ function App() {
   const [currentReward, setCurrentReward] = useState(null)
   const [showRewardModal, setShowRewardModal] = useState(false)
   const [rewardHistory, setRewardHistory] = useState([])
+  const [hasPaid, setHasPaid] = useState(false)
+  const [isRequestingFaucet, setIsRequestingFaucet] = useState(false)
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false)
+
+  // Treasury wallet address (you'll need to set this)
+  const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
+  const PAYMENT_AMOUNT = 0.5 // SOL
 
   // Get wallet balance when connected
   const getBalance = async () => {
@@ -30,6 +38,81 @@ function App() {
       getBalance()
     }
   }, [connected, publicKey])
+
+  // Request faucet funds
+  const requestFaucet = async () => {
+    if (!publicKey) return
+
+    setIsRequestingFaucet(true)
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/faucet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          walletAddress: publicKey.toBase58()
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to request faucet')
+      }
+
+      alert(`Success! ${data.amount} SOL airdropped to your wallet!\n\nTransaction: ${data.signature}`)
+
+      // Refresh balance after airdrop
+      setTimeout(() => {
+        getBalance()
+      }, 2000)
+
+    } catch (error) {
+      console.error('Faucet error:', error)
+      alert(`Error: ${error.message}`)
+    } finally {
+      setIsRequestingFaucet(false)
+    }
+  }
+
+  // Process payment to unlock AI coach
+  const processPayment = async () => {
+    if (!publicKey || !connected) return
+
+    setIsPaymentProcessing(true)
+    try {
+      // Create transfer transaction
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(TREASURY_WALLET),
+          lamports: PAYMENT_AMOUNT * LAMPORTS_PER_SOL,
+        })
+      )
+
+      // Send transaction
+      const signature = await sendTransaction(transaction, connection)
+
+      // Wait for confirmation
+      await connection.confirmTransaction(signature, 'confirmed')
+
+      console.log('Payment successful:', signature)
+      setHasPaid(true)
+
+      // Refresh balance
+      getBalance()
+
+      alert(`Payment successful! 🎉\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the AI Coach.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
+
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert(`Payment failed: ${error.message}`)
+    } finally {
+      setIsPaymentProcessing(false)
+    }
+  }
 
   // Handle habit completion and rewards
   const handleHabitCompleted = async (habitResult) => {
@@ -145,37 +228,98 @@ function App() {
                   <span className="label">Balance:</span>
                   <span className="value">{balance !== null ? `${balance.toFixed(4)} SOL` : 'Loading...'}</span>
                 </div>
-                <button onClick={getBalance} className="refresh-button">
-                  🔄 Refresh Balance
-                </button>
-              </div>
-            </div>
-
-            <div className="stats-cards">
-              <div className="stat-card">
-                <div className="stat-icon">🏆</div>
-                <div className="stat-content">
-                  <div className="stat-value">{habitsCompleted}</div>
-                  <div className="stat-label">Habits Completed</div>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">💰</div>
-                <div className="stat-content">
-                  <div className="stat-value">{totalEarned.toFixed(3)} SOL</div>
-                  <div className="stat-label">Total Earned</div>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">🔥</div>
-                <div className="stat-content">
-                  <div className="stat-value">{habitsCompleted > 0 ? '1' : '0'} day</div>
-                  <div className="stat-label">Current Streak</div>
+                <div className="button-group">
+                  <button onClick={getBalance} className="refresh-button">
+                    🔄 Refresh Balance
+                  </button>
+                  {balance !== null && balance < PAYMENT_AMOUNT && !hasPaid && (
+                    <button
+                      onClick={requestFaucet}
+                      className="faucet-button"
+                      disabled={isRequestingFaucet}
+                    >
+                      {isRequestingFaucet ? '⏳ Requesting...' : '🚰 Get Test SOL'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
 
-            <ChatInterface onHabitCompleted={handleHabitCompleted} />
+            {!hasPaid ? (
+              <div className="payment-gate">
+                <div className="gate-icon">🔒</div>
+                <h2>Unlock AI Financial Coach</h2>
+                <p className="gate-description">
+                  Pay <strong>{PAYMENT_AMOUNT} SOL</strong> to access personalized financial coaching.
+                  Complete 5 learning modules to earn your payment back!
+                </p>
+
+                <div className="payment-breakdown">
+                  <div className="breakdown-item">
+                    <span className="breakdown-icon">💡</span>
+                    <span>Learn 5 financial concepts</span>
+                  </div>
+                  <div className="breakdown-item">
+                    <span className="breakdown-icon">💰</span>
+                    <span>Earn 0.1 SOL per module</span>
+                  </div>
+                  <div className="breakdown-item">
+                    <span className="breakdown-icon">✨</span>
+                    <span>Get your {PAYMENT_AMOUNT} SOL back!</span>
+                  </div>
+                </div>
+
+                {balance !== null && balance < PAYMENT_AMOUNT ? (
+                  <div className="insufficient-funds">
+                    <p>⚠️ Insufficient balance. You need {PAYMENT_AMOUNT} SOL to start.</p>
+                    <p>Your balance: {balance.toFixed(4)} SOL</p>
+                    <button
+                      onClick={requestFaucet}
+                      className="faucet-button-large"
+                      disabled={isRequestingFaucet}
+                    >
+                      {isRequestingFaucet ? '⏳ Requesting...' : '🚰 Get 1 SOL from Faucet'}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={processPayment}
+                    className="payment-button"
+                    disabled={isPaymentProcessing || balance === null}
+                  >
+                    {isPaymentProcessing ? '⏳ Processing Payment...' : `💳 Pay ${PAYMENT_AMOUNT} SOL to Start`}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="stats-cards">
+                  <div className="stat-card">
+                    <div className="stat-icon">🏆</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{habitsCompleted}/5</div>
+                      <div className="stat-label">Modules Completed</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">💰</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{totalEarned.toFixed(2)} SOL</div>
+                      <div className="stat-label">Earned Back</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">🎯</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{(PAYMENT_AMOUNT - totalEarned).toFixed(2)} SOL</div>
+                      <div className="stat-label">Remaining to Earn</div>
+                    </div>
+                  </div>
+                </div>
+
+                <ChatInterface onHabitCompleted={handleHabitCompleted} />
+              </>
+            )}
           </div>
         )}
       </main>

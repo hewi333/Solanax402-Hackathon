@@ -1,0 +1,170 @@
+/* Payment Gate Styles */
+.payment-gate {
+  background: var(--card-bg);
+  border: 2px solid var(--primary-purple);
+  border-radius: 24px;
+  padding: 3rem;
+  text-align: center;
+  max-width: 700px;
+  margin: 2rem auto;
+  box-shadow: 0 10px 40px rgba(153, 69, 255, 0.3);
+}
+
+.gate-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.payment-gate h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gate-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.payment-breakdown {
+  background: rgba(153, 69, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.breakdown-icon {
+  font-size: 1.5rem;
+}
+
+.insufficient-funds {
+  background: rgba(255, 184, 77, 0.1);
+  border: 1px solid var(--warning);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.insufficient-funds p {
+  margin: 0.5rem 0;
+  color: var(--warning);
+}
+
+.payment-button, .faucet-button-large {
+  padding: 1rem 2.5rem;
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+  min-width: 250px;
+}
+
+.payment-button:hover:not(:disabled),
+.faucet-button-large:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(153, 69, 255, 0.5);
+}
+
+.payment-button:active:not(:disabled),
+.faucet-button-large:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.payment-button:disabled,
+.faucet-button-large:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.faucet-button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #14F195 0%, #9945FF 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.faucet-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 5px 20px rgba(20, 241, 149, 0.4);
+}
+
+.faucet-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .payment-gate {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+
+  .gate-icon {
+    font-size: 3rem;
+  }
+
+  .payment-gate h2 {
+    font-size: 1.5rem;
+  }
+
+  .gate-description {
+    font-size: 1rem;
+  }
+
+  .payment-button,
+  .faucet-button-large {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .refresh-button,
+  .faucet-button {
+    width: 100%;
+  }
+}
