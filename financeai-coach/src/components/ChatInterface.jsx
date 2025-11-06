@@ -1,7 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { LEARNING_MODULES, getModuleById } from '../learningModules'
-import './ChatInterface.css'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Progress } from './ui/progress'
+import { Badge } from './ui/badge'
+import { Bot, User, Send, Loader2, Trophy } from 'lucide-react'
+import { cn } from '../lib/utils'
 
 export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
   const { publicKey } = useWallet()
@@ -16,11 +22,10 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
-  const INITIAL_DEPOSIT = 0.5 // SOL
+  const INITIAL_DEPOSIT = 0.5
 
   const currentModule = getModuleById(currentModuleId)
 
-  // Initialize with first module lesson
   useEffect(() => {
     if (messages.length === 0 && currentModule) {
       const welcomeMessage = {
@@ -32,7 +37,6 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
     }
   }, [])
 
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -41,22 +45,18 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
     scrollToBottom()
   }, [messages])
 
-  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
-  // Evaluate user's answer
   const evaluateAnswer = (userAnswer) => {
     const answer = userAnswer.toLowerCase()
     const keywords = currentModule.evaluationKeywords
 
-    // Count how many keywords are present
     const matchedKeywords = keywords.filter(keyword =>
       answer.includes(keyword.toLowerCase())
     )
 
-    // Need at least 1 keyword match to pass (lenient as requested)
     return {
       passed: matchedKeywords.length >= 1,
       matchedCount: matchedKeywords.length,
@@ -64,7 +64,6 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
     }
   }
 
-  // Send reward to user
   const sendReward = async (moduleId, amount) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
@@ -95,7 +94,6 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
     }
   }
 
-  // Send message and evaluate
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading || sessionComplete) return
 
@@ -111,14 +109,12 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
     setIsLoading(true)
 
     try {
-      // Evaluate the answer
       const evaluation = evaluateAnswer(userInput)
 
       let aiResponse = ''
       let moduleCompleted = false
 
       if (evaluation.passed) {
-        // CORRECT ANSWER!
         aiResponse = `🎉 **Excellent!** You got it!\n\n`
 
         if (currentModule.correctAnswerExample) {
@@ -127,7 +123,6 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
 
         aiResponse += `**Reward:** Sending you ${currentModule.reward} SOL now! 💰\n\n`
 
-        // Check if this is the last module
         if (currentModuleId === LEARNING_MODULES.length) {
           aiResponse += `🏆 **CONGRATULATIONS!** You've completed all 5 modules!\n\nYou've learned about the Solana x402 Hackathon, and you've earned back your 0.5 SOL!\n\nThis entire experience was managed by an autonomous AI agent - me! I evaluated your answers, decided when to reward you, and sent payments without any human intervention.\n\nThat's the power of x402 AI agents on Solana! 🚀`
         } else {
@@ -138,7 +133,6 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
         moduleCompleted = true
 
       } else {
-        // INCORRECT OR INCOMPLETE
         const hintIndex = Math.min(attemptCount, currentModule.hints.length - 1)
         aiResponse = `Hmm, not quite there yet! 🤔\n\n**Hint:** ${currentModule.hints[hintIndex]}\n\nTry again! Remember, I'm looking for you to mention things related to: ${currentModule.evaluationKeywords.slice(0, 3).join(', ')}...`
         setAttemptCount(prev => prev + 1)
@@ -152,17 +146,13 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
 
       setMessages(prev => [...prev, aiMessage])
 
-      // If answer was correct, send reward and move to next module
       if (moduleCompleted) {
         try {
-          // Send the reward!
           const signature = await sendReward(currentModule.id, currentModule.reward)
 
-          // Update total earned
           const newTotalEarned = totalEarned + currentModule.reward
           setTotalEarned(newTotalEarned)
 
-          // Notify parent component
           onHabitCompleted({
             detected: true,
             habit: currentModule.title,
@@ -170,15 +160,12 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
             signature: signature
           })
 
-          // Mark module as completed
           setCompletedModules(prev => [...prev, currentModule.id])
           setAttemptCount(0)
 
-          // Check if user has earned back the full deposit
           if (newTotalEarned >= INITIAL_DEPOSIT) {
             setSessionComplete(true)
 
-            // Add final completion message
             const completionMsg = {
               role: 'assistant',
               content: `🎊 **SESSION COMPLETE!** 🎊\n\nYou've earned back your full ${INITIAL_DEPOSIT} SOL deposit!\n\nTotal earned: ${newTotalEarned} SOL\n\nTo continue learning, start a new session with another ${INITIAL_DEPOSIT} SOL deposit.`,
@@ -186,7 +173,6 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
             }
             setMessages(prev => [...prev, completionMsg])
           } else {
-            // Move to next module (if not last)
             if (currentModuleId < LEARNING_MODULES.length) {
               setCurrentModuleId(prev => prev + 1)
             }
@@ -225,120 +211,166 @@ export default function ChatInterface({ onHabitCompleted, onSessionComplete }) {
   }
 
   return (
-    <div className="chat-interface">
-      <div className="chat-header">
-        <div className="chat-header-icon">🤖</div>
-        <div className="chat-header-info">
-          <h3>AI Agent Guide</h3>
-          <p className="chat-status">
-            {currentModuleId <= LEARNING_MODULES.length
-              ? `Module ${currentModuleId}/${LEARNING_MODULES.length}: ${currentModule?.title || 'Loading...'}`
-              : '🎉 All Modules Complete!'}
-          </p>
-        </div>
-      </div>
-
-      <div className="chat-messages">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`message ${message.role} ${message.isError ? 'error' : ''}`}
-          >
-            <div className="message-avatar">
-              {message.role === 'assistant' ? '🤖' : '👤'}
-            </div>
-            <div className="message-content">
-              <div className="message-text">{message.content}</div>
-              <span className="message-time">
-                {message.timestamp.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-            </div>
+    <Card className="w-full">
+      <CardHeader className="bg-gradient-to-r from-solana-purple to-solana-green">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+            <Bot className="w-6 h-6 text-white" />
           </div>
-        ))}
-        {isLoading && (
-          <div className="message assistant loading">
-            <div className="message-avatar">🤖</div>
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+          <div className="flex-1">
+            <CardTitle className="text-white">AI Agent Guide</CardTitle>
+            <p className="text-sm text-white/80 mt-1">
+              {currentModuleId <= LEARNING_MODULES.length
+                ? `Module ${currentModuleId}/${LEARNING_MODULES.length}: ${currentModule?.title || 'Loading...'}`
+                : '🎉 All Modules Complete!'}
+            </p>
+          </div>
+          <Badge variant="secondary" className="bg-white/20 text-white border-none">
+            {completedModules.length}/{LEARNING_MODULES.length}
+          </Badge>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-0">
+        <div className="h-[500px] overflow-y-auto p-6 space-y-4 bg-muted/20">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={cn(
+                "flex gap-3 animate-in slide-in-from-bottom-2",
+                message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+              )}
+            >
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                message.role === 'assistant'
+                  ? 'bg-gradient-to-r from-solana-purple to-solana-green'
+                  : 'bg-muted'
+              )}>
+                {message.role === 'assistant' ? (
+                  <Bot className="w-5 h-5 text-white" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </div>
+              <div className={cn(
+                "flex flex-col gap-1 max-w-[80%]",
+                message.role === 'user' ? 'items-end' : 'items-start'
+              )}>
+                <div className={cn(
+                  "rounded-lg px-4 py-3 whitespace-pre-wrap",
+                  message.role === 'assistant'
+                    ? 'bg-card border text-card-foreground'
+                    : 'bg-gradient-to-r from-solana-purple to-solana-green text-white',
+                  message.isError && 'border-destructive bg-destructive/10 text-destructive'
+                )}>
+                  {message.content}
+                </div>
+                <span className="text-xs text-muted-foreground px-2">
+                  {message.timestamp.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
               </div>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          ))}
+          {isLoading && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="bg-card border rounded-lg px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-solana-purple rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-2 h-2 bg-solana-purple rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-2 h-2 bg-solana-green rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-      <div className="chat-input-container">
-        {sessionComplete ? (
-          <div className="session-complete-container">
-            <div className="completion-message">
-              <h3>🎊 Session Complete! 🎊</h3>
-              <p className="earned-amount">Total Earned: {totalEarned} SOL</p>
-              <p className="completion-text">
-                You've earned back your {INITIAL_DEPOSIT} SOL deposit!
+        <div className="p-6 border-t bg-card space-y-4">
+          {sessionComplete ? (
+            <div className="text-center space-y-4">
+              <div className="space-y-2">
+                <div className="text-4xl">🎊</div>
+                <h3 className="text-2xl font-bold">Session Complete!</h3>
+                <p className="text-xl font-semibold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                  Total Earned: {totalEarned} SOL
+                </p>
+                <p className="text-muted-foreground">
+                  You've earned back your {INITIAL_DEPOSIT} SOL deposit!
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  if (onSessionComplete) onSessionComplete()
+                }}
+                variant="solana"
+                size="lg"
+                className="w-full"
+              >
+                <Trophy className="w-4 h-4 mr-2" />
+                Start New Session (Pay {INITIAL_DEPOSIT} SOL)
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Starting a new session requires another {INITIAL_DEPOSIT} SOL deposit to unlock more learning modules.
               </p>
             </div>
-            <button
-              onClick={() => {
-                if (onSessionComplete) onSessionComplete()
-              }}
-              className="new-session-button"
-            >
-              Start New Session (Pay {INITIAL_DEPOSIT} SOL)
-            </button>
-            <p className="session-hint">
-              Starting a new session requires another {INITIAL_DEPOSIT} SOL deposit to unlock more learning modules.
-            </p>
-          </div>
-        ) : currentModuleId <= LEARNING_MODULES.length ? (
-          <>
-            <div className="progress-bar-container">
-              <div className="progress-info">
-                <span>Earned: {totalEarned.toFixed(1)} SOL</span>
-                <span>Goal: {INITIAL_DEPOSIT} SOL</span>
+          ) : currentModuleId <= LEARNING_MODULES.length ? (
+            <>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Progress</span>
+                  <span className="font-semibold">
+                    {totalEarned.toFixed(1)} / {INITIAL_DEPOSIT} SOL
+                  </span>
+                </div>
+                <Progress value={(totalEarned / INITIAL_DEPOSIT) * 100} />
               </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${(totalEarned / INITIAL_DEPOSIT) * 100}%` }}
-                ></div>
+
+              <div className="flex gap-2">
+                <textarea
+                  ref={inputRef}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your answer here..."
+                  disabled={isLoading}
+                  className="flex-1 min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                  rows="3"
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={isLoading || !inputMessage.trim()}
+                  variant="solana"
+                  size="lg"
+                  className="self-end"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </Button>
               </div>
+
+              <p className="text-sm text-muted-foreground text-center">
+                💡 Answer in your own words - I'll evaluate and reward you if correct!
+              </p>
+            </>
+          ) : (
+            <div className="text-center space-y-2">
+              <div className="text-4xl">🎉</div>
+              <h3 className="text-2xl font-bold">Journey Complete!</h3>
+              <p className="text-muted-foreground">You've mastered the Solana x402 concepts!</p>
             </div>
-            <div className="chat-input-wrapper">
-              <textarea
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your answer here..."
-                disabled={isLoading}
-                className="chat-input"
-                rows="3"
-              />
-              <button
-                onClick={sendMessage}
-                disabled={isLoading || !inputMessage.trim()}
-                className="send-button"
-              >
-                {isLoading ? '⏳' : '📤'}
-              </button>
-            </div>
-            <p className="chat-hint">
-              💡 Answer in your own words - I'll evaluate and reward you if correct!
-            </p>
-          </>
-        ) : (
-          <div className="completion-message">
-            <h3>🎉 Journey Complete!</h3>
-            <p>You've mastered the Solana x402 concepts!</p>
-          </div>
-        )}
-      </div>
-    </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

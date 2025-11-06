@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'
-import './RewardsModal.css'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog'
+import { Button } from './ui/button'
+import { Badge } from './ui/badge'
+import { Sparkles, Coins } from 'lucide-react'
 
 export default function RewardsModal({ isOpen, reward, onClose }) {
   const [showConfetti, setShowConfetti] = useState(false)
@@ -7,7 +16,6 @@ export default function RewardsModal({ isOpen, reward, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setShowConfetti(true)
-      // Auto-close after 5 seconds
       const timer = setTimeout(() => {
         onClose()
       }, 5000)
@@ -17,45 +25,66 @@ export default function RewardsModal({ isOpen, reward, onClose }) {
     }
   }, [isOpen, onClose])
 
-  if (!isOpen || !reward) return null
+  if (!reward) return null
 
   return (
     <>
       {showConfetti && (
-        <div className="confetti-container">
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
           {[...Array(50)].map((_, i) => (
             <div
               key={i}
-              className="confetti"
+              className="absolute w-2 h-2 opacity-80 animate-[confettiFall_3s_ease-out_forwards]"
               style={{
                 left: `${Math.random() * 100}%`,
+                top: '-10px',
                 animationDelay: `${Math.random() * 0.5}s`,
-                backgroundColor: ['#667eea', '#764ba2', '#f6d365', '#fda085', '#a8edea', '#fed6e3'][Math.floor(Math.random() * 6)]
+                backgroundColor: ['#9945FF', '#14F195', '#c084fc', '#19FB9B', '#7d38d9', '#00D18C'][Math.floor(Math.random() * 6)]
               }}
             />
           ))}
         </div>
       )}
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-icon">🎉</div>
-          <h2>Habit Completed!</h2>
-          <div className="reward-badge">
-            <div className="reward-amount">{reward.reward} SOL</div>
-            <div className="reward-habit">{reward.habit}</div>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center animate-bounce">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <DialogTitle className="text-3xl">Module Completed!</DialogTitle>
+            <DialogDescription className="text-base">
+              Great job! You've earned a reward for completing this learning module.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col items-center space-y-4 py-4">
+            <Badge variant="solana" className="text-2xl px-6 py-3 font-bold">
+              <Coins className="w-5 h-5 mr-2" />
+              {reward.reward} SOL
+            </Badge>
+
+            <div className="text-center">
+              <p className="text-lg font-semibold text-foreground">
+                {reward.habit}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-4 py-2 rounded-lg">
+              <span>💡</span>
+              <span>Your reward will be sent to your wallet shortly!</span>
+            </div>
           </div>
-          <p className="reward-message">
-            Great job! You've earned a reward for completing this financial habit.
-          </p>
-          <div className="reward-note">
-            <span className="note-icon">💡</span>
-            <span>Your reward will be sent to your wallet shortly!</span>
-          </div>
-          <button onClick={onClose} className="close-button">
+
+          <Button
+            onClick={onClose}
+            variant="solana"
+            size="lg"
+            className="w-full"
+          >
             Awesome! 🚀
-          </button>
-        </div>
-      </div>
+          </Button>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

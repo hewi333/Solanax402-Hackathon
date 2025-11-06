@@ -4,8 +4,10 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction, PublicKey } from '@solana/web3.js'
 import ChatInterface from './components/ChatInterface'
 import RewardsModal from './components/RewardsModal'
-import './App.css'
-import './App-payment.css'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
+import { Button } from './components/ui/button'
+import { Badge } from './components/ui/badge'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction } = useWallet()
@@ -19,13 +21,11 @@ function App() {
   const [hasPaid, setHasPaid] = useState(false)
   const [isRequestingFaucet, setIsRequestingFaucet] = useState(false)
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false)
-  const [sessionKey, setSessionKey] = useState(0) // Used to remount ChatInterface on new session
+  const [sessionKey, setSessionKey] = useState(0)
 
-  // Treasury wallet address (you'll need to set this)
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
-  const PAYMENT_AMOUNT = 0.5 // SOL
+  const PAYMENT_AMOUNT = 0.5
 
-  // Get wallet balance when connected
   const getBalance = async () => {
     if (publicKey) {
       const bal = await connection.getBalance(publicKey)
@@ -33,14 +33,12 @@ function App() {
     }
   }
 
-  // Fetch balance when wallet connects
   useEffect(() => {
     if (connected && publicKey) {
       getBalance()
     }
   }, [connected, publicKey])
 
-  // Request faucet funds
   const requestFaucet = async () => {
     if (!publicKey) return
 
@@ -64,8 +62,6 @@ function App() {
       }
 
       alert(`Success! ${data.amount} SOL airdropped to your wallet!\n\nTransaction: ${data.signature}`)
-
-      // Refresh balance after airdrop
       setTimeout(() => {
         getBalance()
       }, 2000)
@@ -78,13 +74,11 @@ function App() {
     }
   }
 
-  // Process payment to unlock AI coach
   const processPayment = async () => {
     if (!publicKey || !connected) return
 
     setIsPaymentProcessing(true)
     try {
-      // Create transfer transaction
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -93,16 +87,11 @@ function App() {
         })
       )
 
-      // Send transaction
       const signature = await sendTransaction(transaction, connection)
-
-      // Wait for confirmation
       await connection.confirmTransaction(signature, 'confirmed')
 
       console.log('Payment successful:', signature)
       setHasPaid(true)
-
-      // Refresh balance
       getBalance()
 
       alert(`Payment successful! 🎉\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the AI Coach.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
@@ -115,32 +104,23 @@ function App() {
     }
   }
 
-  // Handle session completion (user earned back deposit)
   const handleSessionComplete = () => {
-    // Reset all state to require new payment
     setHasPaid(false)
     setHabitsCompleted(0)
     setTotalEarned(0)
     setRewardHistory([])
     setCurrentReward(null)
     setShowRewardModal(false)
-    setSessionKey(prev => prev + 1) // Increment to remount ChatInterface
-
-    // Refresh balance to show updated amount
+    setSessionKey(prev => prev + 1)
     getBalance()
-
     console.log('Session complete - ready for new session')
   }
 
-  // Handle habit completion and rewards
   const handleHabitCompleted = async (habitResult) => {
     console.log('Habit completed:', habitResult)
-
-    // Update stats
     setHabitsCompleted(prev => prev + 1)
     setTotalEarned(prev => prev + habitResult.reward)
 
-    // Add to history
     const rewardEntry = {
       ...habitResult,
       timestamp: new Date(),
@@ -148,191 +128,245 @@ function App() {
     }
 
     setRewardHistory(prev => [rewardEntry, ...prev])
-
-    // Show reward modal
     setCurrentReward(habitResult)
     setShowRewardModal(true)
-
-    // Simulate reward payment (in production, this would be actual SOL transfer)
-    // For demo purposes, we're just showing the UI
     console.log(`Would send ${habitResult.reward} SOL for completing: ${habitResult.habit}`)
-
-    // Note: Uncomment below for actual SOL transfers on devnet
-    // await sendReward(habitResult.reward)
-  }
-
-  // Function to send actual SOL reward (currently commented out for safety)
-  const sendReward = async (amount) => {
-    if (!publicKey || !connected) return
-
-    try {
-      // This would be the reward sender wallet (in production, this would be a server wallet)
-      // For demo, we're just logging the intent
-      console.log(`Sending ${amount} SOL reward to ${publicKey.toBase58()}`)
-
-      /* Actual implementation would look like:
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: rewardWalletPublicKey,
-          toPubkey: publicKey,
-          lamports: amount * LAMPORTS_PER_SOL,
-        })
-      )
-
-      const signature = await sendTransaction(transaction, connection)
-      await connection.confirmTransaction(signature, 'confirmed')
-      */
-
-      // Refresh balance after reward
-      setTimeout(() => {
-        getBalance()
-      }, 1000)
-    } catch (error) {
-      console.error('Error sending reward:', error)
-    }
   }
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <div className="header-content">
-          <div className="logo-section">
-            <div className="logo">💰</div>
-            <h1>FinanceAI Coach</h1>
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center text-2xl">
+                💰
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                FinanceAI Coach
+              </h1>
+            </div>
+            <WalletMultiButton />
           </div>
-          <WalletMultiButton />
         </div>
       </header>
 
-      <main className="main-content">
+      <main className="flex-1 container mx-auto px-4 py-8">
         {!connected ? (
-          <div className="welcome-section">
-            <h2>Welcome to FinanceAI Coach</h2>
-            <p className="tagline">
-              Your AI-powered finance coach that rewards good habits with instant crypto
-            </p>
-            <div className="features">
-              <div className="feature">
-                <span className="feature-icon">🤖</span>
-                <h3>AI-Powered Coaching</h3>
-                <p>Chat naturally about your financial goals</p>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">⚡</span>
-                <h3>Instant Rewards</h3>
-                <p>Earn SOL for completing financial habits</p>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">📊</span>
-                <h3>Track Progress</h3>
-                <p>See your streaks and achievements grow</p>
-              </div>
+          <div className="max-w-4xl mx-auto space-y-8 text-center">
+            <div className="space-y-4">
+              <h2 className="text-4xl md:text-5xl font-bold">
+                Welcome to{' '}
+                <span className="bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                  FinanceAI Coach
+                </span>
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Your AI-powered finance coach that rewards good habits with instant crypto
+              </p>
             </div>
-            <div className="cta">
-              <p className="cta-text">Connect your Phantom wallet to get started</p>
-              <p className="network-badge">🔗 Using Solana Devnet</p>
+
+            <div className="grid md:grid-cols-3 gap-6 mt-12">
+              <Card className="border-2 hover:border-solana-purple transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center text-3xl mx-auto mb-2">
+                    🤖
+                  </div>
+                  <CardTitle>AI-Powered Coaching</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>Chat naturally about your financial goals</CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-solana-green transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-full bg-solana-green/10 flex items-center justify-center text-3xl mx-auto mb-2">
+                    ⚡
+                  </div>
+                  <CardTitle>Instant Rewards</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>Earn SOL for completing financial habits</CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-solana-purple transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center text-3xl mx-auto mb-2">
+                    📊
+                  </div>
+                  <CardTitle>Track Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>See your streaks and achievements grow</CardDescription>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-12 space-y-4">
+              <p className="text-lg text-muted-foreground">Connect your Phantom wallet to get started</p>
+              <Badge variant="solana" className="text-base px-4 py-2">
+                🔗 Using Solana Devnet
+              </Badge>
             </div>
           </div>
         ) : (
-          <div className="dashboard">
-            <div className="wallet-info">
-              <h2>Wallet Connected! 🎉</h2>
-              <div className="info-card">
-                <div className="info-row">
-                  <span className="label">Address:</span>
-                  <span className="value">{publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}</span>
+          <div className="max-w-6xl mx-auto space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="w-5 h-5" />
+                  Wallet Connected!
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Address:</span>
+                      <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                        {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+                      </code>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Balance:</span>
+                      <span className="text-sm font-semibold">
+                        {balance !== null ? `${balance.toFixed(4)} SOL` : 'Loading...'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={getBalance} variant="outline" size="sm">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Refresh Balance
+                    </Button>
+                    {balance !== null && balance < PAYMENT_AMOUNT && !hasPaid && (
+                      <Button
+                        onClick={requestFaucet}
+                        variant="secondary"
+                        size="sm"
+                        disabled={isRequestingFaucet}
+                      >
+                        <Droplet className="w-4 h-4 mr-2" />
+                        {isRequestingFaucet ? 'Requesting...' : 'Get Test SOL'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="info-row">
-                  <span className="label">Balance:</span>
-                  <span className="value">{balance !== null ? `${balance.toFixed(4)} SOL` : 'Loading...'}</span>
-                </div>
-                <div className="button-group">
-                  <button onClick={getBalance} className="refresh-button">
-                    🔄 Refresh Balance
-                  </button>
-                  {balance !== null && balance < PAYMENT_AMOUNT && !hasPaid && (
-                    <button
-                      onClick={requestFaucet}
-                      className="faucet-button"
-                      disabled={isRequestingFaucet}
-                    >
-                      {isRequestingFaucet ? '⏳ Requesting...' : '🚰 Get Test SOL'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {!hasPaid ? (
-              <div className="payment-gate">
-                <div className="gate-icon">🔒</div>
-                <h2>Unlock AI Financial Coach</h2>
-                <p className="gate-description">
-                  Pay <strong>{PAYMENT_AMOUNT} SOL</strong> to access personalized financial coaching.
-                  Complete 5 learning modules to earn your payment back!
-                </p>
+              <Card className="border-2 border-solana-purple/50">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 rounded-full bg-solana-purple/10 flex items-center justify-center text-4xl mx-auto mb-4">
+                    <Lock className="w-8 h-8 text-solana-purple" />
+                  </div>
+                  <CardTitle className="text-3xl">Unlock AI Financial Coach</CardTitle>
+                  <CardDescription className="text-base">
+                    Pay <strong className="text-solana-green">{PAYMENT_AMOUNT} SOL</strong> to access personalized financial coaching.
+                    Complete 5 learning modules to earn your payment back!
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                      <Sparkles className="w-6 h-6 text-solana-purple" />
+                      <span className="text-sm">Learn 5 financial concepts</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                      <TrendingUp className="w-6 h-6 text-solana-green" />
+                      <span className="text-sm">Earn 0.1 SOL per module</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                      <Target className="w-6 h-6 text-solana-purple" />
+                      <span className="text-sm">Get your {PAYMENT_AMOUNT} SOL back!</span>
+                    </div>
+                  </div>
 
-                <div className="payment-breakdown">
-                  <div className="breakdown-item">
-                    <span className="breakdown-icon">💡</span>
-                    <span>Learn 5 financial concepts</span>
-                  </div>
-                  <div className="breakdown-item">
-                    <span className="breakdown-icon">💰</span>
-                    <span>Earn 0.1 SOL per module</span>
-                  </div>
-                  <div className="breakdown-item">
-                    <span className="breakdown-icon">✨</span>
-                    <span>Get your {PAYMENT_AMOUNT} SOL back!</span>
-                  </div>
-                </div>
-
-                {balance !== null && balance < PAYMENT_AMOUNT ? (
-                  <div className="insufficient-funds">
-                    <p>⚠️ Insufficient balance. You need {PAYMENT_AMOUNT} SOL to start.</p>
-                    <p>Your balance: {balance.toFixed(4)} SOL</p>
-                    <button
-                      onClick={requestFaucet}
-                      className="faucet-button-large"
-                      disabled={isRequestingFaucet}
+                  {balance !== null && balance < PAYMENT_AMOUNT ? (
+                    <div className="text-center space-y-4 p-6 bg-destructive/10 rounded-lg border border-destructive/20">
+                      <p className="text-destructive font-semibold">
+                        ⚠️ Insufficient balance. You need {PAYMENT_AMOUNT} SOL to start.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Your balance: {balance.toFixed(4)} SOL
+                      </p>
+                      <Button
+                        onClick={requestFaucet}
+                        variant="secondary"
+                        size="lg"
+                        disabled={isRequestingFaucet}
+                        className="w-full md:w-auto"
+                      >
+                        <Droplet className="w-4 h-4 mr-2" />
+                        {isRequestingFaucet ? 'Requesting...' : 'Get 1 SOL from Faucet'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={processPayment}
+                      variant="solana"
+                      size="lg"
+                      disabled={isPaymentProcessing || balance === null}
+                      className="w-full"
                     >
-                      {isRequestingFaucet ? '⏳ Requesting...' : '🚰 Get 1 SOL from Faucet'}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={processPayment}
-                    className="payment-button"
-                    disabled={isPaymentProcessing || balance === null}
-                  >
-                    {isPaymentProcessing ? '⏳ Processing Payment...' : `💳 Pay ${PAYMENT_AMOUNT} SOL to Start`}
-                  </button>
-                )}
-              </div>
+                      {isPaymentProcessing ? 'Processing Payment...' : `💳 Pay ${PAYMENT_AMOUNT} SOL to Start`}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
             ) : (
               <>
-                <div className="stats-cards">
-                  <div className="stat-card">
-                    <div className="stat-icon">🏆</div>
-                    <div className="stat-content">
-                      <div className="stat-value">{habitsCompleted}/5</div>
-                      <div className="stat-label">Modules Completed</div>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">💰</div>
-                    <div className="stat-content">
-                      <div className="stat-value">{totalEarned.toFixed(2)} SOL</div>
-                      <div className="stat-label">Earned Back</div>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">🎯</div>
-                    <div className="stat-content">
-                      <div className="stat-value">{(PAYMENT_AMOUNT - totalEarned).toFixed(2)} SOL</div>
-                      <div className="stat-label">Remaining to Earn</div>
-                    </div>
-                  </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base font-medium">Modules Completed</CardTitle>
+                        <div className="w-10 h-10 rounded-full bg-solana-purple/10 flex items-center justify-center text-xl">
+                          🏆
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                        {habitsCompleted}/5
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base font-medium">Earned Back</CardTitle>
+                        <div className="w-10 h-10 rounded-full bg-solana-green/10 flex items-center justify-center text-xl">
+                          💰
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                        {totalEarned.toFixed(2)} SOL
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base font-medium">Remaining to Earn</CardTitle>
+                        <div className="w-10 h-10 rounded-full bg-solana-purple/10 flex items-center justify-center text-xl">
+                          🎯
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+                        {(PAYMENT_AMOUNT - totalEarned).toFixed(2)} SOL
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <ChatInterface
@@ -346,17 +380,31 @@ function App() {
         )}
       </main>
 
-      <footer className="app-footer">
-        <p>Built with ❤️ for Solana x402 Hackathon</p>
-        <p className="footer-links">
-          <a href="https://solana.com/x402/hackathon" target="_blank" rel="noopener noreferrer">
-            About Hackathon
-          </a>
-          {' • '}
-          <a href="https://github.com/heyhewi/Solanax402-Hackathon" target="_blank" rel="noopener noreferrer">
-            GitHub
-          </a>
-        </p>
+      <footer className="border-t bg-card py-6 mt-12">
+        <div className="container mx-auto px-4 text-center space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Built with <span className="text-red-500">❤️</span> for Solana x402 Hackathon
+          </p>
+          <p className="text-sm text-muted-foreground space-x-2">
+            <a
+              href="https://solana.com/x402/hackathon"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-solana-purple transition-colors"
+            >
+              About Hackathon
+            </a>
+            <span>•</span>
+            <a
+              href="https://github.com/heyhewi/Solanax402-Hackathon"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-solana-green transition-colors"
+            >
+              GitHub
+            </a>
+          </p>
+        </div>
       </footer>
 
       <RewardsModal
