@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import OpenAI from 'openai'
 import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl, Keypair, SystemProgram, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
+import bs58 from 'bs58'
 
 // Load environment variables
 dotenv.config()
@@ -22,14 +23,28 @@ const connection = new Connection(
 )
 
 // Initialize Treasury Wallet
+// Supports both base58-encoded private key strings and JSON array format
 let treasuryWallet = null
 if (process.env.TREASURY_WALLET_KEYPAIR) {
   try {
-    const keypairArray = JSON.parse(process.env.TREASURY_WALLET_KEYPAIR)
-    treasuryWallet = Keypair.fromSecretKey(Uint8Array.from(keypairArray))
+    const keypairInput = process.env.TREASURY_WALLET_KEYPAIR.trim()
+    let secretKey
+
+    // Check if input is a base58 string or JSON array
+    if (keypairInput.startsWith('[')) {
+      // JSON array format (legacy support)
+      const keypairArray = JSON.parse(keypairInput)
+      secretKey = Uint8Array.from(keypairArray)
+    } else {
+      // Base58 encoded string (recommended format)
+      secretKey = bs58.decode(keypairInput)
+    }
+
+    treasuryWallet = Keypair.fromSecretKey(secretKey)
     console.log(`💰 Treasury wallet loaded: ${treasuryWallet.publicKey.toBase58()}`)
   } catch (error) {
-    console.warn('⚠️  Treasury wallet not configured properly')
+    console.error('⚠️  Failed to load treasury wallet:', error.message)
+    console.warn('⚠️  Treasury wallet not configured properly. Please check TREASURY_WALLET_KEYPAIR in .env')
   }
 }
 
