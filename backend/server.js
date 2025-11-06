@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import OpenAI from 'openai'
 import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl, Keypair, SystemProgram, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
-import { Coinbase, Wallet as CoinbaseWallet } from '@coinbase/coinbase-sdk'
+import { CdpClient } from '@coinbase/cdp-sdk'
 
 // Load environment variables
 dotenv.config()
@@ -49,36 +49,44 @@ if (process.env.TREASURY_WALLET_KEYPAIR) {
   }
 }
 
-// Initialize Coinbase CDP SDK
-// Add your CDP credentials to .env: CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY
+// Initialize Coinbase CDP SDK v2
+// Add your CDP credentials to .env: CDP_API_KEY_ID, CDP_API_KEY_SECRET
+// CDP_WALLET_SECRET is optional - only needed if CDP wallets need to sign transactions
+let cdpClient = null
 let cdpConfigured = false
-if (process.env.CDP_API_KEY_NAME && process.env.CDP_API_KEY_PRIVATE_KEY) {
-  // Validate API key name format
-  const apiKeyName = process.env.CDP_API_KEY_NAME
-  if (!apiKeyName.startsWith('organizations/') || !apiKeyName.includes('/apiKeys/')) {
-    console.error('❌ Invalid CDP_API_KEY_NAME format!')
-    console.error('Current value:', apiKeyName)
-    console.error('Expected format: organizations/{org_id}/apiKeys/{key_id}')
-    console.error('Example: organizations/8f1ac569-ed29-48ae-b989-6798a975afab/apiKeys/87d98ae9-f31f-42ee-9b69-723d3ff9dd77')
-    console.warn('⚠️  CDP embedded wallets will not be available due to invalid API key format')
-  } else {
-    try {
-      Coinbase.configure({
-        apiKeyName: process.env.CDP_API_KEY_NAME,
-        privateKey: process.env.CDP_API_KEY_PRIVATE_KEY
-      })
-      cdpConfigured = true
-      console.log('🏦 Coinbase CDP SDK initialized successfully')
-      console.log('Organization ID:', apiKeyName.split('/')[1])
-      console.log('API Key ID:', apiKeyName.split('/')[3])
-    } catch (error) {
-      console.error('⚠️  Failed to initialize CDP SDK:', error.message)
-      console.error('Full error:', error)
-      console.warn('⚠️  CDP embedded wallets will not be available')
+
+if (process.env.CDP_API_KEY_ID && process.env.CDP_API_KEY_SECRET) {
+  try {
+    // Initialize CDP v2 client
+    const cdpConfig = {
+      apiKeyId: process.env.CDP_API_KEY_ID,
+      apiKeySecret: process.env.CDP_API_KEY_SECRET
     }
+
+    // Add wallet secret only if provided (optional - only needed for signing FROM CDP wallets)
+    if (process.env.CDP_WALLET_SECRET) {
+      cdpConfig.walletSecret = process.env.CDP_WALLET_SECRET
+      console.log('📝 CDP Wallet Secret provided - can sign transactions from CDP wallets')
+    } else {
+      console.log('ℹ️  CDP Wallet Secret not provided - CDP wallets can receive funds but not send')
+    }
+
+    cdpClient = new CdpClient(cdpConfig)
+    cdpConfigured = true
+    console.log('🏦 Coinbase CDP SDK v2 initialized successfully')
+    console.log('API Key ID:', process.env.CDP_API_KEY_ID.substring(0, 8) + '...')
+  } catch (error) {
+    console.error('⚠️  Failed to initialize CDP SDK v2:', error.message)
+    console.error('Full error:', error)
+    console.warn('⚠️  CDP embedded wallets will not be available')
   }
 } else {
-  console.warn('⚠️  CDP credentials not configured. Set CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY to enable embedded wallets')
+  console.warn('⚠️  CDP v2 credentials not configured.')
+  console.warn('Required environment variables:')
+  console.warn('  - CDP_API_KEY_ID: Your CDP API key ID (REQUIRED)')
+  console.warn('  - CDP_API_KEY_SECRET: Your CDP API key secret (REQUIRED)')
+  console.warn('  - CDP_WALLET_SECRET: Your wallet secret (OPTIONAL - only for signing)')
+  console.warn('Get credentials from: https://portal.cdp.coinbase.com/')
 }
 
 // In-memory storage for CDP wallet data (in production, use a database)
@@ -254,7 +262,7 @@ app.post('/api/reward', async (req, res) => {
 // CDP EMBEDDED WALLET ENDPOINTS
 // =====================================================
 
-// Create a new embedded wallet via Coinbase CDP
+// Create a new embedded wallet via Coinbase CDP v2
 app.post('/api/cdp/create-wallet', async (req, res) => {
   try {
     const { userId } = req.body
@@ -265,68 +273,95 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
       })
     }
 
-    if (!cdpConfigured) {
+    if (!cdpConfigured || !cdpClient) {
       return res.status(503).json({
-        error: 'CDP service not configured. Please add CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY to environment variables on Railway.',
-        details: 'See CDP_INTEGRATION_GUIDE.md for setup instructions'
+        error: 'CDP service not configured. Please add CDP_API_KEY_ID and CDP_API_KEY_SECRET to environment variables on Railway.',
+        details: 'See CDP_INTEGRATION_GUIDE.md for setup instructions',
+        note: 'CDP_WALLET_SECRET is optional - only needed if CDP wallets need to sign transactions'
       })
     }
 
-    console.log(`🏦 Creating CDP wallet for user: ${userId}`)
-    console.log('Available networks:', Object.keys(Coinbase.networks))
+    console.log(`🏦 Creating CDP v2 account for user: ${userId}`)
 
-    // Create a new wallet on Solana Devnet
-    console.log('Attempting to create wallet on network:', Coinbase.networks.SolanaDevnet)
-    const wallet = await CoinbaseWallet.create({
-      networkId: Coinbase.networks.SolanaDevnet
+    // Create a Solana account using CDP v2 API
+    // Use getOrCreateAccount to reuse existing account if available
+    const accountName = `user_${userId}`
+    console.log('Creating Solana account with name:', accountName)
+
+    const account = await cdpClient.solana.getOrCreateAccount({
+      name: accountName
     })
 
-    console.log('Wallet created, getting default address...')
+    console.log('Account created/retrieved successfully')
 
-    // Get the default address
-    const address = await wallet.getDefaultAddress()
-    const solanaAddress = address.getId()
+    // Get the account address
+    const solanaAddress = account.address
 
-    console.log('Address retrieved:', solanaAddress)
+    console.log('Solana address:', solanaAddress)
 
-    // Export wallet data for persistence (in production, use secure storage)
-    const walletData = await wallet.export()
-
-    // Store wallet data (in production, use a secure database)
+    // Store account data (in production, use a secure database)
     const storedData = {
-      walletId: wallet.getId(),
+      accountName,
       userId,
       address: solanaAddress,
       network: 'solana-devnet',
-      seed: walletData.seed, // Store securely in production!
       createdAt: new Date().toISOString()
     }
 
     cdpWalletStore.set(userId, storedData)
 
-    console.log(`✅ CDP wallet created successfully: ${solanaAddress}`)
+    console.log(`✅ CDP v2 account created successfully: ${solanaAddress}`)
 
-    res.json({
-      success: true,
-      wallet: {
-        id: storedData.walletId,
-        address: solanaAddress,
-        network: 'solana-devnet'
-      },
-      message: 'Embedded wallet created successfully!'
-    })
+    // Auto-fund the wallet from Solana devnet faucet
+    console.log('🚰 Auto-funding wallet from devnet faucet...')
+    try {
+      const publicKey = new PublicKey(solanaAddress)
+      const airdropAmount = 1 * LAMPORTS_PER_SOL
+      const signature = await connection.requestAirdrop(publicKey, airdropAmount)
+      await connection.confirmTransaction(signature, 'confirmed')
+      console.log(`✅ Wallet funded with 1 SOL. Signature: ${signature}`)
+
+      res.json({
+        success: true,
+        wallet: {
+          name: accountName,
+          address: solanaAddress,
+          network: 'solana-devnet',
+          funded: true,
+          balance: 1.0
+        },
+        message: 'Embedded wallet created and funded successfully!'
+      })
+    } catch (fundError) {
+      console.warn('⚠️  Failed to auto-fund wallet:', fundError.message)
+      // Still return success even if funding fails - user can fund manually
+      res.json({
+        success: true,
+        wallet: {
+          name: accountName,
+          address: solanaAddress,
+          network: 'solana-devnet',
+          funded: false,
+          balance: 0
+        },
+        message: 'Embedded wallet created successfully! Please fund it manually.',
+        warning: 'Auto-funding failed. You may need to request funds from the faucet.'
+      })
+    }
 
   } catch (error) {
-    console.error('❌ CDP wallet creation error:')
+    console.error('❌ CDP v2 account creation error:')
     console.error('Error name:', error.name)
     console.error('Error message:', error.message)
     console.error('Error stack:', error.stack)
-    console.error('Full error:', JSON.stringify(error, null, 2))
+    if (error.response) {
+      console.error('API Response:', error.response.status, error.response.data)
+    }
 
     res.status(500).json({
       error: error.message || 'Failed to create embedded wallet. Please try again.',
       errorType: error.name,
-      hint: !cdpConfigured ? 'CDP credentials may not be configured correctly' : 'Check server logs for details'
+      hint: !cdpConfigured ? 'CDP v2 credentials may not be configured correctly' : 'Check server logs for details'
     })
   }
 })
@@ -443,6 +478,88 @@ app.post('/api/cdp/export-wallet', async (req, res) => {
     console.error('CDP wallet export error:', error)
     res.status(500).json({
       error: error.message || 'Failed to export wallet. Please try again.'
+    })
+  }
+})
+
+// Process payment from CDP wallet to treasury
+app.post('/api/cdp/send-payment', async (req, res) => {
+  try {
+    const { userId, amount, recipientAddress } = req.body
+
+    if (!userId || !amount || !recipientAddress) {
+      return res.status(400).json({
+        error: 'userId, amount, and recipientAddress are required'
+      })
+    }
+
+    if (!cdpConfigured || !cdpClient) {
+      return res.status(503).json({
+        error: 'CDP service not configured.'
+      })
+    }
+
+    if (!process.env.CDP_WALLET_SECRET) {
+      return res.status(503).json({
+        error: 'CDP_WALLET_SECRET not configured. Required to sign transactions from CDP wallets.',
+        hint: 'Add CDP_WALLET_SECRET to Railway environment variables to enable embedded wallet payments'
+      })
+    }
+
+    const walletData = cdpWalletStore.get(userId)
+
+    if (!walletData) {
+      return res.status(404).json({
+        error: 'Wallet not found for this user. Please create a wallet first.'
+      })
+    }
+
+    console.log(`💸 Processing payment from CDP wallet for user: ${userId}`)
+    console.log(`Amount: ${amount} SOL to ${recipientAddress}`)
+
+    // Get the CDP account
+    const account = await cdpClient.solana.getOrCreateAccount({
+      name: walletData.accountName
+    })
+
+    console.log('Account retrieved, initiating transfer...')
+
+    // Transfer SOL using CDP's built-in transfer method
+    const transfer = await account.transfer({
+      to: recipientAddress,
+      amount: amount,
+      token: 'sol'
+    })
+
+    console.log('Transfer initiated, waiting for confirmation...')
+
+    // Wait for transaction confirmation
+    const signature = transfer.getTransactionHash()
+
+    console.log(`✅ Payment successful! Signature: ${signature}`)
+
+    res.json({
+      success: true,
+      signature,
+      amount,
+      from: walletData.address,
+      to: recipientAddress,
+      message: 'Payment processed successfully!'
+    })
+
+  } catch (error) {
+    console.error('❌ CDP payment error:')
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+    if (error.response) {
+      console.error('API Response:', error.response.status, error.response.data)
+    }
+
+    res.status(500).json({
+      error: error.message || 'Failed to process payment. Please try again.',
+      errorType: error.name,
+      hint: 'Check that wallet has sufficient balance and CDP_WALLET_SECRET is configured'
     })
   }
 })

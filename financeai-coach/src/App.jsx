@@ -24,21 +24,47 @@ function App() {
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false)
   const [sessionKey, setSessionKey] = useState(0)
 
+  // Embedded wallet state
+  const [embeddedWallet, setEmbeddedWallet] = useState(null)
+  const [isEmbeddedWallet, setIsEmbeddedWallet] = useState(false)
+
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
   const PAYMENT_AMOUNT = 0.5
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+  // Check if any wallet is connected (browser or embedded)
+  const isWalletConnected = connected || isEmbeddedWallet
+  const currentWalletAddress = publicKey?.toBase58() || embeddedWallet?.address
 
   const getBalance = async () => {
     if (publicKey) {
       const bal = await connection.getBalance(publicKey)
       setBalance(bal / LAMPORTS_PER_SOL)
+    } else if (embeddedWallet?.address) {
+      // Get balance for embedded wallet
+      const publicKey = new PublicKey(embeddedWallet.address)
+      const bal = await connection.getBalance(publicKey)
+      setBalance(bal / LAMPORTS_PER_SOL)
     }
   }
+
+  // Check for existing embedded wallet on mount
+  useEffect(() => {
+    const cdpUserId = localStorage.getItem('cdp_user_id')
+    const cdpAddress = localStorage.getItem('cdp_wallet_address')
+    if (cdpUserId && cdpAddress) {
+      setEmbeddedWallet({ userId: cdpUserId, address: cdpAddress })
+      setIsEmbeddedWallet(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (connected && publicKey) {
       getBalance()
+    } else if (embeddedWallet) {
+      getBalance()
     }
-  }, [connected, publicKey])
+  }, [connected, publicKey, embeddedWallet])
 
   const requestFaucet = async () => {
     if (!publicKey) return
@@ -99,6 +125,42 @@ function App() {
 
     } catch (error) {
       console.error('Payment error:', error)
+      alert(`Payment failed: ${error.message}`)
+    } finally {
+      setIsPaymentProcessing(false)
+    }
+  }
+
+  const processEmbeddedPayment = async () => {
+    if (!embeddedWallet) return
+
+    setIsPaymentProcessing(true)
+    try {
+      const response = await fetch(`${API_URL}/api/cdp/send-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: embeddedWallet.userId,
+          amount: PAYMENT_AMOUNT,
+          recipientAddress: TREASURY_WALLET
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.hint || 'Payment failed')
+      }
+
+      if (data.success) {
+        console.log('Embedded wallet payment successful:', data.signature)
+        setHasPaid(true)
+        getBalance()
+
+        alert(`Payment successful!\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${data.signature}`)
+      }
+    } catch (error) {
+      console.error('Embedded payment error:', error)
       alert(`Payment failed: ${error.message}`)
     } finally {
       setIsPaymentProcessing(false)
@@ -193,6 +255,13 @@ function App() {
               <div className="flex flex-col items-start gap-1">
                 <EmbeddedWalletButton onWalletCreated={(wallet) => {
                   console.log('CDP Wallet created:', wallet)
+                  // Get userId from localStorage (set by EmbeddedWalletButton)
+                  const userId = localStorage.getItem('cdp_user_id')
+                  if (userId && wallet.address) {
+                    setEmbeddedWallet({ userId, address: wallet.address })
+                    setIsEmbeddedWallet(true)
+                    getBalance()
+                  }
                 }} />
                 <span className="text-xs text-muted-foreground">🏦 Coinbase CDP</span>
               </div>
@@ -202,7 +271,7 @@ function App() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8">
-        {!connected ? (
+        {!isWalletConnected ? (
           <div className="max-w-4xl mx-auto space-y-8 text-center">
             <div className="space-y-4">
               <h2 className="text-4xl md:text-5xl font-bold">
@@ -272,7 +341,12 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Wallet className="w-5 h-5" />
-                  Wallet Connected!
+                  {isEmbeddedWallet ? 'Embedded Wallet Connected!' : 'Wallet Connected!'}
+                  {isEmbeddedWallet && (
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      🏦 Coinbase CDP
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -281,7 +355,7 @@ function App() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Address:</span>
                       <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                        {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+                        {currentWalletAddress?.slice(0, 4)}...{currentWalletAddress?.slice(-4)}
                       </code>
                     </div>
                     <div className="flex items-center gap-2">
@@ -361,7 +435,7 @@ function App() {
                     </div>
                   ) : (
                     <Button
-                      onClick={processPayment}
+                      onClick={isEmbeddedWallet ? processEmbeddedPayment : processPayment}
                       variant="solana"
                       size="lg"
                       disabled={isPaymentProcessing || balance === null}
