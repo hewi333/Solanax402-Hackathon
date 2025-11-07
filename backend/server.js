@@ -410,20 +410,75 @@ app.post('/api/cdp/create-wallet', async (req, res) => {
         message: 'Embedded wallet created and funded successfully!'
       })
     } catch (fundError) {
-      console.warn('⚠️  Failed to auto-fund wallet:', fundError.message)
-      // Still return success even if funding fails - user can fund manually
-      res.json({
-        success: true,
-        wallet: {
-          name: accountName,
-          address: solanaAddress,
-          network: 'solana-devnet',
-          funded: false,
-          balance: 0
-        },
-        message: 'Embedded wallet created successfully! Please fund it manually.',
-        warning: 'Auto-funding failed. You may need to request funds from the faucet.'
-      })
+      console.warn('⚠️  Failed to auto-fund wallet from faucet:', fundError.message)
+      console.log('💰 Attempting backup funding from treasury wallet...')
+
+      // Try to fund from treasury wallet as backup
+      if (treasuryWallet) {
+        try {
+          const recipientPublicKey = new PublicKey(solanaAddress)
+          const fundingAmount = 0.1 * LAMPORTS_PER_SOL  // Fund with 0.1 SOL (enough for 2 test cycles)
+
+          const transaction = new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: treasuryWallet.publicKey,
+              toPubkey: recipientPublicKey,
+              lamports: Math.floor(fundingAmount),
+            })
+          )
+
+          const signature = await sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [treasuryWallet]
+          )
+
+          console.log(`✅ Wallet funded from treasury with 0.1 SOL. Signature: ${signature}`)
+
+          res.json({
+            success: true,
+            wallet: {
+              name: accountName,
+              address: solanaAddress,
+              network: 'solana-devnet',
+              funded: true,
+              balance: 0.1,
+              fundingSource: 'treasury'
+            },
+            message: 'Embedded wallet created and funded from treasury successfully!',
+            signature: signature
+          })
+        } catch (treasuryError) {
+          console.error('❌ Treasury funding also failed:', treasuryError.message)
+          // Both faucet and treasury failed - return unfunded
+          res.json({
+            success: true,
+            wallet: {
+              name: accountName,
+              address: solanaAddress,
+              network: 'solana-devnet',
+              funded: false,
+              balance: 0
+            },
+            message: 'Embedded wallet created successfully! Please fund it manually.',
+            warning: 'Auto-funding failed (faucet and treasury). You may need to request funds from the faucet manually or reduce payment amounts for testing.'
+          })
+        }
+      } else {
+        // No treasury wallet configured - return unfunded
+        res.json({
+          success: true,
+          wallet: {
+            name: accountName,
+            address: solanaAddress,
+            network: 'solana-devnet',
+            funded: false,
+            balance: 0
+          },
+          message: 'Embedded wallet created successfully! Please fund it manually.',
+          warning: 'Auto-funding failed. Treasury wallet not configured. You may need to request funds from the faucet.'
+        })
+      }
     }
 
   } catch (error) {

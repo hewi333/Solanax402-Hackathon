@@ -288,6 +288,34 @@ Backend endpoint (development only):
 
 ---
 
+## Multiple Wallet Types Appearing
+
+**Question:** "Why do I see Backpack, Solflare, MetaMask, Brave, and other wallets I didn't install?"
+
+**Answer:** This is normal and expected behavior! The Solana wallet adapter automatically detects ALL wallet extensions you have installed in your browser.
+
+**How it Works:**
+- The wallet adapter scans for installed browser extensions
+- It shows detected wallets even if you primarily use Phantom
+- This gives you flexibility to choose which wallet to use
+
+**What You See:**
+- **Detected:** Backpack, Solflare, MetaMask (if installed)
+- **More Options:** Coinbase Wallet extension
+- **Always Available:** Phantom, Coinbase CDP embedded wallet
+
+**For Testing:**
+- ✅ **Use Phantom** for main development testing
+- ✅ **Ignore other wallets** if you're not using them
+- ✅ **Test with Coinbase CDP** for embedded wallet flow
+
+**Why This is Good:**
+- Users with multiple wallets can choose their preferred one
+- No need to uninstall other extensions
+- Standard Solana ecosystem behavior
+
+---
+
 ## Troubleshooting
 
 ### Issue: "Payment failed. The number 0.5 cannot be converted to a Bigint"
