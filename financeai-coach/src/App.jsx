@@ -11,7 +11,7 @@ import { Badge } from './components/ui/badge'
 import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info } from 'lucide-react'
 
 function App() {
-  const { publicKey, connected, sendTransaction } = useWallet()
+  const { publicKey, connected, sendTransaction, wallet } = useWallet()
   const { connection } = useConnection()
   const [balance, setBalance] = useState(null)
   const [totalEarned, setTotalEarned] = useState(0)
@@ -33,23 +33,61 @@ function App() {
   // Wallet selection state - ensures only one wallet type is active at a time
   const [activeWalletType, setActiveWalletType] = useState(null) // 'external' | 'embedded' | null
 
+  // Error state for user-facing errors
+  const [walletError, setWalletError] = useState(null)
+
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
   const PAYMENT_AMOUNT = 0.05  // Reduced for testing - allows more iterations with treasury funds
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
-  // Check if any wallet is connected (browser or embedded)
-  const isWalletConnected = connected || isEmbeddedWallet
-  const currentWalletAddress = publicKey?.toBase58() || embeddedWallet?.address
+  // Single source of truth for wallet connection and address
+  // Use activeWalletType as the primary indicator
+  const isWalletConnected = activeWalletType !== null
+  const currentWalletAddress = activeWalletType === 'external'
+    ? publicKey?.toBase58()
+    : activeWalletType === 'embedded'
+    ? embeddedWallet?.address
+    : null
+
+  // Get specific wallet name for display
+  const getWalletDisplayName = () => {
+    if (activeWalletType === 'embedded') {
+      return '🏦 Coinbase CDP Wallet'
+    } else if (activeWalletType === 'external' && wallet?.adapter?.name) {
+      const walletName = wallet.adapter.name
+      // Add emoji based on wallet type
+      if (walletName.toLowerCase().includes('phantom')) {
+        return '👻 Phantom Wallet'
+      } else if (walletName.toLowerCase().includes('coinbase')) {
+        return '💼 Coinbase Wallet'
+      } else if (walletName.toLowerCase().includes('solflare')) {
+        return '☀️ Solflare Wallet'
+      } else {
+        return `🔗 ${walletName}`
+      }
+    } else if (activeWalletType === 'external') {
+      return '🔗 External Wallet'
+    }
+    return null
+  }
 
   const getBalance = async () => {
-    if (publicKey) {
-      const bal = await connection.getBalance(publicKey)
-      setBalance(bal / LAMPORTS_PER_SOL)
-    } else if (embeddedWallet?.address) {
-      // Get balance for embedded wallet
-      const publicKey = new PublicKey(embeddedWallet.address)
-      const bal = await connection.getBalance(publicKey)
-      setBalance(bal / LAMPORTS_PER_SOL)
+    try {
+      if (publicKey) {
+        const bal = await connection.getBalance(publicKey)
+        setBalance(bal / LAMPORTS_PER_SOL)
+      } else if (embeddedWallet?.address) {
+        // Get balance for embedded wallet
+        const embeddedPublicKey = new PublicKey(embeddedWallet.address)
+        const bal = await connection.getBalance(embeddedPublicKey)
+        setBalance(bal / LAMPORTS_PER_SOL)
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error)
+      setWalletError({
+        message: 'Failed to fetch wallet balance',
+        technical: error.message
+      })
     }
   }
 
@@ -90,54 +128,91 @@ function App() {
     }
   }
 
-  // Check for existing embedded wallet on mount
+  // Load embedded wallet from localStorage on mount with validation
   useEffect(() => {
     const cdpUserId = localStorage.getItem('cdp_user_id')
     const cdpAddress = localStorage.getItem('cdp_wallet_address')
+
+    // Validate that both values exist and address looks valid
     if (cdpUserId && cdpAddress) {
-      setEmbeddedWallet({ userId: cdpUserId, address: cdpAddress })
-      setIsEmbeddedWallet(true)
+      try {
+        // Validate address format
+        new PublicKey(cdpAddress)
+        setEmbeddedWallet({ userId: cdpUserId, address: cdpAddress })
+        setIsEmbeddedWallet(true)
+        console.log('✅ Embedded wallet loaded from localStorage')
+      } catch (error) {
+        console.error('❌ Invalid embedded wallet address in localStorage:', error)
+        // Clear invalid data
+        localStorage.removeItem('cdp_user_id')
+        localStorage.removeItem('cdp_wallet_address')
+      }
     }
   }, [])
 
-  // Auto-connect priority: External wallet (Phantom) > Embedded wallet
-  // External wallets take priority because users with wallets likely prefer them
+  // Unified wallet detection with priority: External > Embedded
+  // This single effect prevents race conditions between wallet types
   useEffect(() => {
-    if (connected && publicKey && !activeWalletType) {
-      console.log('External wallet auto-connected (Phantom/Coinbase extension)')
-      setActiveWalletType('external')
-      setIsEmbeddedWallet(false)  // Disable embedded if external connects
-    } else if (!connected && activeWalletType === 'external') {
-      // External wallet disconnected - reset
-      console.log('External wallet disconnected')
+    // Priority 1: External wallet (Phantom/Coinbase) - user clicked WalletMultiButton
+    if (connected && publicKey) {
+      if (activeWalletType !== 'external') {
+        console.log('🔗 External wallet connected:', publicKey.toBase58())
+        setActiveWalletType('external')
+        setIsEmbeddedWallet(false) // Disable embedded when external connects
+        setWalletError(null) // Clear any errors
+      }
+    }
+    // Priority 2: External wallet disconnected
+    else if (!connected && activeWalletType === 'external') {
+      console.log('🔌 External wallet disconnected')
       setActiveWalletType(null)
     }
-  }, [connected, publicKey, activeWalletType])
-
-  useEffect(() => {
-    // Only activate embedded wallet if no external wallet is connected
-    if (isEmbeddedWallet && embeddedWallet && !connected && !activeWalletType) {
-      console.log('Embedded wallet auto-loaded from localStorage')
+    // Priority 3: Embedded wallet (only if no external wallet)
+    else if (isEmbeddedWallet && embeddedWallet && !connected && !activeWalletType) {
+      console.log('🔗 Embedded wallet activated:', embeddedWallet.address)
       setActiveWalletType('embedded')
+      setWalletError(null) // Clear any errors
     }
-  }, [isEmbeddedWallet, embeddedWallet, connected, activeWalletType])
+  }, [connected, publicKey, isEmbeddedWallet, embeddedWallet, activeWalletType])
 
+  // Fetch balance when wallet connects with cleanup
   useEffect(() => {
-    if (connected && publicKey) {
-      getBalance()
-      // Don't auto-check x402 status - wait for user to click "Start Learning"
-    } else if (embeddedWallet) {
-      getBalance()
-      // Don't auto-check x402 status - wait for user to click "Start Learning"
-    }
-  }, [connected, publicKey, embeddedWallet])
+    let isMounted = true
 
-  // Verify x402 access when payment status changes
-  useEffect(() => {
-    if (isWalletConnected) {
-      verifyX402Access()
+    const fetchBalance = async () => {
+      if (!isMounted) return
+      await getBalance()
     }
-  }, [hasPaid])
+
+    if (isWalletConnected && (publicKey || embeddedWallet)) {
+      fetchBalance()
+      // Don't auto-check x402 status - wait for user to click "Start Learning"
+    }
+
+    // Cleanup function to prevent setState on unmounted component
+    return () => {
+      isMounted = false
+    }
+  }, [isWalletConnected, publicKey, embeddedWallet])
+
+  // Verify x402 access when payment status or wallet connection changes
+  useEffect(() => {
+    let isMounted = true
+
+    const verifyAccess = async () => {
+      if (!isMounted) return
+      await verifyX402Access()
+    }
+
+    if (isWalletConnected && hasClickedStart) {
+      verifyAccess()
+    }
+
+    // Cleanup function to prevent setState on unmounted component
+    return () => {
+      isMounted = false
+    }
+  }, [isWalletConnected, hasPaid, hasClickedStart])
 
   // Disconnect/switch wallet function - clears active wallet and resets session
   const handleDisconnectWallet = () => {
@@ -391,6 +466,34 @@ function App() {
         </div>
       </header>
 
+      {/* Error Banner - Shows wallet and connection errors */}
+      {walletError && (
+        <div className="bg-red-900/20 border-b border-red-500/50">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                <div className="w-5 h-5 text-red-400 mt-0.5">⚠️</div>
+                <div className="flex-1">
+                  <p className="text-red-200 font-medium">{walletError.message}</p>
+                  {walletError.technical && (
+                    <p className="text-red-300/70 text-sm mt-1">
+                      Technical: {walletError.technical}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setWalletError(null)}
+                className="text-red-300 hover:text-red-100 transition-colors px-2 py-1 rounded hover:bg-red-800/30"
+                aria-label="Dismiss error"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 container mx-auto px-4 py-8">
         {!isWalletConnected ? (
           <div className="max-w-4xl mx-auto space-y-8 text-center">
@@ -463,14 +566,9 @@ function App() {
                 <CardTitle className="flex items-center gap-2">
                   <Wallet className="w-5 h-5" />
                   Wallet Connected!
-                  {activeWalletType === 'embedded' && (
+                  {activeWalletType && (
                     <Badge variant="outline" className="ml-2 text-xs">
-                      🏦 Coinbase CDP
-                    </Badge>
-                  )}
-                  {activeWalletType === 'external' && (
-                    <Badge variant="outline" className="ml-2 text-xs">
-                      👻 External Wallet
+                      {getWalletDisplayName()}
                     </Badge>
                   )}
                 </CardTitle>
