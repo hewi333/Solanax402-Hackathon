@@ -8,7 +8,7 @@ import EmbeddedWalletButton from './components/EmbeddedWalletButton'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
-import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info } from 'lucide-react'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction, wallet } = useWallet()
