@@ -730,8 +730,9 @@ app.post('/api/cdp/send-payment', async (req, res) => {
 
     console.log('Transfer initiated, waiting for confirmation...')
 
-    // Wait for transaction confirmation
-    const signature = transfer.getTransactionHash()
+    // CDP SDK v2 for Solana returns signature directly, not via getTransactionHash()
+    // Solana uses signatures as transaction identifiers (not hashes like EVM)
+    const signature = transfer.signature
 
     console.log(`✅ Payment successful! Signature: ${signature}`)
 
