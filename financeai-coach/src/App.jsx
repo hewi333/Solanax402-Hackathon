@@ -24,6 +24,7 @@ function App() {
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false)
   const [sessionKey, setSessionKey] = useState(0)
   const [x402Status, setX402Status] = useState(null) // Track x402 Payment Required status
+  const [hasClickedStart, setHasClickedStart] = useState(false) // Track if user clicked "Start Learning"
 
   // Embedded wallet state
   const [embeddedWallet, setEmbeddedWallet] = useState(null)
@@ -124,10 +125,10 @@ function App() {
   useEffect(() => {
     if (connected && publicKey) {
       getBalance()
-      verifyX402Access() // Check x402 status when wallet connects
+      // Don't auto-check x402 status - wait for user to click "Start Learning"
     } else if (embeddedWallet) {
       getBalance()
-      verifyX402Access() // Check x402 status when wallet connects
+      // Don't auto-check x402 status - wait for user to click "Start Learning"
     }
   }, [connected, publicKey, embeddedWallet])
 
@@ -151,7 +152,18 @@ function App() {
     setActiveWalletType(null)
     setBalance(null)
     setHasPaid(false)  // Reset payment status so user can choose a different wallet
-    console.log('Wallet disconnected - ready for new selection')
+
+    // CRITICAL: Reset all session state to prevent users from continuing previous sessions
+    setModulesCompleted(0)
+    setTotalEarned(0)
+    setRewardHistory([])
+    setCurrentReward(null)
+    setShowRewardModal(false)
+    setSessionKey(prev => prev + 1)  // Force ChatInterface to remount with fresh state
+    setHasClickedStart(false)  // Reset "Start Learning" state
+    setX402Status(null)  // Clear 402 status
+
+    console.log('Wallet disconnected - all session state reset')
   }
 
   const requestFaucet = async () => {
@@ -206,10 +218,12 @@ function App() {
       await connection.confirmTransaction(signature, 'confirmed')
 
       console.log('Payment successful:', signature)
+      console.log('View on Solana Explorer:', `https://explorer.solana.com/tx/${signature}?cluster=devnet`)
       setHasPaid(true)
       getBalance()
 
-      alert(`Payment successful!\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${signature}`)
+      // Show success message with clickable link in console
+      alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction Hash: ${signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
 
     } catch (error) {
       console.error('Payment error:', error)
@@ -242,10 +256,11 @@ function App() {
 
       if (data.success) {
         console.log('Embedded wallet payment successful:', data.signature)
+        console.log('View on Solana Explorer:', `https://explorer.solana.com/tx/${data.signature}?cluster=devnet`)
         setHasPaid(true)
         getBalance()
 
-        alert(`Payment successful!\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction: ${data.signature}`)
+        alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction Hash: ${data.signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${data.signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
       }
     } catch (error) {
       console.error('Embedded payment error:', error)
@@ -498,40 +513,85 @@ function App() {
             </Card>
 
             {!hasPaid ? (
-              <Card className="border-2 border-solana-purple/50">
-                <CardHeader className="text-center">
-                  {/* X402 Protocol Status Display */}
-                  {x402Status && (
-                    <div className="mb-6 p-4 bg-orange-500/10 border-2 border-orange-500/30 rounded-lg">
-                      <div className="flex items-center justify-center gap-3 mb-2">
-                        <Badge variant="destructive" className="text-lg px-4 py-2 font-mono">
-                          HTTP {x402Status.statusCode}
-                        </Badge>
-                        <Badge variant="outline" className="text-sm">
-                          Payment Required
-                        </Badge>
+              !hasClickedStart ? (
+                // Welcome screen - shown before 402 error
+                <Card className="border-2 border-solana-green/50">
+                  <CardHeader className="text-center">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center text-4xl mx-auto mb-4">
+                      <GraduationCap className="w-8 h-8 text-white" />
+                    </div>
+                    <CardTitle className="text-3xl">Ready to Start Learning?</CardTitle>
+                    <CardDescription className="text-base">
+                      You're about to access Solana x402 learning platform.
+                      Complete 5 modules about AI agents and earn rewards!
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                        <Sparkles className="w-6 h-6 text-solana-purple" />
+                        <span className="text-sm">Learn 5 Solana x402 concepts</span>
                       </div>
-                      <p className="text-sm text-muted-foreground font-mono">
-                        {x402Status.message}
-                      </p>
-                      <div className="mt-3 p-3 bg-muted/50 rounded text-xs font-mono text-left">
-                        <div className="font-semibold text-orange-500 mb-2">X402 Protocol Headers:</div>
-                        <div>X-Payment-Required: {x402Status.headers['X-Payment-Required']}</div>
-                        <div>X-Payment-Amount: {x402Status.headers['X-Payment-Amount']}</div>
-                        <div>X-Payment-Network: {x402Status.headers['X-Payment-Network']}</div>
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                        <TrendingUp className="w-6 h-6 text-solana-green" />
+                        <span className="text-sm">Earn 0.01 SOL per module</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                        <Target className="w-6 h-6 text-solana-purple" />
+                        <span className="text-sm">Get rewarded for learning!</span>
                       </div>
                     </div>
-                  )}
 
-                  <div className="w-16 h-16 rounded-full bg-solana-purple/10 flex items-center justify-center text-4xl mx-auto mb-4">
-                    <Lock className="w-8 h-8 text-solana-purple" />
-                  </div>
-                  <CardTitle className="text-3xl">Unlock Learning Platform</CardTitle>
-                  <CardDescription className="text-base">
-                    Pay <strong className="text-solana-green">{PAYMENT_AMOUNT} SOL</strong> to access the Solana x402 learning modules.
-                    Complete all 5 modules to earn your payment back!
-                  </CardDescription>
-                </CardHeader>
+                    <Button
+                      onClick={() => {
+                        setHasClickedStart(true)
+                        verifyX402Access()  // Trigger 402 check when user clicks start
+                      }}
+                      variant="solana"
+                      size="lg"
+                      className="w-full"
+                    >
+                      <Play className="w-5 h-5 mr-2" />
+                      Start Learning
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                // Payment screen - shown after clicking "Start Learning"
+                <Card className="border-2 border-solana-purple/50">
+                  <CardHeader className="text-center">
+                    {/* X402 Protocol Status Display */}
+                    {x402Status && (
+                      <div className="mb-6 p-4 bg-orange-500/10 border-2 border-orange-500/30 rounded-lg">
+                        <div className="flex items-center justify-center gap-3 mb-2">
+                          <Badge variant="destructive" className="text-lg px-4 py-2 font-mono">
+                            HTTP {x402Status.statusCode}
+                          </Badge>
+                          <Badge variant="outline" className="text-sm">
+                            Payment Required
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {x402Status.message}
+                        </p>
+                        <div className="mt-3 p-3 bg-muted/50 rounded text-xs font-mono text-left">
+                          <div className="font-semibold text-orange-500 mb-2">X402 Protocol Headers:</div>
+                          <div>X-Payment-Required: {x402Status.headers['X-Payment-Required']}</div>
+                          <div>X-Payment-Amount: {x402Status.headers['X-Payment-Amount']}</div>
+                          <div>X-Payment-Network: {x402Status.headers['X-Payment-Network']}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="w-16 h-16 rounded-full bg-solana-purple/10 flex items-center justify-center text-4xl mx-auto mb-4">
+                      <Lock className="w-8 h-8 text-solana-purple" />
+                    </div>
+                    <CardTitle className="text-3xl">Unlock Learning Platform</CardTitle>
+                    <CardDescription className="text-base">
+                      Pay <strong className="text-solana-green">{PAYMENT_AMOUNT} SOL</strong> to access the Solana x402 learning modules.
+                      Complete all 5 modules to earn your payment back!
+                    </CardDescription>
+                  </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
@@ -580,6 +640,7 @@ function App() {
                   )}
                 </CardContent>
               </Card>
+              )
             ) : (
               <>
                 <div className="grid md:grid-cols-3 gap-6">

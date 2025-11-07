@@ -69,9 +69,21 @@ export default function RewardsModal({ isOpen, reward, onClose }) {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-4 py-2 rounded-lg">
-              <CheckCircle2 className="w-4 h-4 text-solana-green" />
-              <span>Reward sent to your wallet!</span>
+            <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-4 py-3 rounded-lg w-full">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-solana-green" />
+                <span>Reward sent to your wallet!</span>
+              </div>
+              {reward.signature && (
+                <a
+                  href={`https://explorer.solana.com/tx/${reward.signature}?cluster=devnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-solana-green hover:underline flex items-center gap-1"
+                >
+                  View transaction on Solana Explorer →
+                </a>
+              )}
             </div>
           </div>
 

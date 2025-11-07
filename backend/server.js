@@ -714,11 +714,16 @@ app.post('/api/cdp/send-payment', async (req, res) => {
 
     console.log('Account retrieved, initiating transfer...')
 
+    // Convert SOL amount to lamports (integer) to avoid BigInt conversion errors
+    // CDP SDK expects amounts in the token's smallest unit
+    const lamports = Math.floor(amount * LAMPORTS_PER_SOL)
+    console.log(`Converting ${amount} SOL to ${lamports} lamports`)
+
     // Transfer SOL using CDP's built-in transfer method
     // Network parameter is required - can be "devnet" or a Connection object
     const transfer = await account.transfer({
       to: recipientAddress,
-      amount: amount,
+      amount: lamports,
       token: 'sol',
       network: connection  // Pass our Solana connection object for devnet
     })
