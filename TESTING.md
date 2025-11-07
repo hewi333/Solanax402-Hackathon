@@ -105,7 +105,7 @@ curl -X POST http://localhost:3001/api/faucet \
 cd backend && npm run dev
 
 # Start frontend
-cd financeai-coach && npm run dev
+cd learnearn && npm run dev
 
 # Test payment flow
 # (Use Phantom wallet in browser)

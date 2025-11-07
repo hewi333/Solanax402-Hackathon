@@ -147,7 +147,7 @@ Convert the backend to Netlify Functions:
 #### Vercel Serverless Functions + Frontend
 
 Convert backend to Vercel API routes:
-- Create `financeai-coach/api/` directory
+- Create `learnearn/api/` directory
 - Move backend logic to serverless functions
 - Good option but requires restructuring
 
@@ -170,11 +170,11 @@ Convert backend to Vercel API routes:
 ### Testing
 - [ ] Frontend loads without errors
 - [ ] Wallet connection works (Phantom, Coinbase, or embedded)
-- [ ] Payment gate accepts 0.5 SOL
+- [ ] Payment gate accepts 0.05 SOL
 - [ ] Learning modules load correctly
 - [ ] AI evaluates answers
-- [ ] Rewards distribute (0.1 SOL per module)
-- [ ] Session completes after 0.5 SOL earned
+- [ ] Rewards distribute (0.01 SOL per module)
+- [ ] Session completes after 0.05 SOL earned
 
 ### For Mainnet (Post-Hackathon)
 - [ ] Change `VITE_SOLANA_NETWORK` to `mainnet-beta`

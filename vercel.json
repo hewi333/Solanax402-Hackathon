@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd financeai-coach && npm install && npm run build",
-  "outputDirectory": "financeai-coach/dist",
+  "buildCommand": "cd learnearn && npm install && npm run build",
+  "outputDirectory": "learnearn/dist",
   "framework": null,
   "rewrites": [
     {

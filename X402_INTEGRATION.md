@@ -119,7 +119,7 @@ Our implementation uses these custom x402 headers:
 
 ### Frontend: X402 Status Display
 
-**File:** `financeai-coach/src/App.jsx`
+**File:** `learnearn/src/App.jsx`
 
 ```javascript
 // Verify x402 access
