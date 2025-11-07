@@ -1,6 +1,6 @@
-# Quick Start Guide - x402 AI Agent
+# Quick Start Guide - x402 Learn & Earn
 
-Get the x402 AI Agent learning platform running in under 10 minutes.
+Get the x402 Learn & Earn platform running in under 10 minutes.
 
 ---
 

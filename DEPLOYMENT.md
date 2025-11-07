@@ -1,18 +1,16 @@
-# Deployment Guide - FinanceAI Coach
+# Deployment Guide - x402 Learn & Earn
 
-## Do I Need a Separate Repo for the Backend?
-
-**No!** You can deploy both the frontend and backend from the **same repository** (monorepo). This is actually the recommended approach for hackathons and small-to-medium projects.
+Deploy the x402 Learn & Earn platform to production using a monorepo approach.
 
 ## Architecture Overview
 
 ```
 Single Repository (Solanax402-Hackathon)
-├── financeai-coach/    → Deploy to Vercel (Frontend)
+├── src/                → Deploy to Vercel (Frontend)
 └── backend/            → Deploy to Railway/Render (Backend)
 ```
 
-Both can be deployed from the same repo to different services.
+Both frontend and backend deploy from the same repository to different services.
 
 ## Deployment Options
 
@@ -32,7 +30,7 @@ This is the easiest setup for hackathons.
 4. **Configure the project:**
    ```
    Framework Preset: Vite
-   Root Directory: financeai-coach
+   Root Directory: ./ (leave as root)
    Build Command: npm run build
    Output Directory: dist
    ```
@@ -40,9 +38,8 @@ This is the easiest setup for hackathons.
 5. **Add Environment Variables:**
    ```
    VITE_API_URL=https://your-backend-url.railway.app
-   VITE_SOLANA_NETWORK=devnet
+   VITE_TREASURY_WALLET=<your-treasury-public-key>
    VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
-   VITE_APP_NAME=FinanceAI Coach
    ```
 
 6. **Deploy!**
@@ -64,10 +61,19 @@ This is the easiest setup for hackathons.
 
 5. **Add Environment Variables:**
    ```
-   OPENAI_API_KEY=sk-your-openai-key-here
+   TREASURY_WALLET_KEYPAIR=<base58-encoded-private-key>
+   SOLANA_NETWORK=devnet
+   MAX_REWARD_AMOUNT=0.5
    PORT=3001
    NODE_ENV=production
+
+   # Optional: For embedded wallets
+   CDP_API_KEY_ID=<your-cdp-key-id>
+   CDP_API_KEY_SECRET=<your-cdp-secret>
+   CDP_WALLET_SECRET=<your-wallet-secret>
    ```
+
+   **Note**: Generate treasury wallet using `node generate-treasury-wallet.js` locally, then add the Base58 private key here. See [CDP_SETUP.md](CDP_SETUP.md) for embedded wallet credentials.
 
 6. **Generate a public domain:**
    - Railway will give you a URL like: `https://your-app.railway.app`
@@ -101,7 +107,9 @@ Deploy both to Render.com:
 
 5. **Add Environment Variables:**
    ```
-   OPENAI_API_KEY=your-key
+   TREASURY_WALLET_KEYPAIR=<base58-encoded-private-key>
+   SOLANA_NETWORK=devnet
+   MAX_REWARD_AMOUNT=0.5
    PORT=3001
    NODE_ENV=production
    ```
@@ -114,16 +122,17 @@ Deploy both to Render.com:
 
 3. **Configure:**
    ```
-   Name: financeai-frontend
-   Root Directory: financeai-coach
+   Name: x402-learn-earn-frontend
+   Root Directory: ./ (root)
    Build Command: npm run build
-   Publish Directory: financeai-coach/dist
+   Publish Directory: dist
    ```
 
 4. **Add Environment Variables:**
    ```
-   VITE_API_URL=https://financeai-backend.onrender.com
-   (plus other VITE_ variables)
+   VITE_API_URL=https://x402-backend.onrender.com
+   VITE_TREASURY_WALLET=<treasury-public-key>
+   VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
    ```
 
 ### Option 3: All-in-One Platforms
@@ -154,16 +163,18 @@ Convert backend to Vercel API routes:
 ### Configuration
 - [ ] Backend deployed and accessible
 - [ ] Frontend `VITE_API_URL` points to production backend
-- [ ] OpenAI API key configured in backend
+- [ ] Treasury wallet keypair configured in backend
+- [ ] Treasury wallet funded with devnet SOL
 - [ ] All environment variables set correctly
 
 ### Testing
 - [ ] Frontend loads without errors
-- [ ] Wallet connection works
-- [ ] Chat sends messages successfully
-- [ ] AI responds correctly
-- [ ] Habit detection triggers
-- [ ] Rewards modal appears
+- [ ] Wallet connection works (Phantom, Coinbase, or embedded)
+- [ ] Payment gate accepts 0.5 SOL
+- [ ] Learning modules load correctly
+- [ ] AI evaluates answers
+- [ ] Rewards distribute (0.1 SOL per module)
+- [ ] Session completes after 0.5 SOL earned
 
 ### For Mainnet (Post-Hackathon)
 - [ ] Change `VITE_SOLANA_NETWORK` to `mainnet-beta`
@@ -177,16 +188,22 @@ Convert backend to Vercel API routes:
 ### Frontend (.env)
 ```env
 VITE_API_URL=https://your-backend-url.com
-VITE_SOLANA_NETWORK=devnet
+VITE_TREASURY_WALLET=<treasury-public-key>
 VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
-VITE_APP_NAME=FinanceAI Coach
 ```
 
 ### Backend (.env)
 ```env
-OPENAI_API_KEY=sk-your-openai-key-here
+TREASURY_WALLET_KEYPAIR=<base58-encoded-private-key>
+SOLANA_NETWORK=devnet
+MAX_REWARD_AMOUNT=0.5
 PORT=3001
 NODE_ENV=production
+
+# Optional: For Coinbase CDP embedded wallets
+CDP_API_KEY_ID=<your-key-id>
+CDP_API_KEY_SECRET=<your-secret>
+CDP_WALLET_SECRET=<your-wallet-secret>
 ```
 
 ## Why Monorepo Works
@@ -224,16 +241,20 @@ curl https://your-backend-url.com/api/health
 
 Should return:
 ```json
-{"status":"ok","openaiConfigured":true}
+{
+  "status":"ok",
+  "treasuryWallet":"<your-public-key>",
+  "network":"devnet"
+}
 ```
 
-### "OpenAI API not working"
+### "Treasury wallet not configured"
 
 **Check:**
-- Environment variable is named exactly `OPENAI_API_KEY`
-- API key is valid (test on platform.openai.com)
+- Environment variable `TREASURY_WALLET_KEYPAIR` is set
+- It contains the Base58-encoded private key (not JSON array)
 - Backend has been redeployed after setting env var
-- No extra spaces in the key
+- Treasury wallet is funded with devnet SOL
 
 ### "Frontend build fails"
 
@@ -286,21 +307,29 @@ Here's a summary of what to do:
 # 1. Push your code to GitHub (already done!)
 git push origin main
 
-# 2. Deploy backend to Railway
+# 2. Generate treasury wallet locally
+# cd backend && node generate-treasury-wallet.js
+# Save the keys!
+
+# 3. Deploy backend to Railway
 # - Go to railway.app
 # - New Project → Deploy from GitHub
 # - Select repo, set root to "backend"
-# - Add OPENAI_API_KEY env var
+# - Add environment variables (treasury keypair, etc.)
 # - Get the Railway URL
 
-# 3. Deploy frontend to Vercel
+# 4. Deploy frontend to Vercel
 # - Go to vercel.com
 # - New Project → Import from GitHub
-# - Select repo, set root to "financeai-coach"
+# - Select repo, set root to "./" (root)
 # - Add VITE_API_URL with Railway URL
+# - Add VITE_TREASURY_WALLET (public key)
 # - Deploy!
 
-# 4. Test your live app!
+# 5. Fund treasury wallet on devnet
+# Visit solfaucet.com and airdrop SOL to treasury address
+
+# 6. Test your live app!
 ```
 
 ## Support
@@ -312,6 +341,6 @@ Need help with deployment?
 
 ---
 
-**Ready to deploy?** Follow the steps above and your FinanceAI Coach will be live! 🚀
+**Ready to deploy?** Follow the steps above and your x402 Learn & Earn platform will be live! 🚀
 
-**Remember:** You don't need a separate repo - deploy both from your current monorepo! ✨
+**Remember:** Deploy both frontend and backend from your monorepo - no separate repos needed! ✨
