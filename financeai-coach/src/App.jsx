@@ -23,6 +23,7 @@ function App() {
   const [isRequestingFaucet, setIsRequestingFaucet] = useState(false)
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false)
   const [sessionKey, setSessionKey] = useState(0)
+  const [x402Status, setX402Status] = useState(null) // Track x402 Payment Required status
 
   // Embedded wallet state
   const [embeddedWallet, setEmbeddedWallet] = useState(null)
@@ -48,6 +49,43 @@ function App() {
       const publicKey = new PublicKey(embeddedWallet.address)
       const bal = await connection.getBalance(publicKey)
       setBalance(bal / LAMPORTS_PER_SOL)
+    }
+  }
+
+  // X402 Protocol: Verify access and get 402 status if payment required
+  const verifyX402Access = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/x402/verify-access`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress: currentWalletAddress,
+          hasPaid: hasPaid
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.status === 402) {
+        // HTTP 402 Payment Required
+        setX402Status({
+          statusCode: 402,
+          message: data.message,
+          paymentDetails: data.paymentDetails,
+          headers: {
+            'X-Payment-Required': response.headers.get('X-Payment-Required'),
+            'X-Payment-Amount': response.headers.get('X-Payment-Amount'),
+            'X-Payment-Network': response.headers.get('X-Payment-Network')
+          }
+        })
+        console.log('🔒 HTTP 402: Payment Required', data)
+      } else if (response.status === 200) {
+        // Access granted
+        setX402Status(null)
+        console.log('✅ HTTP 200: Access Granted')
+      }
+    } catch (error) {
+      console.error('X402 verification error:', error)
     }
   }
 
@@ -86,10 +124,19 @@ function App() {
   useEffect(() => {
     if (connected && publicKey) {
       getBalance()
+      verifyX402Access() // Check x402 status when wallet connects
     } else if (embeddedWallet) {
       getBalance()
+      verifyX402Access() // Check x402 status when wallet connects
     }
   }, [connected, publicKey, embeddedWallet])
+
+  // Verify x402 access when payment status changes
+  useEffect(() => {
+    if (isWalletConnected) {
+      verifyX402Access()
+    }
+  }, [hasPaid])
 
   // Disconnect/switch wallet function - clears active wallet and resets session
   const handleDisconnectWallet = () => {
@@ -453,6 +500,29 @@ function App() {
             {!hasPaid ? (
               <Card className="border-2 border-solana-purple/50">
                 <CardHeader className="text-center">
+                  {/* X402 Protocol Status Display */}
+                  {x402Status && (
+                    <div className="mb-6 p-4 bg-orange-500/10 border-2 border-orange-500/30 rounded-lg">
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <Badge variant="destructive" className="text-lg px-4 py-2 font-mono">
+                          HTTP {x402Status.statusCode}
+                        </Badge>
+                        <Badge variant="outline" className="text-sm">
+                          Payment Required
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        {x402Status.message}
+                      </p>
+                      <div className="mt-3 p-3 bg-muted/50 rounded text-xs font-mono text-left">
+                        <div className="font-semibold text-orange-500 mb-2">X402 Protocol Headers:</div>
+                        <div>X-Payment-Required: {x402Status.headers['X-Payment-Required']}</div>
+                        <div>X-Payment-Amount: {x402Status.headers['X-Payment-Amount']}</div>
+                        <div>X-Payment-Network: {x402Status.headers['X-Payment-Network']}</div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="w-16 h-16 rounded-full bg-solana-purple/10 flex items-center justify-center text-4xl mx-auto mb-4">
                     <Lock className="w-8 h-8 text-solana-purple" />
                   </div>
