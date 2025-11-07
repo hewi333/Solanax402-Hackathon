@@ -91,7 +91,7 @@ function App() {
     }
   }, [connected, publicKey, embeddedWallet])
 
-  // Disconnect function - clears active wallet
+  // Disconnect/switch wallet function - clears active wallet and resets session
   const handleDisconnectWallet = () => {
     if (activeWalletType === 'embedded') {
       // Clear embedded wallet
@@ -100,9 +100,10 @@ function App() {
       setEmbeddedWallet(null)
       setIsEmbeddedWallet(false)
     }
-    // External wallet disconnect is handled by wallet adapter's disconnect button
+    // Reset wallet state
     setActiveWalletType(null)
     setBalance(null)
+    setHasPaid(false)  // Reset payment status so user can choose a different wallet
     console.log('Wallet disconnected - ready for new selection')
   }
 
@@ -565,6 +566,8 @@ function App() {
                   key={sessionKey}
                   onModuleCompleted={handleModuleCompleted}
                   onSessionComplete={handleSessionComplete}
+                  walletAddress={currentWalletAddress}
+                  isEmbeddedWallet={isEmbeddedWallet}
                 />
               </>
             )}

@@ -8,7 +8,7 @@ import { Badge } from './ui/badge'
 import { ChevronRight, CheckCircle2, Lightbulb, Trophy, Play } from 'lucide-react'
 import { cn } from '../lib/utils'
 
-export default function ChatInterface({ onModuleCompleted, onSessionComplete }) {
+export default function ChatInterface({ onModuleCompleted, onSessionComplete, walletAddress, isEmbeddedWallet }) {
   const { publicKey } = useWallet()
   const [viewMode, setViewMode] = useState('welcome') // welcome, lesson, question, feedback
   const [inputMessage, setInputMessage] = useState('')
@@ -20,9 +20,10 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
   const [sessionComplete, setSessionComplete] = useState(false)
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [showHint, setShowHint] = useState(false)
+  const [currentTxSignature, setCurrentTxSignature] = useState(null)
   const inputRef = useRef(null)
 
-  const INITIAL_DEPOSIT = 0.5
+  const INITIAL_DEPOSIT = 0.05  // Updated to match actual payment amount
   const currentModule = getModuleById(currentModuleId)
 
   const evaluateAnswer = (userAnswer) => {
@@ -43,13 +44,21 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
   const sendReward = async (moduleId, amount) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+      // Get wallet address from either external wallet or embedded wallet
+      const address = walletAddress || (publicKey ? publicKey.toBase58() : null)
+
+      if (!address) {
+        throw new Error('No wallet address available')
+      }
+
       const response = await fetch(`${apiUrl}/api/reward`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          walletAddress: publicKey.toBase58(),
+          walletAddress: address,
           amount: amount,
           moduleId: moduleId
         })
@@ -84,6 +93,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
           const signature = await sendReward(currentModule.id, currentModule.reward)
           const newTotalEarned = totalEarned + currentModule.reward
           setTotalEarned(newTotalEarned)
+          setCurrentTxSignature(signature)  // Store signature for display
 
           onModuleCompleted({
             detected: true,
@@ -95,18 +105,24 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
           setCompletedModules(prev => [...prev, currentModule.id])
           setAttemptCount(0)
 
-          if (newTotalEarned >= INITIAL_DEPOSIT) {
-            setSessionComplete(true)
-          } else if (currentModuleId < LEARNING_MODULES.length) {
-            // Wait 2 seconds then move to next module
+          // Check if all modules are complete (5 modules total)
+          if (currentModuleId >= LEARNING_MODULES.length) {
+            // All modules completed - show completion screen
+            setTimeout(() => {
+              setSessionComplete(true)
+            }, 2000)
+          } else {
+            // Move to next module
             setTimeout(() => {
               setCurrentModuleId(prev => prev + 1)
               setViewMode('lesson')
               setFeedbackMessage('')
               setShowHint(false)
+              setCurrentTxSignature(null)  // Clear previous signature
             }, 2000)
           }
         } catch (error) {
+          console.error('Error sending reward:', error)
           setFeedbackMessage('error')
         }
       } else {
@@ -142,7 +158,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
               You've unlocked 5 modules about Solana x402 AI agents.
             </p>
             <p className="text-base text-muted-foreground">
-              Complete all modules to earn back your <span className="text-solana-green font-semibold">0.5 SOL</span>
+              Complete all modules to earn back your <span className="text-solana-green font-semibold">{INITIAL_DEPOSIT} SOL</span>
             </p>
           </div>
 
@@ -150,7 +166,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
             <pre className="text-sm text-center font-mono text-muted-foreground">
 {`╔═══════════════════════════╗
 ║   5 MODULES UNLOCKED      ║
-║   0.1 SOL PER MODULE      ║
+║   0.01 SOL PER MODULE     ║
 ╚═══════════════════════════╝`}
             </pre>
           </div>
@@ -298,11 +314,21 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete }) 
               <div className="p-4 bg-solana-green/10 border border-solana-green/20 rounded-lg">
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-solana-green flex-shrink-0 mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold text-solana-green">Excellent! You got it!</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Reward: {currentModule.reward} SOL sent to your wallet!
                     </p>
+                    {currentTxSignature && (
+                      <a
+                        href={`https://explorer.solana.com/tx/${currentTxSignature}?cluster=devnet`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-solana-green hover:underline mt-2 inline-block"
+                      >
+                        View transaction on Solana Explorer →
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
