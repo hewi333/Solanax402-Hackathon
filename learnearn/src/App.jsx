@@ -33,6 +33,10 @@ function App() {
   // Wallet selection state - ensures only one wallet type is active at a time
   const [activeWalletType, setActiveWalletType] = useState(null) // 'external' | 'embedded' | null
 
+  // Wallet connection state machine for better UX
+  const [walletConnectionState, setWalletConnectionState] = useState('disconnected')
+  // States: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error'
+
   // Error state for user-facing errors
   const [walletError, setWalletError] = useState(null)
 
@@ -128,24 +132,38 @@ function App() {
     }
   }
 
-  // Load embedded wallet from localStorage on mount with validation
+  // Load embedded wallet from localStorage on mount with validation and session recovery
   useEffect(() => {
     const cdpUserId = localStorage.getItem('cdp_user_id')
     const cdpAddress = localStorage.getItem('cdp_wallet_address')
+    const sessionWalletType = sessionStorage.getItem('active_wallet_type')
 
     // Validate that both values exist and address looks valid
     if (cdpUserId && cdpAddress) {
       try {
+        setWalletConnectionState('reconnecting')
         // Validate address format
         new PublicKey(cdpAddress)
         setEmbeddedWallet({ userId: cdpUserId, address: cdpAddress })
         setIsEmbeddedWallet(true)
-        console.log('✅ Embedded wallet loaded from localStorage')
+
+        // Restore session state if available
+        if (sessionWalletType === 'embedded') {
+          setActiveWalletType('embedded')
+        }
+
+        setWalletConnectionState('disconnected')
       } catch (error) {
         console.error('❌ Invalid embedded wallet address in localStorage:', error)
+        setWalletConnectionState('error')
+        setWalletError({
+          message: 'Failed to restore wallet session',
+          technical: error.message
+        })
         // Clear invalid data
         localStorage.removeItem('cdp_user_id')
         localStorage.removeItem('cdp_wallet_address')
+        sessionStorage.removeItem('active_wallet_type')
       }
     }
   }, [])
@@ -156,22 +174,27 @@ function App() {
     // Priority 1: External wallet (Phantom/Coinbase) - user clicked WalletMultiButton
     if (connected && publicKey) {
       if (activeWalletType !== 'external') {
-        console.log('🔗 External wallet connected:', publicKey.toBase58())
+        setWalletConnectionState('connected')
         setActiveWalletType('external')
         setIsEmbeddedWallet(false) // Disable embedded when external connects
         setWalletError(null) // Clear any errors
+        // Persist to session storage
+        sessionStorage.setItem('active_wallet_type', 'external')
       }
     }
     // Priority 2: External wallet disconnected
     else if (!connected && activeWalletType === 'external') {
-      console.log('🔌 External wallet disconnected')
+      setWalletConnectionState('disconnected')
       setActiveWalletType(null)
+      sessionStorage.removeItem('active_wallet_type')
     }
     // Priority 3: Embedded wallet (only if no external wallet)
     else if (isEmbeddedWallet && embeddedWallet && !connected && !activeWalletType) {
-      console.log('🔗 Embedded wallet activated:', embeddedWallet.address)
+      setWalletConnectionState('connected')
       setActiveWalletType('embedded')
       setWalletError(null) // Clear any errors
+      // Persist to session storage
+      sessionStorage.setItem('active_wallet_type', 'embedded')
     }
   }, [connected, publicKey, isEmbeddedWallet, embeddedWallet, activeWalletType])
 
@@ -223,8 +246,13 @@ function App() {
       setEmbeddedWallet(null)
       setIsEmbeddedWallet(false)
     }
+
+    // Clear session storage
+    sessionStorage.removeItem('active_wallet_type')
+
     // Reset wallet state
     setActiveWalletType(null)
+    setWalletConnectionState('disconnected')
     setBalance(null)
     setHasPaid(false)  // Reset payment status so user can choose a different wallet
 
@@ -237,8 +265,7 @@ function App() {
     setSessionKey(prev => prev + 1)  // Force ChatInterface to remount with fresh state
     setHasClickedStart(false)  // Reset "Start Learning" state
     setX402Status(null)  // Clear 402 status
-
-    console.log('Wallet disconnected - all session state reset')
+    setWalletError(null)  // Clear any errors
   }
 
   const requestFaucet = async () => {
@@ -403,23 +430,32 @@ function App() {
       </div>
 
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo - Simplified for mobile */}
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
+              <h1 className="text-base md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent truncate">
                 Solana x402 Learn & Earn
               </h1>
             </div>
 
-            {/* Wallet Connection Options - Only show relevant option based on state */}
-            <div className="flex items-center gap-3">
+            {/* Wallet Connection - Responsive layout */}
+            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+              {/* Show wallet connection status or buttons */}
+              {walletConnectionState === 'reconnecting' && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span className="hidden sm:inline">Reconnecting...</span>
+                </div>
+              )}
+
               {/* Show external wallet button if no wallet is connected OR external wallet is active */}
-              {(!activeWalletType || activeWalletType === 'external') && (
-                <div className="flex flex-col items-end gap-1">
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30">
+              {!activeWalletType && (
+                <>
+                  <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
                     <div className="w-5 h-5 flex items-center justify-center">
                       <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
@@ -428,44 +464,46 @@ function App() {
                         <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
                       </svg>
                     </div>
-                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0 }} />
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }} />
                   </div>
-                  <span className="text-xs text-muted-foreground">👻 Phantom & More</span>
-                </div>
-              )}
 
-              {/* Show divider only when both options are visible */}
-              {!activeWalletType && (
-                <div className="h-12 w-px bg-border" />
-              )}
+                  {/* Mobile wallet button - more compact */}
+                  <div className="md:hidden">
+                    <WalletMultiButton style={{ fontSize: '13px', padding: '8px 12px', height: '36px' }} />
+                  </div>
 
-              {/* Show embedded wallet button if no wallet is connected OR embedded wallet is active */}
-              {(!activeWalletType || activeWalletType === 'embedded') && (
-                <div className="flex flex-col items-start gap-1">
-                  <EmbeddedWalletButton onWalletCreated={(wallet) => {
-                    console.log('CDP Wallet created:', wallet)
-                    const userId = localStorage.getItem('cdp_user_id')
-                    if (userId && wallet.address) {
-                      setEmbeddedWallet({ userId, address: wallet.address })
-                      setIsEmbeddedWallet(true)
-                      setActiveWalletType('embedded')  // Set active wallet type
-                      getBalance()
-                    }
-                  }} />
-                  <span className="text-xs text-muted-foreground">🏦 Coinbase CDP</span>
-                </div>
+                  <div className="hidden md:block h-8 w-px bg-border" />
+
+                  <div className="hidden md:block">
+                    <EmbeddedWalletButton onWalletCreated={(wallet) => {
+                      const userId = localStorage.getItem('cdp_user_id')
+                      if (userId && wallet.address) {
+                        setEmbeddedWallet({ userId, address: wallet.address })
+                        setIsEmbeddedWallet(true)
+                        setActiveWalletType('embedded')
+                        getBalance()
+                      }
+                    }} />
+                  </div>
+                </>
               )}
 
               {/* Show disconnect/switch button when wallet is connected */}
               {activeWalletType && (
-                <Button
-                  onClick={handleDisconnectWallet}
-                  variant="outline"
-                  size="sm"
-                  className="ml-2"
-                >
-                  Switch Wallet
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="hidden sm:flex items-center gap-1 text-xs">
+                    {getWalletDisplayName()}
+                  </Badge>
+                  <Button
+                    onClick={handleDisconnectWallet}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs md:text-sm px-2 md:px-3 h-8 md:h-9"
+                  >
+                    <span className="hidden sm:inline">Switch</span>
+                    <span className="sm:hidden">⟳</span>
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -500,69 +538,112 @@ function App() {
         </div>
       )}
 
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-12 md:py-20">
         {!isWalletConnected ? (
-          <div className="max-w-4xl mx-auto space-y-8 text-center">
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl font-bold">
-                Welcome to{' '}
-                <span className="bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent">
-                  Solana x402 Learn & Earn
-                </span>
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Learn about Solana x402 AI agents and earn SOL as you progress through interactive modules
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6 mt-12">
-              <Card className="border-2 hover:border-solana-purple transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center mx-auto mb-2">
-                    <Bot className="w-6 h-6 text-solana-purple" />
-                  </div>
-                  <CardTitle>AI-Powered Learning</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>Learn about Solana x402 AI agents through interactive lessons</CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 hover:border-solana-green transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-solana-green/10 flex items-center justify-center mx-auto mb-2">
-                    <Zap className="w-6 h-6 text-solana-green" />
-                  </div>
-                  <CardTitle>Earn While Learning</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>Earn SOL rewards for completing each learning module</CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 hover:border-solana-purple transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-solana-purple/10 flex items-center justify-center mx-auto mb-2">
-                    <BarChart3 className="w-6 h-6 text-solana-purple" />
-                  </div>
-                  <CardTitle>Track Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>Monitor your learning journey and earnings in real-time</CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="mt-12 space-y-4">
-              <p className="text-lg text-muted-foreground">Connect your wallet to get started</p>
-              <div className="flex flex-col items-center gap-2">
-                <Badge variant="solana" className="text-base px-4 py-2">
-                  Using Solana Devnet
-                </Badge>
-                <p className="text-sm text-muted-foreground">
-                  Choose Browser Wallets (Phantom, Coinbase) or create an Embedded Wallet
+          <div className="max-w-5xl mx-auto">
+            {/* Hero Section */}
+            <div className="text-center space-y-8 mb-16">
+              <div className="space-y-6">
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                  Learn about{' '}
+                  <span className="bg-gradient-to-r from-solana-purple via-purple-400 to-solana-green bg-clip-text text-transparent">
+                    Solana x402 AI agents
+                  </span>
+                  <br />
+                  and earn SOL
+                </h2>
+                <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                  Learn about Solana x402 AI agents and earn SOL as you progress through interactive modules
                 </p>
               </div>
+
+              {/* Value Props - Compact inline badges */}
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-solana-purple/10 border border-solana-purple/20">
+                  <Bot className="w-5 h-5 text-solana-purple" />
+                  <span className="text-sm md:text-base font-medium">AI-Powered Learning</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-solana-green/10 border border-solana-green/20">
+                  <Zap className="w-5 h-5 text-solana-green" />
+                  <span className="text-sm md:text-base font-medium">Earn 0.05 SOL</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
+                  <Trophy className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm md:text-base font-medium">5 Interactive Modules</span>
+                </div>
+              </div>
+
+              {/* CTA Section */}
+              <div className="mt-12 space-y-6">
+                <div className="space-y-3">
+                  <p className="text-lg md:text-xl font-semibold text-foreground">
+                    Ready to start learning?
+                  </p>
+                  <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
+                    Connect your wallet to access the Solana x402 learning platform. Choose a browser wallet like Phantom, or create an embedded wallet with Coinbase CDP.
+                  </p>
+                </div>
+
+                <Badge variant="solana" className="text-sm md:text-base px-6 py-2">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Using Solana Devnet (Test Network)
+                </Badge>
+              </div>
+            </div>
+
+            {/* Wallet Connection Cards - Horizontal on desktop, stacked on mobile */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {/* Browser Wallet Card */}
+              <Card className="border-2 border-purple-500/30 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500/20 to-purple-600/20 flex items-center justify-center mx-auto mb-4 border-2 border-purple-500/30">
+                    <Wallet className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <CardTitle className="text-xl">Browser Wallet</CardTitle>
+                  <CardDescription className="text-base mt-2">
+                    Connect with Phantom, Coinbase Wallet, or other extensions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
+                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
+                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
+                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
+                      </svg>
+                    </div>
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '15px', fontWeight: '600' }} />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">Recommended for existing wallet users</p>
+                </CardContent>
+              </Card>
+
+              {/* Embedded Wallet Card */}
+              <Card className="border-2 border-solana-green/30 hover:border-solana-green/50 transition-all duration-300 hover:shadow-lg hover:shadow-solana-green/10 hover:-translate-y-1">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-solana-green/20 to-green-600/20 flex items-center justify-center mx-auto mb-4 border-2 border-solana-green/30">
+                    <Sparkles className="w-8 h-8 text-solana-green" />
+                  </div>
+                  <CardTitle className="text-xl">Embedded Wallet</CardTitle>
+                  <CardDescription className="text-base mt-2">
+                    Create a new wallet instantly with Coinbase CDP - no extension needed
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <EmbeddedWalletButton onWalletCreated={(wallet) => {
+                    const userId = localStorage.getItem('cdp_user_id')
+                    if (userId && wallet.address) {
+                      setEmbeddedWallet({ userId, address: wallet.address })
+                      setIsEmbeddedWallet(true)
+                      setActiveWalletType('embedded')
+                      getBalance()
+                    }
+                  }} />
+                  <p className="text-xs text-muted-foreground mt-3">Perfect for first-time users</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         ) : (
