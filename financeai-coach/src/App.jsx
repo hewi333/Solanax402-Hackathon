@@ -242,7 +242,13 @@ function App() {
   }
 
   const requestFaucet = async () => {
-    if (!publicKey) return
+    // Support both external wallets (Phantom) and CDP wallets
+    const targetAddress = publicKey?.toBase58() || embeddedWallet?.address
+
+    if (!targetAddress) {
+      console.error('No wallet address available for faucet request')
+      return
+    }
 
     setIsRequestingFaucet(true)
     try {
@@ -253,7 +259,7 @@ function App() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          walletAddress: publicKey.toBase58()
+          walletAddress: targetAddress
         })
       })
 

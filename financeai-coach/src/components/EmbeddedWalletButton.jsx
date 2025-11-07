@@ -19,10 +19,24 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
       setLoading(true)
       setError(null)
 
+      // Check if user already has a wallet in localStorage
+      const existingUserId = localStorage.getItem('cdp_user_id')
+      const existingAddress = localStorage.getItem('cdp_wallet_address')
+
+      if (existingUserId && existingAddress) {
+        console.log('Found existing wallet in localStorage, loading instead of creating new one...')
+        console.log('User ID:', existingUserId)
+        console.log('Address:', existingAddress)
+
+        // Load existing wallet instead of creating a new one
+        await loadExistingWallet()
+        return
+      }
+
       // Generate a unique user ID (in production, use actual user authentication)
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-      console.log('Creating embedded wallet for user:', userId)
+      console.log('Creating new embedded wallet for user:', userId)
       console.log('API URL:', API_URL)
 
       const response = await axios.post(`${API_URL}/api/cdp/create-wallet`, {
@@ -37,7 +51,7 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
         localStorage.setItem('cdp_user_id', userId)
         localStorage.setItem('cdp_wallet_address', wallet.address)
 
-        console.log('Embedded wallet created:', wallet)
+        console.log('✅ Embedded wallet created:', wallet)
 
         // Notify parent component
         if (onWalletCreated) {
@@ -45,7 +59,7 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
         }
       }
     } catch (err) {
-      console.error('Failed to create embedded wallet:', err)
+      console.error('❌ Failed to create embedded wallet:', err)
       console.error('Error response:', err.response?.data)
 
       let errorMessage = 'Failed to create wallet. Please try again.'
@@ -111,6 +125,9 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
     }
   }, [])
 
+  // Check if wallet exists in localStorage to show appropriate button text
+  const hasExistingWallet = localStorage.getItem('cdp_user_id') && localStorage.getItem('cdp_wallet_address')
+
   return (
     <div className="embedded-wallet-container">
       {!walletInfo ? (
@@ -138,7 +155,7 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
           {loading ? (
             <>
               <span className="spinner">⏳</span>
-              Creating...
+              {hasExistingWallet ? 'Connecting...' : 'Creating...'}
             </>
           ) : (
             <>
@@ -147,7 +164,7 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
                 <circle cx="24" cy="24" r="24" fill="white"/>
                 <path d="M24 8C15.163 8 8 15.163 8 24C8 32.837 15.163 40 24 40C32.837 40 40 32.837 40 24C40 15.163 32.837 8 24 8ZM24 30C20.686 30 18 27.314 18 24C18 20.686 20.686 18 24 18C27.314 18 30 20.686 30 24C30 27.314 27.314 30 24 30Z" fill="#0052FF"/>
               </svg>
-              Create Embedded Wallet
+              {hasExistingWallet ? 'Connect Wallet' : 'Create Wallet'}
             </>
           )}
         </button>
