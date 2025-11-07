@@ -4,7 +4,7 @@ export const LEARNING_MODULES = [
     id: 1,
     title: "What is the Solana x402 Hackathon?",
     description: "Learn about the hackathon you're participating in right now!",
-    reward: 0.1,
+    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
 
     lessonContent: `The Solana x402 Hackathon is a competition focused on building AI agents that can autonomously interact with the Solana blockchain.
 
@@ -29,7 +29,7 @@ The hackathon has 5 tracks, and we're building for Track 5: "x402 Agent Applicat
     id: 2,
     title: "Why Solana for AI Agents?",
     description: "Discover why Solana is perfect for AI agent applications",
-    reward: 0.1,
+    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
 
     lessonContent: `Solana is uniquely suited for AI agents because:
 
@@ -57,7 +57,7 @@ This means AI agents can make hundreds of small decisions and payments without w
     id: 3,
     title: "Agent Autonomy & Decision Making",
     description: "What makes an AI agent truly 'autonomous'?",
-    reward: 0.1,
+    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
 
     lessonContent: `A TRUE x402 AI agent is autonomous, meaning:
 
@@ -88,7 +88,7 @@ Right now, YOU are experiencing this! I'm evaluating your answers and deciding w
     id: 4,
     title: "Solana's Technical Magic",
     description: "The tech that makes instant AI agents possible",
-    reward: 0.1,
+    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
 
     lessonContent: `Solana achieves its speed through innovative tech:
 
@@ -119,7 +119,7 @@ This architecture means AI agents get near-instant feedback on their actions!`,
     id: 5,
     title: "Hackathon Fun Facts! 🎉",
     description: "Time for some fun Solana knowledge!",
-    reward: 0.1,
+    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
 
     lessonContent: `Let's end with some fun facts about Solana and this hackathon:
 

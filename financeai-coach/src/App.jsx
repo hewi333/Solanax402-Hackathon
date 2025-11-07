@@ -28,8 +28,11 @@ function App() {
   const [embeddedWallet, setEmbeddedWallet] = useState(null)
   const [isEmbeddedWallet, setIsEmbeddedWallet] = useState(false)
 
+  // Wallet selection state - ensures only one wallet type is active at a time
+  const [activeWalletType, setActiveWalletType] = useState(null) // 'external' | 'embedded' | null
+
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
-  const PAYMENT_AMOUNT = 0.5
+  const PAYMENT_AMOUNT = 0.05  // Reduced for testing - allows more iterations with treasury funds
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
   // Check if any wallet is connected (browser or embedded)
@@ -58,6 +61,28 @@ function App() {
     }
   }, [])
 
+  // Auto-connect priority: External wallet (Phantom) > Embedded wallet
+  // External wallets take priority because users with wallets likely prefer them
+  useEffect(() => {
+    if (connected && publicKey && !activeWalletType) {
+      console.log('External wallet auto-connected (Phantom/Coinbase extension)')
+      setActiveWalletType('external')
+      setIsEmbeddedWallet(false)  // Disable embedded if external connects
+    } else if (!connected && activeWalletType === 'external') {
+      // External wallet disconnected - reset
+      console.log('External wallet disconnected')
+      setActiveWalletType(null)
+    }
+  }, [connected, publicKey, activeWalletType])
+
+  useEffect(() => {
+    // Only activate embedded wallet if no external wallet is connected
+    if (isEmbeddedWallet && embeddedWallet && !connected && !activeWalletType) {
+      console.log('Embedded wallet auto-loaded from localStorage')
+      setActiveWalletType('embedded')
+    }
+  }, [isEmbeddedWallet, embeddedWallet, connected, activeWalletType])
+
   useEffect(() => {
     if (connected && publicKey) {
       getBalance()
@@ -65,6 +90,21 @@ function App() {
       getBalance()
     }
   }, [connected, publicKey, embeddedWallet])
+
+  // Disconnect function - clears active wallet
+  const handleDisconnectWallet = () => {
+    if (activeWalletType === 'embedded') {
+      // Clear embedded wallet
+      localStorage.removeItem('cdp_user_id')
+      localStorage.removeItem('cdp_wallet_address')
+      setEmbeddedWallet(null)
+      setIsEmbeddedWallet(false)
+    }
+    // External wallet disconnect is handled by wallet adapter's disconnect button
+    setActiveWalletType(null)
+    setBalance(null)
+    console.log('Wallet disconnected - ready for new selection')
+  }
 
   const requestFaucet = async () => {
     if (!publicKey) return
@@ -110,7 +150,7 @@ function App() {
         SystemProgram.transfer({
           fromPubkey: publicKey,
           toPubkey: new PublicKey(TREASURY_WALLET),
-          lamports: PAYMENT_AMOUNT * LAMPORTS_PER_SOL,
+          lamports: Math.floor(PAYMENT_AMOUNT * LAMPORTS_PER_SOL),  // Math.floor ensures integer for BigInt conversion
         })
       )
 
@@ -230,41 +270,59 @@ function App() {
               </h1>
             </div>
 
-            {/* Wallet Connection Options */}
+            {/* Wallet Connection Options - Only show relevant option based on state */}
             <div className="flex items-center gap-3">
-              {/* Browser Wallets (Phantom, Coinbase extension) */}
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30">
-                  <div className="w-5 h-5 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
-                      <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
-                      <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
-                      <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
-                    </svg>
+              {/* Show external wallet button if no wallet is connected OR external wallet is active */}
+              {(!activeWalletType || activeWalletType === 'external') && (
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
+                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
+                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
+                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
+                      </svg>
+                    </div>
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0 }} />
                   </div>
-                  <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0 }} />
+                  <span className="text-xs text-muted-foreground">👻 Phantom & More</span>
                 </div>
-                <span className="text-xs text-muted-foreground">👻 Phantom & More</span>
-              </div>
+              )}
 
-              {/* Divider */}
-              <div className="h-12 w-px bg-border" />
+              {/* Show divider only when both options are visible */}
+              {!activeWalletType && (
+                <div className="h-12 w-px bg-border" />
+              )}
 
-              {/* Embedded Wallet (CDP) */}
-              <div className="flex flex-col items-start gap-1">
-                <EmbeddedWalletButton onWalletCreated={(wallet) => {
-                  console.log('CDP Wallet created:', wallet)
-                  // Get userId from localStorage (set by EmbeddedWalletButton)
-                  const userId = localStorage.getItem('cdp_user_id')
-                  if (userId && wallet.address) {
-                    setEmbeddedWallet({ userId, address: wallet.address })
-                    setIsEmbeddedWallet(true)
-                    getBalance()
-                  }
-                }} />
-                <span className="text-xs text-muted-foreground">🏦 Coinbase CDP</span>
-              </div>
+              {/* Show embedded wallet button if no wallet is connected OR embedded wallet is active */}
+              {(!activeWalletType || activeWalletType === 'embedded') && (
+                <div className="flex flex-col items-start gap-1">
+                  <EmbeddedWalletButton onWalletCreated={(wallet) => {
+                    console.log('CDP Wallet created:', wallet)
+                    const userId = localStorage.getItem('cdp_user_id')
+                    if (userId && wallet.address) {
+                      setEmbeddedWallet({ userId, address: wallet.address })
+                      setIsEmbeddedWallet(true)
+                      setActiveWalletType('embedded')  // Set active wallet type
+                      getBalance()
+                    }
+                  }} />
+                  <span className="text-xs text-muted-foreground">🏦 Coinbase CDP</span>
+                </div>
+              )}
+
+              {/* Show disconnect/switch button when wallet is connected */}
+              {activeWalletType && (
+                <Button
+                  onClick={handleDisconnectWallet}
+                  variant="outline"
+                  size="sm"
+                  className="ml-2"
+                >
+                  Switch Wallet
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -341,10 +399,15 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Wallet className="w-5 h-5" />
-                  {isEmbeddedWallet ? 'Embedded Wallet Connected!' : 'Wallet Connected!'}
-                  {isEmbeddedWallet && (
+                  Wallet Connected!
+                  {activeWalletType === 'embedded' && (
                     <Badge variant="outline" className="ml-2 text-xs">
                       🏦 Coinbase CDP
+                    </Badge>
+                  )}
+                  {activeWalletType === 'external' && (
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      👻 External Wallet
                     </Badge>
                   )}
                 </CardTitle>
@@ -406,7 +469,7 @@ function App() {
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <TrendingUp className="w-6 h-6 text-solana-green" />
-                      <span className="text-sm">Earn 0.1 SOL per module</span>
+                      <span className="text-sm">Earn 0.01 SOL per module</span>
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <Target className="w-6 h-6 text-solana-purple" />
