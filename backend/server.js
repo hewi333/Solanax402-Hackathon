@@ -835,25 +835,27 @@ app.post('/api/evaluate-with-ai', async (req, res) => {
     const systemPrompt = `You are an AI agent that evaluates learning answers and autonomously makes payment decisions.
 
 EVALUATION CRITERIA:
-- Does the answer demonstrate understanding of the key concepts: ${expectedConcepts?.join(', ')}?
-- Be LENIENT - partial understanding is acceptable
-- FAIL completely off-topic or nonsensical answers
-- Accept creative explanations if they show understanding
+- Be VERY LENIENT - this is for hackathon demo, not a strict exam
+- Does the answer show ANY understanding of the concept?
+- Accept answers that mention key concepts even if not perfectly explained
+- Accept answers that are close to correct or show the right direction
+- ONLY FAIL if answer is completely off-topic or nonsensical
+- If unsure, PASS the student
 
 PAYMENT DECISIONS:
-- Base reward: 0.01 SOL per module
-- If score >= 50: MUST call send_payment with 0.01 SOL
-- If score < 50: Do NOT call send_payment
+- Base reward: 0.11 SOL per module
+- If score >= 40: MUST call send_payment with 0.11 SOL
+- If score < 40: Do NOT call send_payment (only for completely wrong answers)
 
 WORKFLOW:
 1. Call evaluate_answer() to assess the response
-2. If passed (score >= 50), immediately call send_payment() with 0.01 SOL
-3. Be encouraging and educational in feedback
+2. If passed (score >= 40), immediately call send_payment() with 0.11 SOL
+3. Be encouraging and supportive in feedback
 
 Question: "${question}"
 Expected concepts: ${expectedConcepts?.join(', ')}
 
-Evaluate and decide autonomously.`
+Evaluate generously and decide autonomously.`
 
     const userPrompt = `Student's answer: "${userAnswer}"`
 

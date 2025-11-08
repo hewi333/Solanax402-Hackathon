@@ -25,7 +25,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
   const [evaluationMethod, setEvaluationMethod] = useState('') // 'ai' or 'fallback'
   const inputRef = useRef(null)
 
-  const INITIAL_DEPOSIT = 0.05  // Updated to match actual payment amount
+  const INITIAL_DEPOSIT = 0.33  // 3 modules x 0.11 SOL each
   const currentModule = getModuleById(currentModuleId)
 
   // Keyword matching fallback (original evaluation)
@@ -138,6 +138,61 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
     setEvaluationMethod('')
 
     try {
+      // Auto-pass after 2 incorrect attempts
+      if (attemptCount >= 2) {
+        console.log('👍 Auto-passing after 2 attempts')
+        const evaluation = {
+          passed: true,
+          score: 50,
+          feedback: `Here's the answer: ${currentModule.correctAnswerExample}. Let's move on!`,
+          method: 'auto-pass'
+        }
+
+        setEvaluationMethod(evaluation.method)
+        setAiFeedback(evaluation.feedback)
+        setFeedbackMessage('correct')
+
+        try {
+          const signature = await sendReward(currentModule.id, currentModule.reward)
+          const newTotalEarned = totalEarned + currentModule.reward
+          setTotalEarned(newTotalEarned)
+          setCurrentTxSignature(signature)
+
+          onModuleCompleted({
+            detected: true,
+            module: currentModule.title,
+            reward: currentModule.reward,
+            signature: signature,
+            evaluatedBy: 'auto-pass'
+          })
+
+          setCompletedModules(prev => [...prev, currentModule.id])
+          setAttemptCount(0)
+
+          if (currentModuleId >= LEARNING_MODULES.length) {
+            setTimeout(() => {
+              setSessionComplete(true)
+            }, 2000)
+          } else {
+            setTimeout(() => {
+              setCurrentModuleId(prev => prev + 1)
+              setViewMode('lesson')
+              setFeedbackMessage('')
+              setShowHint(false)
+              setCurrentTxSignature(null)
+              setAiFeedback('')
+              setEvaluationMethod('')
+            }, 2000)
+          }
+        } catch (error) {
+          console.error('Error sending reward:', error)
+          setFeedbackMessage('error')
+        }
+
+        setIsLoading(false)
+        return
+      }
+
       // Try AI evaluation first
       console.log('🤖 Attempting AI evaluation...')
       let evaluation = await evaluateAnswerWithAI(userInput)
