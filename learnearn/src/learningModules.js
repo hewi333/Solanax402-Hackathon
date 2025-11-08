@@ -1,151 +1,82 @@
 // Learning modules for Solana x402 Hackathon
+// Simplified to 3 modules for easy hackathon judging flow
 export const LEARNING_MODULES = [
   {
     id: 1,
-    title: "What is the Solana x402 Hackathon?",
-    description: "Learn about the hackathon you're participating in right now!",
-    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
+    title: "What is x402?",
+    description: "Learn about the x402 protocol",
+    reward: 0.11,  // 3 modules = 0.33 SOL total
 
-    lessonContent: `The Solana x402 Hackathon is a competition focused on building AI agents that can autonomously interact with the Solana blockchain.
+    lessonContent: `The x402 protocol represents the future of AI-powered payments.
 
-The name "x402" refers to the HTTP 402 "Payment Required" status code - representing the future where AI agents can make and receive payments autonomously.
+The name "x402" comes from HTTP status code 402: "Payment Required"
 
-The hackathon has 5 tracks, and we're building for Track 5: "x402 Agent Application" - real-world AI agent use cases!`,
+This hackathon is about building AI agents that can autonomously make payment decisions using Solana.`,
 
-    question: "What does 'x402' refer to in the hackathon name?",
+    question: "What does x402 stand for?",
 
-    evaluationKeywords: ["payment", "402", "http", "status code", "pay"],
+    evaluationKeywords: ["payment", "402", "http", "pay", "required", "status"],
 
     hints: [
-      "Think about HTTP status codes...",
-      "It's related to payments and money...",
-      "The '402' is actually an HTTP status code!"
+      "It's an HTTP status code...",
+      "The number is 402..."
     ],
 
-    correctAnswerExample: "x402 refers to HTTP status code 402 'Payment Required', representing AI agents that can handle payments autonomously."
+    correctAnswerExample: "HTTP 402 Payment Required"
   },
 
   {
     id: 2,
-    title: "Why Solana for AI Agents?",
-    description: "Discover why Solana is perfect for AI agent applications",
-    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
+    title: "Why AI Agents?",
+    description: "Understanding autonomous AI agents",
+    reward: 0.11,  // 3 modules = 0.33 SOL total
 
-    lessonContent: `Solana is uniquely suited for AI agents because:
+    lessonContent: `AI agents can make autonomous decisions without human approval each time.
 
-🚀 **Speed**: 400ms confirmation times mean agents can act instantly
-💰 **Cost**: $0.00025 per transaction enables micropayments
-📈 **Scale**: 65,000 TPS can handle millions of agent interactions
-⚡ **No Mempool**: Agents don't compete with MEV bots
+In this app, an AI agent is:
+- Evaluating your answers
+- Deciding if you pass
+- Sending SOL payments automatically
 
-This means AI agents can make hundreds of small decisions and payments without worrying about cost or speed!`,
+No human reviews your answers - the AI does it all!`,
 
-    question: "Name at least TWO reasons why Solana is perfect for AI agents.",
+    question: "What is this AI agent doing right now?",
 
-    evaluationKeywords: ["fast", "speed", "cheap", "cost", "scale", "tps", "instant", "micropayment", "400ms", "65000", "low fee"],
+    evaluationKeywords: ["evaluate", "evaluating", "answer", "decision", "payment", "decide", "judge", "check", "review", "assess"],
 
     hints: [
-      "Think about transaction speed and cost...",
-      "How fast can Solana confirm transactions?",
-      "What about the cost per transaction?"
+      "What's happening when you submit an answer?",
+      "Who is checking if your answer is correct?"
     ],
 
-    correctAnswerExample: "Solana is fast (400ms confirmations) and cheap ($0.00025/tx), making it perfect for AI agents that need to make many small payments quickly."
+    correctAnswerExample: "Evaluating my answers and deciding whether to send payment"
   },
 
   {
     id: 3,
-    title: "Agent Autonomy & Decision Making",
-    description: "What makes an AI agent truly 'autonomous'?",
-    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
+    title: "How Does This Work?",
+    description: "The complete flow",
+    reward: 0.11,  // 3 modules = 0.33 SOL total
 
-    lessonContent: `A TRUE x402 AI agent is autonomous, meaning:
+    lessonContent: `Here's what happened:
 
-🤖 **Makes Decisions**: The agent evaluates situations and decides what to do (not just following hardcoded rules)
+1. You paid 0.33 SOL to access this learning platform (x402 protocol!)
+2. An AI agent evaluates each answer you submit
+3. If you pass, the AI sends 0.11 SOL back to your wallet
+4. Complete all 3 modules to earn back your full 0.33 SOL!
 
-💸 **Controls Money**: The agent can initiate payments without human approval for each transaction
+This demonstrates AI agents + payments + Solana all working together.`,
 
-🧠 **Learns & Adapts**: The agent uses AI to understand context and make intelligent choices
+    question: "How much SOL did you pay to start, and how much do you earn per module?",
 
-🔄 **Closed Loop**: The agent manages entire workflows from start to finish
-
-Right now, YOU are experiencing this! I'm evaluating your answers and deciding whether to send you rewards - no human in the loop!`,
-
-    question: "What does it mean for an AI agent to be 'autonomous'? Give at least one key characteristic.",
-
-    evaluationKeywords: ["decision", "decide", "independent", "control", "payment", "automatic", "evaluate", "judge", "choose", "money"],
+    evaluationKeywords: ["0.33", "33", ".33", "0.11", "11", ".11", "paid", "earn", "sol", "point three", "point one"],
 
     hints: [
-      "Think about what I'm doing right now with your answers...",
-      "Who decides if you get rewarded?",
-      "An autonomous agent makes its own..."
+      "Check the lesson content above...",
+      "You paid something at the start and earn something per module..."
     ],
 
-    correctAnswerExample: "An autonomous agent makes its own decisions without human approval each time, like deciding when to send payments based on evaluation."
-  },
-
-  {
-    id: 4,
-    title: "Solana's Technical Magic",
-    description: "The tech that makes instant AI agents possible",
-    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
-
-    lessonContent: `Solana achieves its speed through innovative tech:
-
-⏰ **Proof of History (PoH)**: Timestamps transactions cryptographically, eliminating time negotiation between nodes
-
-🔄 **Parallel Processing**: Multiple smart contracts run simultaneously (unlike Ethereum's serial execution)
-
-🌊 **Gulf Stream**: Transactions forwarded before block finality, reducing confirmation time
-
-📦 **Turbine**: Block propagation protocol that breaks data into small packets
-
-This architecture means AI agents get near-instant feedback on their actions!`,
-
-    question: "What is Proof of History and why does it matter for speed?",
-
-    evaluationKeywords: ["timestamp", "time", "clock", "proof of history", "poh", "history", "order", "sequence", "cryptographic"],
-
-    hints: [
-      "It's about TIME and ordering...",
-      "How does Solana know what happened when?",
-      "It's a cryptographic way to timestamp events..."
-    ],
-
-    correctAnswerExample: "Proof of History cryptographically timestamps transactions, creating a historical record that proves events occurred in a specific order, eliminating the need for nodes to communicate about time."
-  },
-
-  {
-    id: 5,
-    title: "Hackathon Fun Facts! 🎉",
-    description: "Time for some fun Solana knowledge!",
-    reward: 0.01,  // Reduced for testing - 5 modules = 0.05 SOL total
-
-    lessonContent: `Let's end with some fun facts about Solana and this hackathon:
-
-🏆 The prize pool is $50,000 across 5 tracks ($10,000 per track!)
-
-🦎 Solana's mascot is... well, there's a lot of gecko/lizard vibes in the community
-
-💜 Solana's brand color is that distinctive purple-to-green gradient you see everywhere
-
-🌍 The hackathon is fully online and global - anyone can participate
-
-🤖 You're literally learning INSIDE a hackathon submission right now (how meta!)
-
-And the best part? This entire app is open source, so anyone can fork it and teach other topics!`,
-
-    question: "Here's a fun one: What are you doing RIGHT NOW in this very moment? (Hint: it's meta!)",
-
-    evaluationKeywords: ["learning", "hackathon", "submission", "app", "project", "demo", "x402", "agent", "inside", "meta"],
-
-    hints: [
-      "Look around... what app are you using?",
-      "This app IS a hackathon submission...",
-      "You're learning inside a..."
-    ],
-
-    correctAnswerExample: "I'm learning inside a hackathon submission! This app is both teaching me AND demonstrating the x402 concept at the same time!"
+    correctAnswerExample: "Paid 0.33 SOL to start, earn 0.11 SOL per module"
   }
 ]
 
