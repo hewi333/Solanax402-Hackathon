@@ -25,7 +25,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
   const [evaluationMethod, setEvaluationMethod] = useState('') // 'ai' or 'fallback'
   const inputRef = useRef(null)
 
-  const INITIAL_DEPOSIT = 0.33  // 3 modules x 0.11 SOL each
+  const INITIAL_DEPOSIT = 0.033  // 3 modules x 0.011 SOL each
   const currentModule = getModuleById(currentModuleId)
 
   // Keyword matching fallback (original evaluation)
@@ -144,7 +144,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
         const evaluation = {
           passed: true,
           score: 50,
-          feedback: `Here's the answer: ${currentModule.correctAnswerExample}. Let's move on!`,
+          feedback: `That's not exactly right, but this is just a demo so let's move on! The answer is: ${currentModule.correctAnswerExample}`,
           method: 'auto-pass'
         }
 

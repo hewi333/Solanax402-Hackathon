@@ -5,7 +5,7 @@ export const LEARNING_MODULES = [
     id: 1,
     title: "What is x402?",
     description: "Learn about the x402 protocol",
-    reward: 0.11,  // 3 modules = 0.33 SOL total
+    reward: 0.011,  // 3 modules = 0.033 SOL total
 
     lessonContent: `The x402 protocol represents the future of AI-powered payments.
 
@@ -29,7 +29,7 @@ This hackathon is about building AI agents that can autonomously make payment de
     id: 2,
     title: "Why AI Agents?",
     description: "Understanding autonomous AI agents",
-    reward: 0.11,  // 3 modules = 0.33 SOL total
+    reward: 0.011,  // 3 modules = 0.033 SOL total
 
     lessonContent: `AI agents can make autonomous decisions without human approval each time.
 
@@ -56,27 +56,27 @@ No human reviews your answers - the AI does it all!`,
     id: 3,
     title: "How Does This Work?",
     description: "The complete flow",
-    reward: 0.11,  // 3 modules = 0.33 SOL total
+    reward: 0.011,  // 3 modules = 0.033 SOL total
 
     lessonContent: `Here's what happened:
 
-1. You paid 0.33 SOL to access this learning platform (x402 protocol!)
+1. You paid 0.033 SOL to access this learning platform (x402 protocol!)
 2. An AI agent evaluates each answer you submit
-3. If you pass, the AI sends 0.11 SOL back to your wallet
-4. Complete all 3 modules to earn back your full 0.33 SOL!
+3. If you pass, the AI sends 0.011 SOL back to your wallet
+4. Complete all 3 modules to earn back your full 0.033 SOL!
 
 This demonstrates AI agents + payments + Solana all working together.`,
 
     question: "How much SOL did you pay to start, and how much do you earn per module?",
 
-    evaluationKeywords: ["0.33", "33", ".33", "0.11", "11", ".11", "paid", "earn", "sol", "point three", "point one"],
+    evaluationKeywords: ["0.033", "033", ".033", "0.011", "011", ".011", "paid", "earn", "sol", "point zero three", "point zero one"],
 
     hints: [
       "Check the lesson content above...",
       "You paid something at the start and earn something per module..."
     ],
 
-    correctAnswerExample: "Paid 0.33 SOL to start, earn 0.11 SOL per module"
+    correctAnswerExample: "Paid 0.033 SOL to start, earn 0.011 SOL per module"
   }
 ]
 
