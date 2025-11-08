@@ -130,7 +130,7 @@ app.post('/api/x402/verify-access', async (req, res) => {
     // Return HTTP 402 Payment Required with x402 protocol headers
     res.status(402)
       .header('X-Payment-Required', 'true')
-      .header('X-Payment-Amount', '0.05 SOL')
+      .header('X-Payment-Amount', '0.033 SOL')
       .header('X-Payment-Recipient', process.env.TREASURY_WALLET || 'treasury')
       .header('X-Payment-Network', 'solana-devnet')
       .header('X-Payment-Description', 'Access to Solana x402 Learn & Earn Platform')
@@ -139,10 +139,10 @@ app.post('/api/x402/verify-access', async (req, res) => {
         statusCode: 402,
         message: 'HTTP 402: Payment Required to access this resource',
         paymentDetails: {
-          amount: '0.05 SOL',
+          amount: '0.033 SOL',
           recipient: process.env.TREASURY_WALLET || 'treasury',
           network: 'solana-devnet',
-          description: 'Unlock 5 learning modules about Solana x402 AI agents'
+          description: 'Unlock 3 learning modules about Solana x402 AI agents'
         }
       })
   } else {
@@ -819,7 +819,7 @@ app.post('/api/evaluate-with-ai', async (req, res) => {
           properties: {
             amount: {
               type: 'number',
-              description: 'SOL amount to send (base: 0.01)'
+              description: 'SOL amount to send (base: 0.011)'
             },
             reason: {
               type: 'string',
@@ -843,13 +843,13 @@ EVALUATION CRITERIA:
 - If unsure, PASS the student
 
 PAYMENT DECISIONS:
-- Base reward: 0.11 SOL per module
-- If score >= 40: MUST call send_payment with 0.11 SOL
+- Base reward: 0.011 SOL per module
+- If score >= 40: MUST call send_payment with 0.011 SOL
 - If score < 40: Do NOT call send_payment (only for completely wrong answers)
 
 WORKFLOW:
 1. Call evaluate_answer() to assess the response
-2. If passed (score >= 40), immediately call send_payment() with 0.11 SOL
+2. If passed (score >= 40), immediately call send_payment() with 0.011 SOL
 3. Be encouraging and supportive in feedback
 
 Question: "${question}"

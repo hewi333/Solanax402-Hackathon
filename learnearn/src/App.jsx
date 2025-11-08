@@ -41,7 +41,7 @@ function App() {
   const [walletError, setWalletError] = useState(null)
 
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
-  const PAYMENT_AMOUNT = 0.33  // 3 modules x 0.11 SOL each = earn back full amount
+  const PAYMENT_AMOUNT = 0.033  // 3 modules x 0.011 SOL each = earn back full amount
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
   // Single source of truth for wallet connection and address
@@ -565,7 +565,7 @@ function App() {
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-solana-green/10 border border-solana-green/20">
                   <Zap className="w-5 h-5 text-solana-green" />
-                  <span className="text-sm md:text-base font-medium">Earn 0.33 SOL</span>
+                  <span className="text-sm md:text-base font-medium">Earn 0.033 SOL</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
                   <Trophy className="w-5 h-5 text-purple-400" />
