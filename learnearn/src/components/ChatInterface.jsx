@@ -50,10 +50,16 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       const address = walletAddress || (publicKey ? publicKey.toBase58() : null)
 
+      console.log('🔍 AI Evaluation - Starting...')
+      console.log('  API URL:', apiUrl)
+      console.log('  Wallet:', address)
+      console.log('  Module:', currentModule.id)
+
       if (!address) {
         throw new Error('No wallet address available')
       }
 
+      console.log('📡 Calling /api/evaluate-with-ai...')
       const response = await fetch(`${apiUrl}/api/evaluate-with-ai`, {
         method: 'POST',
         headers: {
@@ -69,7 +75,9 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
         })
       })
 
+      console.log('📥 Response status:', response.status)
       const data = await response.json()
+      console.log('📥 Response data:', data)
 
       if (!response.ok && !data.fallbackAvailable) {
         throw new Error(data.error || 'AI evaluation failed')
@@ -77,6 +85,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
 
       // AI evaluation succeeded
       if (data.aiEvaluated) {
+        console.log('✅ AI evaluation succeeded!')
         return {
           passed: data.passed,
           score: data.score,
@@ -87,9 +96,12 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
       }
 
       // AI not available, return null to trigger fallback
+      console.warn('⚠️ AI evaluation not available (aiEvaluated=false)')
       return null
     } catch (error) {
-      console.warn('AI evaluation failed, will use fallback:', error)
+      console.error('❌ AI evaluation failed:', error)
+      console.error('   Error message:', error.message)
+      console.error('   Stack:', error.stack)
       return null
     }
   }

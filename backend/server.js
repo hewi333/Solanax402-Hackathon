@@ -772,7 +772,17 @@ app.post('/api/evaluate-with-ai', async (req, res) => {
   try {
     const { userAnswer, moduleId, walletAddress, question, expectedConcepts, lessonContext } = req.body
 
+    console.log('\n🤖 ========== AI EVALUATION REQUEST ==========')
+    console.log('  Module ID:', moduleId)
+    console.log('  Wallet:', walletAddress)
+    console.log('  Question:', question)
+    console.log('  User Answer:', userAnswer)
+    console.log('  Expected Concepts:', expectedConcepts)
+    console.log('  OpenAI Key Present:', !!process.env.OPENAI_API_KEY)
+    console.log('=============================================\n')
+
     if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OpenAI API key NOT configured!')
       return res.status(500).json({
         error: 'OpenAI API key not configured.',
         fallbackAvailable: true
@@ -780,6 +790,7 @@ app.post('/api/evaluate-with-ai', async (req, res) => {
     }
 
     if (!userAnswer || !walletAddress) {
+      console.error('❌ Missing required fields')
       return res.status(400).json({
         error: 'User answer and wallet address are required.'
       })
@@ -859,6 +870,10 @@ Evaluate generously and decide autonomously.`
 
     const userPrompt = `Student's answer: "${userAnswer}"`
 
+    console.log('📞 Calling OpenAI API...')
+    console.log('  Model: gpt-3.5-turbo')
+    console.log('  Temperature: 0.3')
+
     // Call OpenAI with function calling (use gpt-3.5-turbo for speed)
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -872,8 +887,9 @@ Evaluate generously and decide autonomously.`
       max_tokens: 200
     })
 
+    console.log('✅ OpenAI API responded successfully!')
     const responseMessage = completion.choices[0].message
-    console.log('AI response:', JSON.stringify(responseMessage, null, 2))
+    console.log('🤖 AI response:', JSON.stringify(responseMessage, null, 2))
 
     // Process function calls
     let evaluation = null
@@ -892,6 +908,7 @@ Evaluate generously and decide autonomously.`
         // If passed, AI should call send_payment next
         // Make a second call to let AI call send_payment
         if (evaluation.passed) {
+          console.log('💰 Student passed! Calling OpenAI again for payment decision...')
           const secondCompletion = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
             messages: [
@@ -910,8 +927,9 @@ Evaluate generously and decide autonomously.`
             max_tokens: 200
           })
 
+          console.log('✅ OpenAI payment decision received!')
           const secondResponse = secondCompletion.choices[0].message
-          console.log('AI second response:', JSON.stringify(secondResponse, null, 2))
+          console.log('💸 AI second response:', JSON.stringify(secondResponse, null, 2))
 
           if (secondResponse.function_call && secondResponse.function_call.name === 'send_payment') {
             const paymentArgs = JSON.parse(secondResponse.function_call.arguments)
@@ -959,17 +977,27 @@ Evaluate generously and decide autonomously.`
     }
 
     // Return evaluation and payment result
-    res.json({
+    const response = {
       aiEvaluated: true,
       passed: evaluation?.passed || false,
       score: evaluation?.score || 0,
       feedback: evaluation?.feedback || 'Unable to evaluate answer.',
       payment: paymentResult,
       moduleId
-    })
+    }
+
+    console.log('\n✅ ========== SENDING RESPONSE ==========')
+    console.log(JSON.stringify(response, null, 2))
+    console.log('========================================\n')
+
+    res.json(response)
 
   } catch (error) {
-    console.error('AI evaluation error:', error)
+    console.error('\n❌ ========== AI EVALUATION ERROR ==========')
+    console.error('Error:', error)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+    console.error('===========================================\n')
 
     // Return error with fallback flag
     res.status(500).json({
