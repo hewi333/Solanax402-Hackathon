@@ -21,12 +21,15 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [showHint, setShowHint] = useState(false)
   const [currentTxSignature, setCurrentTxSignature] = useState(null)
+  const [aiFeedback, setAiFeedback] = useState('')
+  const [evaluationMethod, setEvaluationMethod] = useState('') // 'ai' or 'fallback'
   const inputRef = useRef(null)
 
   const INITIAL_DEPOSIT = 0.05  // Updated to match actual payment amount
   const currentModule = getModuleById(currentModuleId)
 
-  const evaluateAnswer = (userAnswer) => {
+  // Keyword matching fallback (original evaluation)
+  const evaluateAnswerWithKeywords = (userAnswer) => {
     const answer = userAnswer.toLowerCase()
     const keywords = currentModule.evaluationKeywords
 
@@ -38,6 +41,56 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
       passed: matchedKeywords.length >= 1,
       matchedCount: matchedKeywords.length,
       totalKeywords: keywords.length
+    }
+  }
+
+  // AI-powered evaluation (primary method)
+  const evaluateAnswerWithAI = async (userAnswer) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const address = walletAddress || (publicKey ? publicKey.toBase58() : null)
+
+      if (!address) {
+        throw new Error('No wallet address available')
+      }
+
+      const response = await fetch(`${apiUrl}/api/evaluate-with-ai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userAnswer,
+          moduleId: currentModule.id,
+          walletAddress: address,
+          question: currentModule.question,
+          expectedConcepts: currentModule.evaluationKeywords,
+          lessonContext: currentModule.lessonContent
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok && !data.fallbackAvailable) {
+        throw new Error(data.error || 'AI evaluation failed')
+      }
+
+      // AI evaluation succeeded
+      if (data.aiEvaluated) {
+        return {
+          passed: data.passed,
+          score: data.score,
+          feedback: data.feedback,
+          payment: data.payment,
+          method: 'ai'
+        }
+      }
+
+      // AI not available, return null to trigger fallback
+      return null
+    } catch (error) {
+      console.warn('AI evaluation failed, will use fallback:', error)
+      return null
     }
   }
 
@@ -81,33 +134,65 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
     setIsLoading(true)
     const userInput = inputMessage
     setInputMessage('')
+    setAiFeedback('')
+    setEvaluationMethod('')
 
     try {
-      const evaluation = evaluateAnswer(userInput)
+      // Try AI evaluation first
+      console.log('🤖 Attempting AI evaluation...')
+      let evaluation = await evaluateAnswerWithAI(userInput)
+
+      // Fall back to keyword matching if AI fails
+      if (!evaluation) {
+        console.log('⚠️ AI unavailable, using keyword fallback')
+        const keywordEval = evaluateAnswerWithKeywords(userInput)
+        evaluation = {
+          passed: keywordEval.passed,
+          score: keywordEval.passed ? 100 : 0,
+          feedback: keywordEval.passed
+            ? 'Good job! Your answer contains the key concepts.'
+            : 'Try to include more key concepts in your answer.',
+          method: 'fallback'
+        }
+      }
+
+      setEvaluationMethod(evaluation.method)
+      setAiFeedback(evaluation.feedback)
 
       if (evaluation.passed) {
         // Correct answer
         setFeedbackMessage('correct')
 
         try {
-          const signature = await sendReward(currentModule.id, currentModule.reward)
+          let signature = null
+
+          // If AI already sent the payment, use that signature
+          if (evaluation.payment && evaluation.payment.success) {
+            signature = evaluation.payment.signature
+            console.log('✅ AI Agent already sent payment:', signature)
+          } else {
+            // Otherwise, send reward manually (fallback case)
+            signature = await sendReward(currentModule.id, currentModule.reward)
+            console.log('✅ Manual reward sent:', signature)
+          }
+
           const newTotalEarned = totalEarned + currentModule.reward
           setTotalEarned(newTotalEarned)
-          setCurrentTxSignature(signature)  // Store signature for display
+          setCurrentTxSignature(signature)
 
           onModuleCompleted({
             detected: true,
             module: currentModule.title,
             reward: currentModule.reward,
-            signature: signature
+            signature: signature,
+            evaluatedBy: evaluation.method
           })
 
           setCompletedModules(prev => [...prev, currentModule.id])
           setAttemptCount(0)
 
-          // Check if all modules are complete (5 modules total)
+          // Check if all modules are complete
           if (currentModuleId >= LEARNING_MODULES.length) {
-            // All modules completed - show completion screen
             setTimeout(() => {
               setSessionComplete(true)
             }, 2000)
@@ -118,7 +203,9 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
               setViewMode('lesson')
               setFeedbackMessage('')
               setShowHint(false)
-              setCurrentTxSignature(null)  // Clear previous signature
+              setCurrentTxSignature(null)
+              setAiFeedback('')
+              setEvaluationMethod('')
             }, 2000)
           }
         } catch (error) {
@@ -315,7 +402,19 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-solana-green flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="font-semibold text-solana-green">Excellent! You got it!</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold text-solana-green">Excellent! You got it!</p>
+                      {evaluationMethod === 'ai' && (
+                        <Badge variant="outline" className="text-xs bg-solana-purple/20 text-solana-purple border-solana-purple/30">
+                          🤖 AI Evaluated
+                        </Badge>
+                      )}
+                    </div>
+                    {aiFeedback && (
+                      <p className="text-sm text-foreground mt-2 mb-2">
+                        {aiFeedback}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground mt-1">
                       Reward: {currentModule.reward} SOL sent to your wallet!
                     </p>
@@ -338,8 +437,20 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
               <div className="p-4 bg-muted/50 border rounded-lg">
                 <div className="flex items-start gap-3">
                   <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Not quite there yet!</p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold">Not quite there yet!</p>
+                      {evaluationMethod === 'ai' && (
+                        <Badge variant="outline" className="text-xs bg-solana-purple/20 text-solana-purple border-solana-purple/30">
+                          🤖 AI Evaluated
+                        </Badge>
+                      )}
+                    </div>
+                    {aiFeedback && evaluationMethod === 'ai' && (
+                      <p className="text-sm text-foreground mt-2 mb-2">
+                        {aiFeedback}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground mt-2">
                       <span className="font-medium">Hint:</span> {currentModule.hints[hintIndex]}
                     </p>
@@ -385,7 +496,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
                 >
                   {isLoading ? (
                     <>
-                      <span className="mr-2">Evaluating</span>
+                      <span className="mr-2">🤖 AI Evaluating</span>
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -400,7 +511,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
 
               <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
                 <Lightbulb className="w-4 h-4" />
-                Answer in your own words - the AI will evaluate your response
+                Answer in your own words - AI agent will evaluate and send payment
               </p>
             </div>
           </CardContent>
