@@ -766,6 +766,218 @@ app.post('/api/cdp/send-payment', async (req, res) => {
 // END CDP ENDPOINTS
 // =====================================================
 
+// AI Agent Evaluation Endpoint with Function Calling
+// The AI autonomously evaluates answers and makes payment decisions
+app.post('/api/evaluate-with-ai', async (req, res) => {
+  try {
+    const { userAnswer, moduleId, walletAddress, question, expectedConcepts, lessonContext } = req.body
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        error: 'OpenAI API key not configured.',
+        fallbackAvailable: true
+      })
+    }
+
+    if (!userAnswer || !walletAddress) {
+      return res.status(400).json({
+        error: 'User answer and wallet address are required.'
+      })
+    }
+
+    console.log(`🤖 AI Agent evaluating Module ${moduleId} answer for ${walletAddress}`)
+
+    // Define functions the AI agent can call
+    const functions = [
+      {
+        name: 'evaluate_answer',
+        description: 'Evaluate if a learning answer demonstrates understanding of key concepts',
+        parameters: {
+          type: 'object',
+          properties: {
+            passed: {
+              type: 'boolean',
+              description: 'Whether the answer demonstrates sufficient understanding to pass'
+            },
+            score: {
+              type: 'number',
+              description: 'Quality score from 0-100 based on completeness and accuracy'
+            },
+            feedback: {
+              type: 'string',
+              description: 'Constructive feedback for the learner (1-2 sentences)'
+            }
+          },
+          required: ['passed', 'score', 'feedback']
+        }
+      },
+      {
+        name: 'send_payment',
+        description: 'Send SOL reward to the learner if they passed',
+        parameters: {
+          type: 'object',
+          properties: {
+            amount: {
+              type: 'number',
+              description: 'SOL amount to send (base: 0.01)'
+            },
+            reason: {
+              type: 'string',
+              description: 'Brief reason for the payment decision'
+            }
+          },
+          required: ['amount', 'reason']
+        }
+      }
+    ]
+
+    // System prompt for the AI agent
+    const systemPrompt = `You are an AI agent that evaluates learning answers and autonomously makes payment decisions.
+
+EVALUATION CRITERIA:
+- Does the answer demonstrate understanding of the key concepts: ${expectedConcepts?.join(', ')}?
+- Be LENIENT - partial understanding is acceptable
+- FAIL completely off-topic or nonsensical answers
+- Accept creative explanations if they show understanding
+
+PAYMENT DECISIONS:
+- Base reward: 0.01 SOL per module
+- If score >= 50: MUST call send_payment with 0.01 SOL
+- If score < 50: Do NOT call send_payment
+
+WORKFLOW:
+1. Call evaluate_answer() to assess the response
+2. If passed (score >= 50), immediately call send_payment() with 0.01 SOL
+3. Be encouraging and educational in feedback
+
+Question: "${question}"
+Expected concepts: ${expectedConcepts?.join(', ')}
+
+Evaluate and decide autonomously.`
+
+    const userPrompt = `Student's answer: "${userAnswer}"`
+
+    // Call OpenAI with function calling (use gpt-3.5-turbo for speed)
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      functions: functions,
+      function_call: 'auto',
+      temperature: 0.3, // Lower temperature for consistent evaluations
+      max_tokens: 200
+    })
+
+    const responseMessage = completion.choices[0].message
+    console.log('AI response:', JSON.stringify(responseMessage, null, 2))
+
+    // Process function calls
+    let evaluation = null
+    let paymentResult = null
+
+    // Handle function calls (can be multiple)
+    if (responseMessage.function_call) {
+      const functionName = responseMessage.function_call.name
+      const functionArgs = JSON.parse(responseMessage.function_call.arguments)
+
+      console.log(`AI called function: ${functionName}`, functionArgs)
+
+      if (functionName === 'evaluate_answer') {
+        evaluation = functionArgs
+
+        // If passed, AI should call send_payment next
+        // Make a second call to let AI call send_payment
+        if (evaluation.passed) {
+          const secondCompletion = await openai.chat.completions.create({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+              responseMessage,
+              {
+                role: 'function',
+                name: 'evaluate_answer',
+                content: JSON.stringify({ success: true, evaluation })
+              }
+            ],
+            functions: functions,
+            function_call: 'auto',
+            temperature: 0.3,
+            max_tokens: 200
+          })
+
+          const secondResponse = secondCompletion.choices[0].message
+          console.log('AI second response:', JSON.stringify(secondResponse, null, 2))
+
+          if (secondResponse.function_call && secondResponse.function_call.name === 'send_payment') {
+            const paymentArgs = JSON.parse(secondResponse.function_call.arguments)
+
+            // Execute the actual payment
+            try {
+              if (!treasuryWallet) {
+                throw new Error('Treasury wallet not configured')
+              }
+
+              const recipientPublicKey = new PublicKey(walletAddress)
+              const transaction = new Transaction().add(
+                SystemProgram.transfer({
+                  fromPubkey: treasuryWallet.publicKey,
+                  toPubkey: recipientPublicKey,
+                  lamports: Math.floor(paymentArgs.amount * LAMPORTS_PER_SOL),
+                })
+              )
+
+              const signature = await sendAndConfirmTransaction(
+                connection,
+                transaction,
+                [treasuryWallet],
+                { commitment: 'confirmed' }
+              )
+
+              console.log(`✅ AI Agent sent ${paymentArgs.amount} SOL. Signature: ${signature}`)
+
+              paymentResult = {
+                success: true,
+                signature,
+                amount: paymentArgs.amount,
+                reason: paymentArgs.reason
+              }
+            } catch (paymentError) {
+              console.error('Payment execution error:', paymentError)
+              paymentResult = {
+                success: false,
+                error: paymentError.message
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Return evaluation and payment result
+    res.json({
+      aiEvaluated: true,
+      passed: evaluation?.passed || false,
+      score: evaluation?.score || 0,
+      feedback: evaluation?.feedback || 'Unable to evaluate answer.',
+      payment: paymentResult,
+      moduleId
+    })
+
+  } catch (error) {
+    console.error('AI evaluation error:', error)
+
+    // Return error with fallback flag
+    res.status(500).json({
+      error: error.message || 'AI evaluation failed',
+      fallbackAvailable: true,
+      aiEvaluated: false
+    })
+  }
+})
+
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
