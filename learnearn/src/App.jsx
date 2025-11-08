@@ -11,7 +11,7 @@ import { Badge } from './components/ui/badge'
 import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play } from 'lucide-react'
 
 function App() {
-  const { publicKey, connected, sendTransaction, wallet } = useWallet()
+  const { publicKey, connected, sendTransaction, wallet, disconnect } = useWallet()
   const { connection } = useConnection()
   const [balance, setBalance] = useState(null)
   const [totalEarned, setTotalEarned] = useState(0)
@@ -32,6 +32,9 @@ function App() {
 
   // Wallet selection state - ensures only one wallet type is active at a time
   const [activeWalletType, setActiveWalletType] = useState(null) // 'external' | 'embedded' | null
+
+  // Wallet switching guard to prevent race conditions
+  const [isSwitchingWallet, setIsSwitchingWallet] = useState(false)
 
   // Wallet connection state machine for better UX
   const [walletConnectionState, setWalletConnectionState] = useState('disconnected')
@@ -171,6 +174,11 @@ function App() {
   // Unified wallet detection with priority: External > Embedded
   // This single effect prevents race conditions between wallet types
   useEffect(() => {
+    // Prevent wallet detection while switching to avoid race conditions
+    if (isSwitchingWallet) {
+      return
+    }
+
     // Priority 1: External wallet (Phantom/Coinbase) - user clicked WalletMultiButton
     if (connected && publicKey) {
       if (activeWalletType !== 'external') {
@@ -196,7 +204,7 @@ function App() {
       // Persist to session storage
       sessionStorage.setItem('active_wallet_type', 'embedded')
     }
-  }, [connected, publicKey, isEmbeddedWallet, embeddedWallet, activeWalletType])
+  }, [connected, publicKey, isEmbeddedWallet, embeddedWallet, activeWalletType, isSwitchingWallet])
 
   // Fetch balance when wallet connects with cleanup
   useEffect(() => {
@@ -238,34 +246,58 @@ function App() {
   }, [isWalletConnected, hasPaid, hasClickedStart])
 
   // Disconnect/switch wallet function - clears active wallet and resets session
-  const handleDisconnectWallet = () => {
-    if (activeWalletType === 'embedded') {
-      // Clear embedded wallet
-      localStorage.removeItem('cdp_user_id')
-      localStorage.removeItem('cdp_wallet_address')
-      setEmbeddedWallet(null)
-      setIsEmbeddedWallet(false)
+  const handleDisconnectWallet = async () => {
+    setIsSwitchingWallet(true)
+
+    try {
+      if (activeWalletType === 'embedded') {
+        // Clear embedded wallet
+        localStorage.removeItem('cdp_user_id')
+        localStorage.removeItem('cdp_wallet_address')
+        setEmbeddedWallet(null)
+        setIsEmbeddedWallet(false)
+      } else if (activeWalletType === 'external') {
+        // Properly disconnect external wallet (Phantom/Coinbase)
+        if (disconnect) {
+          console.log('🔌 Disconnecting external wallet...')
+          await disconnect()
+          // Wait for disconnect to propagate through wallet adapter
+          await new Promise(resolve => setTimeout(resolve, 300))
+          console.log('✅ External wallet disconnected')
+        }
+      }
+
+      // Clear session storage
+      sessionStorage.removeItem('active_wallet_type')
+
+      // Reset wallet state
+      setActiveWalletType(null)
+      setWalletConnectionState('disconnected')
+      setBalance(null)
+      setHasPaid(false)  // Reset payment status so user can choose a different wallet
+
+      // CRITICAL: Reset all session state to prevent users from continuing previous sessions
+      setModulesCompleted(0)
+      setTotalEarned(0)
+      setRewardHistory([])
+      setCurrentReward(null)
+      setShowRewardModal(false)
+      setSessionKey(prev => prev + 1)  // Force ChatInterface to remount with fresh state
+      setHasClickedStart(false)  // Reset "Start Learning" state
+      setX402Status(null)  // Clear 402 status
+      setWalletError(null)  // Clear any errors
+    } catch (error) {
+      console.error('❌ Error disconnecting wallet:', error)
+      setWalletError({
+        message: 'Failed to disconnect wallet properly',
+        technical: error.message
+      })
+      // Still reset state even if disconnect fails
+      setActiveWalletType(null)
+      setWalletConnectionState('disconnected')
+    } finally {
+      setIsSwitchingWallet(false)
     }
-
-    // Clear session storage
-    sessionStorage.removeItem('active_wallet_type')
-
-    // Reset wallet state
-    setActiveWalletType(null)
-    setWalletConnectionState('disconnected')
-    setBalance(null)
-    setHasPaid(false)  // Reset payment status so user can choose a different wallet
-
-    // CRITICAL: Reset all session state to prevent users from continuing previous sessions
-    setModulesCompleted(0)
-    setTotalEarned(0)
-    setRewardHistory([])
-    setCurrentReward(null)
-    setShowRewardModal(false)
-    setSessionKey(prev => prev + 1)  // Force ChatInterface to remount with fresh state
-    setHasClickedStart(false)  // Reset "Start Learning" state
-    setX402Status(null)  // Clear 402 status
-    setWalletError(null)  // Clear any errors
   }
 
   const requestFaucet = async () => {
@@ -545,15 +577,14 @@ function App() {
             <div className="text-center space-y-8 mb-16">
               <div className="space-y-6">
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                  Learn about{' '}
                   <span className="bg-gradient-to-r from-solana-purple via-purple-400 to-solana-green bg-clip-text text-transparent">
-                    Solana x402 AI agents
+                    Learn AI Agents
                   </span>
                   <br />
-                  and earn SOL
+                  Earn SOL
                 </h2>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  Learn about Solana x402 AI agents and earn SOL as you progress through interactive modules
+                  Master Solana x402 AI agents through interactive lessons. Earn SOL rewards.
                 </p>
               </div>
 

@@ -568,24 +568,59 @@ app.get('/api/cdp/wallet/:userId', async (req, res) => {
   try {
     const { userId } = req.params
 
-    if (!cdpConfigured) {
+    if (!cdpConfigured || !cdpClient) {
       return res.status(503).json({
         error: 'CDP service not configured.'
       })
     }
 
-    const walletData = cdpWalletStore.get(userId)
+    // First, check in-memory store
+    let walletData = cdpWalletStore.get(userId)
 
+    // If not in memory (e.g., server restarted), fetch from CDP
     if (!walletData) {
-      return res.status(404).json({
-        error: 'Wallet not found for this user'
-      })
+      console.log(`📦 Wallet not in memory for ${userId}, fetching from CDP...`)
+
+      try {
+        // CDP requires: alphanumeric and hyphens only, 2-36 chars (no underscores!)
+        const accountName = userId.replace(/_/g, '-')
+        console.log(`🔄 Calling getOrCreateAccount with name: ${accountName}`)
+
+        const account = await cdpClient.solana.getOrCreateAccount({
+          name: accountName
+        })
+
+        console.log(`✅ Account retrieved from CDP: ${account.address}`)
+
+        // Rebuild wallet data
+        walletData = {
+          accountName,
+          userId,
+          address: account.address,
+          network: 'solana-devnet',
+          createdAt: new Date().toISOString()
+        }
+
+        // Store back in memory for future requests
+        cdpWalletStore.set(userId, walletData)
+        console.log(`💾 Wallet data cached in memory for future requests`)
+      } catch (cdpError) {
+        console.error('❌ Failed to restore wallet from CDP:', cdpError)
+        console.error('   Error Type:', cdpError.name)
+        console.error('   Error Message:', cdpError.message)
+
+        return res.status(404).json({
+          error: 'Wallet not found and could not be restored from CDP',
+          hint: 'Please create a new wallet',
+          technical: cdpError.message
+        })
+      }
     }
 
     res.json({
       success: true,
       wallet: {
-        id: walletData.walletId,
+        name: walletData.accountName,
         address: walletData.address,
         network: walletData.network,
         createdAt: walletData.createdAt
