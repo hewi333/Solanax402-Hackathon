@@ -297,7 +297,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
             <CheckCircle2 className="w-16 h-16 mx-auto text-solana-green" />
             <h2 className="text-3xl font-bold">Payment Successful!</h2>
             <p className="text-lg text-muted-foreground">
-              You've unlocked 5 modules about Solana x402 AI agents.
+              You've unlocked 3 modules about Solana x402 AI agents.
             </p>
             <p className="text-base text-muted-foreground">
               Complete all modules to earn back your <span className="text-solana-green font-semibold">{INITIAL_DEPOSIT} SOL</span>
@@ -307,8 +307,8 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
           <div className="py-6">
             <pre className="text-sm text-center font-mono text-muted-foreground">
 {`╔═══════════════════════════╗
-║   5 MODULES UNLOCKED      ║
-║   0.01 SOL PER MODULE     ║
+║   3 MODULES UNLOCKED      ║
+║   0.011 SOL PER MODULE    ║
 ╚═══════════════════════════╝`}
             </pre>
           </div>
@@ -388,7 +388,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
             <div className="space-y-4">
               <pre className="text-center font-mono text-sm text-solana-purple">
 {`╔════════════════════════════╗
-║     MODULE ${currentModule.id}/5           ║
+║     MODULE ${currentModule.id}/3           ║
 ╚════════════════════════════╝`}
               </pre>
               <CardTitle className="text-2xl text-center">{currentModule.title}</CardTitle>

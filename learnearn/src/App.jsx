@@ -331,7 +331,7 @@ function App() {
       getBalance()
 
       // Show success message with clickable link in console
-      alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction Hash: ${signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
+      alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 3 learning modules to earn it back!\n\nTransaction Hash: ${signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
 
     } catch (error) {
       console.error('Payment error:', error)
@@ -368,7 +368,7 @@ function App() {
         setHasPaid(true)
         getBalance()
 
-        alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 5 learning modules to earn it back!\n\nTransaction Hash: ${data.signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${data.signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
+        alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 3 learning modules to earn it back!\n\nTransaction Hash: ${data.signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${data.signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
       }
     } catch (error) {
       console.error('Embedded payment error:', error)
@@ -708,18 +708,18 @@ function App() {
                     <CardTitle className="text-3xl">Ready to Start Learning?</CardTitle>
                     <CardDescription className="text-base">
                       You're about to access Solana x402 learning platform.
-                      Complete 5 modules about AI agents and earn rewards!
+                      Complete 3 modules about AI agents and earn rewards!
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid md:grid-cols-3 gap-4">
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                         <Sparkles className="w-6 h-6 text-solana-purple" />
-                        <span className="text-sm">Learn 5 Solana x402 concepts</span>
+                        <span className="text-sm">Learn 3 Solana x402 concepts</span>
                       </div>
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                         <TrendingUp className="w-6 h-6 text-solana-green" />
-                        <span className="text-sm">Earn 0.01 SOL per module</span>
+                        <span className="text-sm">Earn 0.011 SOL per module</span>
                       </div>
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                         <Target className="w-6 h-6 text-solana-purple" />
@@ -774,18 +774,18 @@ function App() {
                     <CardTitle className="text-3xl">Unlock Learning Platform</CardTitle>
                     <CardDescription className="text-base">
                       Pay <strong className="text-solana-green">{PAYMENT_AMOUNT} SOL</strong> to access the Solana x402 learning modules.
-                      Complete all 5 modules to earn your payment back!
+                      Complete all 3 modules to earn your payment back!
                     </CardDescription>
                   </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <Sparkles className="w-6 h-6 text-solana-purple" />
-                      <span className="text-sm">Learn 5 Solana x402 concepts</span>
+                      <span className="text-sm">Learn 3 Solana x402 concepts</span>
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <TrendingUp className="w-6 h-6 text-solana-green" />
-                      <span className="text-sm">Earn 0.01 SOL per module</span>
+                      <span className="text-sm">Earn 0.011 SOL per module</span>
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <Target className="w-6 h-6 text-solana-purple" />
@@ -840,7 +840,7 @@ function App() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-solana-purple">
-                        {modulesCompleted}/5
+                        {modulesCompleted}/3
                       </div>
                     </CardContent>
                   </Card>
