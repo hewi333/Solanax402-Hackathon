@@ -28,6 +28,18 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
   const INITIAL_DEPOSIT = 0.033  // 3 modules x 0.011 SOL each
   const currentModule = getModuleById(currentModuleId)
 
+  // Allow disabling fallback for testing (set VITE_DISABLE_FALLBACK=true in .env)
+  const DISABLE_FALLBACK = import.meta.env.VITE_DISABLE_FALLBACK === 'true'
+
+  // Log fallback status on mount
+  useEffect(() => {
+    if (DISABLE_FALLBACK) {
+      console.warn('⚠️ Keyword fallback is DISABLED - AI must work or evaluation will fail')
+    } else {
+      console.log('✅ Keyword fallback is ENABLED (will activate after 10s timeout or AI failure)')
+    }
+  }, [])
+
   // Keyword matching fallback (original evaluation)
   const evaluateAnswerWithKeywords = (userAnswer) => {
     const answer = userAnswer.toLowerCase()
@@ -205,12 +217,34 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
         return
       }
 
-      // Try AI evaluation first
+      // Try AI evaluation first with timeout
       console.log('🤖 Attempting AI evaluation...')
-      let evaluation = await evaluateAnswerWithAI(userInput)
 
-      // Fall back to keyword matching if AI fails
+      // Add timeout wrapper (10 seconds)
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('AI evaluation timeout (10s)')), 10000)
+      )
+
+      let evaluation = null
+      try {
+        evaluation = await Promise.race([
+          evaluateAnswerWithAI(userInput),
+          timeout
+        ])
+      } catch (timeoutError) {
+        console.error('⏱️ AI evaluation timed out:', timeoutError.message)
+        evaluation = null
+      }
+
+      // Fall back to keyword matching if AI fails or times out (unless disabled)
       if (!evaluation) {
+        if (DISABLE_FALLBACK) {
+          console.error('❌ AI evaluation failed and fallback is disabled')
+          setFeedbackMessage('error')
+          setIsLoading(false)
+          return
+        }
+
         console.log('⚠️ AI unavailable, using keyword fallback')
         const keywordEval = evaluateAnswerWithKeywords(userInput)
         evaluation = {
