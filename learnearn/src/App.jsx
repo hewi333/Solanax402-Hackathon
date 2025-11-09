@@ -485,28 +485,10 @@ function App() {
                 </div>
               )}
 
-              {/* Show external wallet button if no wallet is connected OR external wallet is active */}
+              {/* Show wallet buttons if no wallet is connected */}
               {!activeWalletType && (
                 <>
-                  <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
-                    <div className="w-5 h-5 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
-                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
-                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
-                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
-                      </svg>
-                    </div>
-                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }} />
-                  </div>
-
-                  {/* Mobile wallet button - more compact */}
-                  <div className="md:hidden">
-                    <WalletMultiButton style={{ fontSize: '13px', padding: '8px 12px', height: '36px' }} />
-                  </div>
-
-                  <div className="hidden md:block h-8 w-px bg-border" />
-
+                  {/* CDP Wallet Button - Desktop */}
                   <div className="hidden md:block">
                     <EmbeddedWalletButton
                       key={embeddedWallet?.userId || 'no-wallet'}
@@ -520,6 +502,37 @@ function App() {
                         }
                       }}
                     />
+                  </div>
+
+                  {/* CDP Wallet Button - Mobile */}
+                  <div className="md:hidden">
+                    <EmbeddedWalletButton
+                      key={embeddedWallet?.userId || 'no-wallet'}
+                      onWalletCreated={(wallet) => {
+                        const userId = localStorage.getItem('cdp_user_id')
+                        if (userId && wallet.address) {
+                          setEmbeddedWallet({ userId, address: wallet.address })
+                          setIsEmbeddedWallet(true)
+                          setActiveWalletType('embedded')
+                          getBalance()
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="hidden md:block h-8 w-px bg-border" />
+
+                  {/* Browser Wallet Button - Desktop */}
+                  <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
+                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
+                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
+                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
+                      </svg>
+                    </div>
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }} />
                   </div>
                 </>
               )}
@@ -628,33 +641,6 @@ function App() {
 
             {/* Wallet Connection Cards - Horizontal on desktop, stacked on mobile */}
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {/* Browser Wallet Card */}
-              <Card className="border-2 border-purple-500/30 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500/20 to-purple-600/20 flex items-center justify-center mx-auto mb-4 border-2 border-purple-500/30">
-                    <Wallet className="w-8 h-8 text-purple-400" />
-                  </div>
-                  <CardTitle className="text-xl">Browser Wallet</CardTitle>
-                  <CardDescription className="text-base mt-2">
-                    Connect with Phantom, Coinbase Wallet, or other extensions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
-                    <div className="w-5 h-5 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
-                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
-                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
-                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
-                      </svg>
-                    </div>
-                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '15px', fontWeight: '600' }} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">Recommended for existing wallet users</p>
-                </CardContent>
-              </Card>
-
               {/* Embedded Wallet Card */}
               <Card className="border-2 border-solana-green/30 hover:border-solana-green/50 transition-all duration-300 hover:shadow-lg hover:shadow-solana-green/10 hover:-translate-y-1">
                 <CardHeader className="text-center pb-4">
@@ -680,6 +666,33 @@ function App() {
                     }}
                   />
                   <p className="text-xs text-muted-foreground mt-3">Perfect for first-time users</p>
+                </CardContent>
+              </Card>
+
+              {/* Browser Wallet Card */}
+              <Card className="border-2 border-purple-500/30 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500/20 to-purple-600/20 flex items-center justify-center mx-auto mb-4 border-2 border-purple-500/30">
+                    <Wallet className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <CardTitle className="text-xl">Browser Wallet</CardTitle>
+                  <CardDescription className="text-base mt-2">
+                    Connect with Phantom, Coinbase Wallet, or other extensions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
+                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
+                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
+                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
+                      </svg>
+                    </div>
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '15px', fontWeight: '600' }} />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">Recommended for existing wallet users</p>
                 </CardContent>
               </Card>
             </div>
