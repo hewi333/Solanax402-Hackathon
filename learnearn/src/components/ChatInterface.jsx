@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Progress } from './ui/progress'
 import { Badge } from './ui/badge'
-import { ChevronRight, CheckCircle2, Lightbulb, Trophy, Play } from 'lucide-react'
+import { ChevronRight, CheckCircle2, Lightbulb, Trophy, Play, Home } from 'lucide-react'
 import { cn } from '../lib/utils'
 
-export default function ChatInterface({ onModuleCompleted, onSessionComplete, walletAddress, isEmbeddedWallet }) {
+export default function ChatInterface({ onModuleCompleted, onSessionComplete, onReturnHome, walletAddress, isEmbeddedWallet }) {
   const { publicKey } = useWallet()
   const [viewMode, setViewMode] = useState('welcome') // welcome, lesson, question, feedback
   const [inputMessage, setInputMessage] = useState('')
@@ -394,16 +394,29 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, wa
             </pre>
           </div>
 
-          <Button
-            onClick={() => {
-              if (onSessionComplete) onSessionComplete()
-            }}
-            variant="solana"
-            size="lg"
-            className="w-full"
-          >
-            Start New Session (Pay {INITIAL_DEPOSIT} SOL)
-          </Button>
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                if (onSessionComplete) onSessionComplete()
+              }}
+              variant="solana"
+              size="lg"
+              className="w-full"
+            >
+              Start New Session (Pay {INITIAL_DEPOSIT} SOL)
+            </Button>
+            <Button
+              onClick={() => {
+                if (onReturnHome) onReturnHome()
+              }}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Return to Home
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             Starting a new session requires another {INITIAL_DEPOSIT} SOL deposit.
           </p>

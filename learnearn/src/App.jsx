@@ -471,7 +471,7 @@ function App() {
                 <GraduationCap className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
               <h1 className="text-base md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent truncate">
-                Solana x402 Learn & Earn
+                learnearn.xyz
               </h1>
             </div>
 
@@ -601,23 +601,23 @@ function App() {
                   Earn SOL
                 </h2>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  Master Solana x402 AI agents through interactive lessons. Earn SOL rewards.
+                  Answer 3 questions. Earn back your deposit. Simple.
                 </p>
               </div>
 
-              {/* Value Props - Compact inline badges */}
-              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-solana-purple/10 border border-solana-purple/20">
-                  <Bot className="w-5 h-5 text-solana-purple" />
-                  <span className="text-sm md:text-base font-medium">AI-Powered Learning</span>
+              {/* Value Props - Static info pills */}
+              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-solana-purple/5 pointer-events-none">
+                  <Bot className="w-4 h-4 text-solana-purple" />
+                  <span className="text-xs md:text-sm text-muted-foreground">AI Evaluation</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-solana-green/10 border border-solana-green/20">
-                  <Zap className="w-5 h-5 text-solana-green" />
-                  <span className="text-sm md:text-base font-medium">Earn 0.033 SOL</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-solana-green/5 pointer-events-none">
+                  <Zap className="w-4 h-4 text-solana-green" />
+                  <span className="text-xs md:text-sm text-muted-foreground">Earn 0.033 SOL</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
-                  <Trophy className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm md:text-base font-medium">3 Quick Modules</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/5 pointer-events-none">
+                  <Trophy className="w-4 h-4 text-purple-400" />
+                  <span className="text-xs md:text-sm text-muted-foreground">3 Modules</span>
                 </div>
               </div>
 
@@ -625,17 +625,14 @@ function App() {
               <div className="mt-12 space-y-6">
                 <div className="space-y-3">
                   <p className="text-lg md:text-xl font-semibold text-foreground">
-                    Ready to start learning?
-                  </p>
-                  <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-                    Connect your wallet to access the Solana x402 learning platform. Choose a browser wallet like Phantom, or create an embedded wallet with Coinbase CDP.
+                    Connect wallet to start
                   </p>
                 </div>
 
-                <Badge variant="solana" className="text-sm md:text-base px-6 py-2">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Using Solana Devnet (Test Network)
-                </Badge>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/30 rounded text-xs text-muted-foreground pointer-events-none">
+                  <Sparkles className="w-3 h-3" />
+                  Test Network (Devnet)
+                </div>
               </div>
             </div>
 
@@ -933,6 +930,7 @@ function App() {
                   key={sessionKey}
                   onModuleCompleted={handleModuleCompleted}
                   onSessionComplete={handleSessionComplete}
+                  onReturnHome={handleDisconnectWallet}
                   walletAddress={currentWalletAddress}
                   isEmbeddedWallet={isEmbeddedWallet}
                 />
