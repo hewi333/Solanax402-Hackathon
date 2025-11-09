@@ -118,15 +118,22 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
     }
   }
 
-  // Try to load existing wallet on mount or when localStorage changes
+  // Try to load existing wallet on mount ONLY if user didn't explicitly disconnect
   useEffect(() => {
     const existingUserId = localStorage.getItem('cdp_user_id')
     const existingAddress = localStorage.getItem('cdp_wallet_address')
+    const sessionWalletType = sessionStorage.getItem('active_wallet_type')
 
-    // If we have wallet data in localStorage but no walletInfo state, load it
-    if (existingUserId && existingAddress && !walletInfo) {
+    // Only auto-load if:
+    // 1. localStorage has wallet data (user created wallet before)
+    // 2. sessionStorage says 'embedded' was active (page reload, not intentional disconnect)
+    // 3. walletInfo is not already loaded
+    if (existingUserId && existingAddress && sessionWalletType === 'embedded' && !walletInfo) {
       console.log('📦 Detected existing CDP wallet in localStorage:', existingAddress)
+      console.log('🔄 Auto-loading wallet (page reload detected)')
       loadExistingWallet()
+    } else if (existingUserId && existingAddress && !sessionWalletType && !walletInfo) {
+      console.log('📦 CDP wallet exists in localStorage but not auto-loading (user disconnected)')
     }
   }, [walletInfo]) // Re-run when walletInfo changes
 
