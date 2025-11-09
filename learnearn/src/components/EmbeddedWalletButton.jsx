@@ -118,16 +118,20 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
     }
   }
 
-  // Try to load existing wallet on mount
+  // Try to load existing wallet on mount or when localStorage changes
   useEffect(() => {
     const existingUserId = localStorage.getItem('cdp_user_id')
-    if (existingUserId) {
+    const existingAddress = localStorage.getItem('cdp_wallet_address')
+
+    // If we have wallet data in localStorage but no walletInfo state, load it
+    if (existingUserId && existingAddress && !walletInfo) {
+      console.log('📦 Detected existing CDP wallet in localStorage:', existingAddress)
       loadExistingWallet()
     }
-  }, [])
+  }, [walletInfo]) // Re-run when walletInfo changes
 
   // Check if wallet exists in localStorage to show appropriate button text
-  const hasExistingWallet = localStorage.getItem('cdp_user_id') && localStorage.getItem('cdp_wallet_address')
+  const hasExistingWallet = !!localStorage.getItem('cdp_user_id') && !!localStorage.getItem('cdp_wallet_address')
 
   return (
     <div className="embedded-wallet-container w-full">

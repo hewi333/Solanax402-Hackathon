@@ -59,21 +59,21 @@ function App() {
   // Get specific wallet name for display
   const getWalletDisplayName = () => {
     if (activeWalletType === 'embedded') {
-      return '🏦 Coinbase CDP Wallet'
+      return 'Coinbase CDP Wallet'
     } else if (activeWalletType === 'external' && wallet?.adapter?.name) {
       const walletName = wallet.adapter.name
-      // Add emoji based on wallet type
+      // Return wallet name without emoji for cleaner look
       if (walletName.toLowerCase().includes('phantom')) {
-        return '👻 Phantom Wallet'
+        return 'Phantom'
       } else if (walletName.toLowerCase().includes('coinbase')) {
-        return '💼 Coinbase Wallet'
+        return 'Coinbase Wallet'
       } else if (walletName.toLowerCase().includes('solflare')) {
-        return '☀️ Solflare Wallet'
+        return 'Solflare'
       } else {
-        return `🔗 ${walletName}`
+        return walletName
       }
     } else if (activeWalletType === 'external') {
-      return '🔗 External Wallet'
+      return 'Wallet Connected'
     }
     return null
   }
@@ -251,11 +251,12 @@ function App() {
 
     try {
       if (activeWalletType === 'embedded') {
-        // Clear embedded wallet
-        localStorage.removeItem('cdp_user_id')
-        localStorage.removeItem('cdp_wallet_address')
+        // IMPORTANT: Don't clear localStorage - keep CDP wallet data for future reconnection
+        // Only clear the active session state
+        // User can explicitly delete wallet if they want a new one
         setEmbeddedWallet(null)
         setIsEmbeddedWallet(false)
+        console.log('🔌 Disconnecting CDP wallet (localStorage preserved for reconnection)')
       } else if (activeWalletType === 'external') {
         // Properly disconnect external wallet (Phantom/Coinbase)
         if (disconnect) {
@@ -267,7 +268,7 @@ function App() {
         }
       }
 
-      // Clear session storage
+      // Clear session storage (determines which wallet is currently active)
       sessionStorage.removeItem('active_wallet_type')
 
       // Reset wallet state
@@ -507,15 +508,18 @@ function App() {
                   <div className="hidden md:block h-8 w-px bg-border" />
 
                   <div className="hidden md:block">
-                    <EmbeddedWalletButton onWalletCreated={(wallet) => {
-                      const userId = localStorage.getItem('cdp_user_id')
-                      if (userId && wallet.address) {
-                        setEmbeddedWallet({ userId, address: wallet.address })
-                        setIsEmbeddedWallet(true)
-                        setActiveWalletType('embedded')
-                        getBalance()
-                      }
-                    }} />
+                    <EmbeddedWalletButton
+                      key={embeddedWallet?.userId || 'no-wallet'}
+                      onWalletCreated={(wallet) => {
+                        const userId = localStorage.getItem('cdp_user_id')
+                        if (userId && wallet.address) {
+                          setEmbeddedWallet({ userId, address: wallet.address })
+                          setIsEmbeddedWallet(true)
+                          setActiveWalletType('embedded')
+                          getBalance()
+                        }
+                      }}
+                    />
                   </div>
                 </>
               )}
@@ -663,15 +667,18 @@ function App() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <EmbeddedWalletButton onWalletCreated={(wallet) => {
-                    const userId = localStorage.getItem('cdp_user_id')
-                    if (userId && wallet.address) {
-                      setEmbeddedWallet({ userId, address: wallet.address })
-                      setIsEmbeddedWallet(true)
-                      setActiveWalletType('embedded')
-                      getBalance()
-                    }
-                  }} />
+                  <EmbeddedWalletButton
+                    key={embeddedWallet?.userId || 'no-wallet'}
+                    onWalletCreated={(wallet) => {
+                      const userId = localStorage.getItem('cdp_user_id')
+                      if (userId && wallet.address) {
+                        setEmbeddedWallet({ userId, address: wallet.address })
+                        setIsEmbeddedWallet(true)
+                        setActiveWalletType('embedded')
+                        getBalance()
+                      }
+                    }}
+                  />
                   <p className="text-xs text-muted-foreground mt-3">Perfect for first-time users</p>
                 </CardContent>
               </Card>
