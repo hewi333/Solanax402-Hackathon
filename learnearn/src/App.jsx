@@ -471,7 +471,7 @@ function App() {
                 <GraduationCap className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
               <h1 className="text-base md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent truncate">
-                Solana x402 Learn & Earn
+                learnearn.xyz
               </h1>
             </div>
 
