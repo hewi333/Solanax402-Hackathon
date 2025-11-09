@@ -837,7 +837,7 @@ function App() {
                         className="w-full md:w-auto"
                       >
                         <Droplet className="w-4 h-4 mr-2" />
-                        {isRequestingFaucet ? 'Requesting...' : 'Get 1 SOL from Faucet'}
+                        {isRequestingFaucet ? 'Requesting...' : 'Get 0.1 SOL'}
                       </Button>
                     </div>
                   ) : (
