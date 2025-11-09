@@ -442,26 +442,6 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Educational Project Banner */}
-      <div className="bg-solana-purple/10 border-b border-solana-purple/20">
-        <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <Info className="w-4 h-4 text-solana-purple" />
-            <span className="text-muted-foreground">
-              <strong className="text-solana-purple">Educational Project</strong> - Solana x402 Hackathon submission using Devnet (test network)
-              <a
-                href="https://github.com/heyhewi/Solanax402-Hackathon"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-2 text-solana-green hover:underline"
-              >
-                View Source Code
-              </a>
-            </span>
-          </div>
-        </div>
-      </div>
-
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
@@ -941,29 +921,47 @@ function App() {
       </main>
 
       <footer className="border-t bg-card py-6 mt-12">
-        <div className="container mx-auto px-4 text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Built for Solana x402 Hackathon
-          </p>
-          <p className="text-sm text-muted-foreground space-x-2">
-            <a
-              href="https://solana.com/x402/hackathon"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-solana-purple transition-colors"
-            >
-              About Hackathon
-            </a>
-            <span>•</span>
-            <a
-              href="https://github.com/heyhewi/Solanax402-Hackathon"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-solana-green transition-colors"
-            >
-              GitHub
-            </a>
-          </p>
+        <div className="container mx-auto px-4 text-center space-y-4">
+          {/* Educational Project Banner */}
+          <div className="flex items-center justify-center gap-2 text-sm pb-2 border-b border-border/50">
+            <Info className="w-4 h-4 text-solana-purple" />
+            <span className="text-muted-foreground">
+              <strong className="text-solana-purple">Educational Project</strong> - Solana x402 Hackathon submission using Devnet (test network)
+              <a
+                href="https://github.com/heyhewi/Solanax402-Hackathon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-2 text-solana-green hover:underline"
+              >
+                View Source Code
+              </a>
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Built for Solana x402 Hackathon
+            </p>
+            <p className="text-sm text-muted-foreground space-x-2">
+              <a
+                href="https://solana.com/x402/hackathon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-solana-purple transition-colors"
+              >
+                About Hackathon
+              </a>
+              <span>•</span>
+              <a
+                href="https://github.com/heyhewi/Solanax402-Hackathon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-solana-green transition-colors"
+              >
+                GitHub
+              </a>
+            </p>
+          </div>
         </div>
       </footer>
 
