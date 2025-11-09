@@ -221,6 +221,13 @@ app.post('/api/faucet', async (req, res) => {
       })
     }
 
+    // Check if treasury wallet is configured
+    if (!treasuryWallet) {
+      return res.status(500).json({
+        error: 'Faucet not available. Treasury wallet not configured.'
+      })
+    }
+
     // Validate wallet address format
     let publicKey
     try {
@@ -231,46 +238,60 @@ app.post('/api/faucet', async (req, res) => {
       })
     }
 
-    // Rate limiting: 1 airdrop per wallet per hour
+    // Rate limiting: 1 airdrop per wallet per 10 minutes (reduced from 1 hour)
     const now = Date.now()
     const lastRequest = faucetRateLimits.get(walletAddress)
-    const ONE_HOUR = 60 * 60 * 1000
+    const TEN_MINUTES = 10 * 60 * 1000
 
-    if (lastRequest && (now - lastRequest) < ONE_HOUR) {
-      const timeLeft = Math.ceil((ONE_HOUR - (now - lastRequest)) / 1000 / 60)
+    if (lastRequest && (now - lastRequest) < TEN_MINUTES) {
+      const timeLeft = Math.ceil((TEN_MINUTES - (now - lastRequest)) / 1000 / 60)
       return res.status(429).json({
-        error: `Rate limit exceeded. Please try again in ${timeLeft} minutes.`
+        error: `Rate limit exceeded. Please try again in ${timeLeft} minute${timeLeft !== 1 ? 's' : ''}.`
       })
     }
 
-    // Request airdrop from Solana devnet
-    console.log(`🚰 Requesting airdrop for ${walletAddress}`)
-    const airdropAmount = 1 * LAMPORTS_PER_SOL // 1 SOL
+    // Send SOL from treasury wallet (0.1 SOL - enough for testing)
+    console.log(`🚰 Sending 0.1 SOL from treasury to ${walletAddress}`)
+    const airdropAmount = 0.1 * LAMPORTS_PER_SOL
 
-    const signature = await connection.requestAirdrop(publicKey, airdropAmount)
+    // Create transfer transaction
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: treasuryWallet.publicKey,
+        toPubkey: publicKey,
+        lamports: Math.floor(airdropAmount),
+      })
+    )
 
-    // Wait for confirmation
-    await connection.confirmTransaction(signature, 'confirmed')
+    // Send and confirm transaction
+    const signature = await sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [treasuryWallet],
+      {
+        commitment: 'confirmed'
+      }
+    )
 
     // Update rate limit
     faucetRateLimits.set(walletAddress, now)
 
-    console.log(`✅ Airdrop successful: ${signature}`)
+    console.log(`✅ Faucet airdrop successful: ${signature}`)
 
     res.json({
       success: true,
       signature,
-      amount: 1.0,
-      message: 'Successfully airdropped 1 SOL to your wallet!'
+      amount: 0.1,
+      message: 'Successfully airdropped 0.1 SOL to your wallet!'
     })
 
   } catch (error) {
     console.error('Faucet error:', error)
 
     // Handle specific errors
-    if (error.message?.includes('airdrop request failed')) {
+    if (error.message?.includes('insufficient funds')) {
       return res.status(503).json({
-        error: 'Devnet faucet is currently unavailable. Please try again in a moment.'
+        error: 'Treasury wallet has insufficient funds. Please contact support.'
       })
     }
 
