@@ -739,31 +739,24 @@ function App() {
             {/* Hero Section */}
             <div className="text-center space-y-8 mb-16">
               <div className="space-y-6">
-                {/* ASCII Art Header */}
-                <div className="mb-6">
-                  <pre className="text-xs md:text-sm font-mono text-solana-purple/50 leading-tight">
-{`╔════════════════════════════════════════════╗
-║                                            ║
-║   LEARN → EARN → REPEAT                    ║
-║                                            ║
-╚════════════════════════════════════════════╝`}
-                  </pre>
-                </div>
-
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight font-mono">
                   <span className="bg-gradient-to-r from-solana-purple via-purple-400 to-solana-green bg-clip-text text-transparent">
-                    [ Learn AI Agents ]
+                    Learn AI Agents
                   </span>
                   <br />
                   <span className="text-solana-green">
-                    [ Earn SOL ]
+                    Earn SOL
                   </span>
                 </h2>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-mono">
-                  <span className="text-solana-purple">&gt;</span> Answer 3 questions.
-                  <span className="text-solana-green"> &gt;</span> Earn back your deposit.
-                  <span className="text-solana-purple"> &gt;</span> Simple.
-                </p>
+
+                {/* Command-line styled subheading */}
+                <div className="text-base md:text-lg max-w-3xl mx-auto">
+                  <pre className="font-mono text-left inline-block text-sm md:text-base leading-relaxed">
+<span className="text-solana-green">$</span> <span className="text-gray-400">answer</span> <span className="text-solana-purple">3_questions</span>
+<span className="text-solana-green">$</span> <span className="text-gray-400">earn_back</span> <span className="text-solana-purple">deposit</span>
+<span className="text-solana-green">$</span> <span className="text-gray-400">keep_it</span> <span className="text-solana-purple">simple</span>
+                  </pre>
+                </div>
               </div>
 
               {/* Value Props - Static info pills */}
@@ -797,21 +790,13 @@ function App() {
               </div>
             </div>
 
-            {/* Subtle recommendation badge */}
-            <div className="text-center mb-6">
-              <Badge variant="secondary" className="font-mono text-xs px-3 py-1">
-                <Sparkles className="w-3 h-3 mr-1.5 inline text-solana-green" />
-                New to crypto? Try Embedded Wallet (easier setup)
-              </Badge>
-            </div>
-
             {/* Wallet Connection Cards - Seamless design */}
             <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
               {/* Embedded Wallet - Emphasized */}
               <button
                 onClick={() => {
                   // Trigger the embedded wallet button click
-                  document.querySelector('[data-embedded-wallet-button]')?.click()
+                  document.querySelector('.embedded-wallet-button')?.click()
                 }}
                 className="group relative p-8 rounded-2xl border border-solana-green/30 bg-gradient-to-br from-solana-green/5 to-transparent hover:from-solana-green/10 transition-all duration-300 text-left overflow-hidden"
               >
@@ -829,6 +814,10 @@ function App() {
                   <h3 className="text-xl font-bold mb-2">Embedded Wallet</h3>
                   <p className="text-sm text-gray-400 mb-4 leading-relaxed">
                     Email sign-in • No extension needed • Mobile-friendly
+                  </p>
+
+                  <p className="text-xs text-gray-500 mb-4 font-mono">
+                    Powered by Coinbase Developer Platform
                   </p>
 
                   <div className="flex items-center text-solana-green text-sm font-mono group-hover:translate-x-1 transition-transform">
