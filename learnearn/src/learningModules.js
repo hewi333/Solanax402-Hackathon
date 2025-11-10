@@ -65,18 +65,20 @@ No human reviews your answers - the AI does it all!`,
 3. If you pass, the AI sends 0.011 SOL back to your wallet
 4. Complete all 3 modules to earn back your full 0.033 SOL!
 
-This demonstrates AI agents + payments + Solana all working together.`,
+This demonstrates AI agents + payments + Solana all working together.
 
-    question: "How much SOL did you pay to start, and how much do you earn per module?",
+The key innovation: The AI agent has autonomous control over the wallet that holds your funds. It can make payment decisions without human approval based on evaluating your answers.`,
 
-    evaluationKeywords: ["0.033", "033", ".033", "0.011", "011", ".011", "paid", "earn", "sol", "point zero three", "point zero one"],
+    question: "What makes x402 AI agents different from traditional payment systems?",
+
+    evaluationKeywords: ["autonomous", "automatic", "ai", "decision", "evaluation", "human", "approval", "agent", "control", "wallet", "without", "independent"],
 
     hints: [
-      "Check the lesson content above...",
-      "You paid something at the start and earn something per module..."
+      "Think about who or what is making the payment decisions...",
+      "Does a human need to approve each payment, or does the AI decide?"
     ],
 
-    correctAnswerExample: "Paid 0.033 SOL to start, earn 0.011 SOL per module"
+    correctAnswerExample: "AI agents can make autonomous payment decisions without requiring human approval for each transaction"
   }
 ]
 

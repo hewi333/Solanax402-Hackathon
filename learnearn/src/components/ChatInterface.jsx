@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Progress } from './ui/progress'
 import { Badge } from './ui/badge'
-import { ChevronRight, CheckCircle2, Lightbulb, Trophy, Play, Home } from 'lucide-react'
+import { ChevronRight, CheckCircle2, Lightbulb, Trophy, Play, Home, Github, Code2 } from 'lucide-react'
 import { cn } from '../lib/utils'
 
 export default function ChatInterface({ onModuleCompleted, onSessionComplete, onReturnHome, walletAddress, isEmbeddedWallet }) {
@@ -23,6 +23,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
   const [currentTxSignature, setCurrentTxSignature] = useState(null)
   const [aiFeedback, setAiFeedback] = useState('')
   const [evaluationMethod, setEvaluationMethod] = useState('') // 'ai' or 'fallback'
+  const [showTechStack, setShowTechStack] = useState(false)
   const inputRef = useRef(null)
 
   const INITIAL_DEPOSIT = 0.033  // 3 modules x 0.011 SOL each
@@ -394,7 +395,60 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
             </pre>
           </div>
 
+          {/* New: Tech Stack & GitHub CTAs */}
           <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => window.open('https://github.com/hewi333/Solanax402-Hackathon', '_blank')}
+                variant="outline"
+                size="lg"
+                className="border-solana-purple/50 hover:bg-solana-purple/10 hover:border-solana-purple transition-colors"
+              >
+                <Github className="w-4 h-4 mr-2" />
+                View Source
+              </Button>
+
+              <Button
+                onClick={() => setShowTechStack(!showTechStack)}
+                variant="outline"
+                size="lg"
+                className="border-solana-green/50 hover:bg-solana-green/10 hover:border-solana-green transition-colors"
+              >
+                <Code2 className="w-4 h-4 mr-2" />
+                Tech Stack
+              </Button>
+            </div>
+
+            {showTechStack && (
+              <div className="p-6 rounded-lg bg-gradient-to-r from-solana-purple/10 to-solana-green/10 border border-white/10 text-left">
+                <p className="text-sm text-gray-300 mb-3 font-mono">
+                  <span className="text-solana-purple">[</span> Built with <span className="text-solana-green">]</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { name: 'x402', desc: 'Payment Protocol' },
+                    { name: 'Solana', desc: 'Blockchain' },
+                    { name: 'Gradient Parallax', desc: 'AI Agent Platform' },
+                    { name: 'gpt-oss-120b', desc: 'Open Source Model' },
+                    { name: 'Coinbase CDP', desc: 'Embedded Wallets' },
+                    { name: 'Phantom', desc: 'Browser Wallet' },
+                    { name: 'Vercel', desc: 'Frontend Hosting' },
+                    { name: 'Railway', desc: 'Backend Server' },
+                    { name: 'Claude Code', desc: 'AI Coding Assistant' }
+                  ].map(tech => (
+                    <div key={tech.name} className="group">
+                      <Badge variant="secondary" className="font-mono text-xs hover:bg-white/20 transition-colors cursor-default">
+                        {tech.name}
+                      </Badge>
+                      <span className="hidden group-hover:inline text-xs text-gray-400 ml-1">
+                        {tech.desc}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Button
               onClick={() => {
                 if (onSessionComplete) onSessionComplete()
@@ -608,22 +662,25 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                   onClick={handleSubmitAnswer}
                   disabled={isLoading || !inputMessage.trim() || feedbackMessage === 'correct'}
                   variant="solana"
-                  className="flex-1"
+                  className="flex-1 relative overflow-hidden"
                 >
                   {isLoading ? (
-                    <>
+                    <span className="flex items-center justify-center">
                       <img
                         src="/gradient-icon.svg"
                         alt=""
-                        className="inline-block w-4 h-4 mr-2 opacity-90"
+                        className="inline-block w-4 h-4 mr-2 animate-pulse"
+                        style={{
+                          filter: 'drop-shadow(0 0 8px rgba(153, 69, 255, 0.8))'
+                        }}
                       />
-                      <span className="mr-2">AI Evaluating</span>
+                      <span className="mr-2 font-semibold">Gradient Parallax Evaluating</span>
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                       </div>
-                    </>
+                    </span>
                   ) : (
                     <>
                       <img
@@ -637,10 +694,22 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                 </Button>
               </div>
 
-              <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                <img src="/gradient-icon.svg" alt="" className="inline w-4 h-4 opacity-60" />
-                Powered by Gradient Cloud - AI evaluates and sends rewards automatically
-              </p>
+              <div className="flex flex-col items-center gap-2 pt-2">
+                <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/10 to-blue-600/10 border border-purple-400/20">
+                  <img
+                    src="/gradient-icon.svg"
+                    alt=""
+                    className="inline w-5 h-5"
+                    style={{
+                      filter: 'drop-shadow(0 0 4px rgba(153, 69, 255, 0.5))'
+                    }}
+                  />
+                  <div className="text-sm text-center">
+                    <p className="font-semibold text-white">Powered by Gradient Parallax</p>
+                    <p className="text-xs text-gray-400 font-mono">gpt-oss-120b • AI Agent evaluates & rewards</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
