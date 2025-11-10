@@ -48,13 +48,30 @@ function App() {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
   // Single source of truth for wallet connection and address
-  // Use activeWalletType as the primary indicator
+  // Use activeWalletType as the primary indicator with defensive fallback
   const isWalletConnected = activeWalletType !== null
-  const currentWalletAddress = activeWalletType === 'external'
-    ? publicKey?.toBase58()
-    : activeWalletType === 'embedded'
-    ? embeddedWallet?.address
-    : null
+  const currentWalletAddress = (() => {
+    // Primary: Use activeWalletType to determine address
+    if (activeWalletType === 'external') {
+      return publicKey?.toBase58()
+    }
+    if (activeWalletType === 'embedded') {
+      return embeddedWallet?.address
+    }
+
+    // DEFENSIVE FALLBACK: If activeWalletType not set yet but we have wallet data
+    // This handles edge cases during state initialization
+    if (embeddedWallet?.address && !connected) {
+      console.log('⚠️ Using embedded wallet address despite activeWalletType not set (initialization race condition)')
+      return embeddedWallet.address
+    }
+    if (publicKey && connected) {
+      console.log('⚠️ Using external wallet despite activeWalletType not set (initialization race condition)')
+      return publicKey.toBase58()
+    }
+
+    return null
+  })()
 
   // Get specific wallet name for display
   const getWalletDisplayName = () => {
@@ -141,21 +158,38 @@ function App() {
     const cdpAddress = localStorage.getItem('cdp_wallet_address')
     const sessionWalletType = sessionStorage.getItem('active_wallet_type')
 
+    console.log('🔄 Initial wallet loading from localStorage:', {
+      hasCdpUserId: !!cdpUserId,
+      hasCdpAddress: !!cdpAddress,
+      sessionWalletType,
+      timestamp: new Date().toISOString()
+    })
+
     // Validate that both values exist and address looks valid
     if (cdpUserId && cdpAddress) {
       try {
         setWalletConnectionState('reconnecting')
         // Validate address format
         new PublicKey(cdpAddress)
+
+        console.log('✅ CDP wallet validated, setting state synchronously')
+
+        // CRITICAL FIX: Set all wallet state synchronously in batch to avoid race conditions
+        // This ensures activeWalletType is set at the same time as embeddedWallet
         setEmbeddedWallet({ userId: cdpUserId, address: cdpAddress })
         setIsEmbeddedWallet(true)
 
-        // Restore session state if available
+        // CRITICAL FIX: Set activeWalletType immediately if this was the active wallet
+        // This prevents race conditions where wallet is loaded but not "connected"
         if (sessionWalletType === 'embedded') {
           setActiveWalletType('embedded')
+          setWalletConnectionState('connected')
+          console.log('✅ CDP wallet restored and set as active immediately')
+        } else {
+          setWalletConnectionState('disconnected')
+          console.log('ℹ️ CDP wallet loaded but not set as active (user previously disconnected)')
         }
 
-        setWalletConnectionState('disconnected')
       } catch (error) {
         console.error('❌ Invalid embedded wallet address in localStorage:', error)
         setWalletConnectionState('error')
@@ -168,6 +202,8 @@ function App() {
         localStorage.removeItem('cdp_wallet_address')
         sessionStorage.removeItem('active_wallet_type')
       }
+    } else {
+      console.log('ℹ️ No CDP wallet found in localStorage')
     }
   }, [])
 
@@ -176,33 +212,48 @@ function App() {
   useEffect(() => {
     // Prevent wallet detection while switching to avoid race conditions
     if (isSwitchingWallet) {
+      console.log('⏸️ Wallet detection paused (switching in progress)')
       return
     }
+
+    console.log('🔍 Wallet detection check:', {
+      connected,
+      hasPublicKey: !!publicKey,
+      isEmbeddedWallet,
+      hasEmbeddedWallet: !!embeddedWallet,
+      activeWalletType,
+      currentAddress: currentWalletAddress
+    })
 
     // Priority 1: External wallet (Phantom/Coinbase) - user clicked WalletMultiButton
     if (connected && publicKey) {
       if (activeWalletType !== 'external') {
+        console.log('🔗 Setting external wallet as active')
         setWalletConnectionState('connected')
         setActiveWalletType('external')
         setIsEmbeddedWallet(false) // Disable embedded when external connects
         setWalletError(null) // Clear any errors
         // Persist to session storage
         sessionStorage.setItem('active_wallet_type', 'external')
+        console.log('✅ External wallet connected:', publicKey.toBase58())
       }
     }
     // Priority 2: External wallet disconnected
     else if (!connected && activeWalletType === 'external') {
+      console.log('🔌 External wallet disconnected')
       setWalletConnectionState('disconnected')
       setActiveWalletType(null)
       sessionStorage.removeItem('active_wallet_type')
     }
     // Priority 3: Embedded wallet (only if no external wallet)
     else if (isEmbeddedWallet && embeddedWallet && !connected && !activeWalletType) {
+      console.log('🔗 Setting embedded wallet as active (delayed activation)')
       setWalletConnectionState('connected')
       setActiveWalletType('embedded')
       setWalletError(null) // Clear any errors
       // Persist to session storage
       sessionStorage.setItem('active_wallet_type', 'embedded')
+      console.log('✅ Embedded wallet connected (delayed):', embeddedWallet.address)
     }
   }, [connected, publicKey, isEmbeddedWallet, embeddedWallet, activeWalletType, isSwitchingWallet])
 
@@ -244,6 +295,41 @@ function App() {
       isMounted = false
     }
   }, [isWalletConnected, hasPaid, hasClickedStart])
+
+  // Development debugging helper - exposes wallet state to console
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      window._debugWalletState = () => {
+        const state = {
+          // Wallet state
+          embeddedWallet,
+          isEmbeddedWallet,
+          activeWalletType,
+          connected,
+          publicKey: publicKey?.toBase58(),
+          // Computed values
+          isWalletConnected,
+          currentWalletAddress,
+          balance,
+          hasPaid,
+          // Storage
+          localStorage: {
+            cdp_user_id: localStorage.getItem('cdp_user_id'),
+            cdp_wallet_address: localStorage.getItem('cdp_wallet_address')
+          },
+          sessionStorage: {
+            active_wallet_type: sessionStorage.getItem('active_wallet_type')
+          },
+          // Connection state
+          walletConnectionState,
+          walletError
+        }
+        console.table(state)
+        return state
+      }
+      console.log('💡 Debug wallet state: window._debugWalletState()')
+    }
+  }, [embeddedWallet, isEmbeddedWallet, activeWalletType, connected, publicKey, isWalletConnected, currentWalletAddress, balance, hasPaid, walletConnectionState, walletError])
 
   // Disconnect/switch wallet function - clears active wallet and resets session
   const handleDisconnectWallet = async () => {
