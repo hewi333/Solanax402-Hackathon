@@ -8,7 +8,7 @@ import { Badge } from './ui/badge'
 export default function TechBanner() {
   const technologies = [
     {
-      name: 'Solana x402',
+      name: 'x402',
       subtitle: 'Payment Protocol',
       ascii: `
   ╔═══════╗
@@ -20,18 +20,18 @@ export default function TechBanner() {
       name: 'Solana',
       subtitle: 'Blockchain',
       ascii: `
-    ◢◤
-  ◢████◤
-  ████
+    ◢◣
+  ◢████◣
+  ██████
       `
     },
     {
       name: 'Gradient Parallax',
-      subtitle: 'AI Agent Platform',
+      subtitle: 'Distributed AI Inference',
       ascii: `
   ▲ ▲ ▲
   ▼ ▼ ▼
-  AI
+   AI
       `
     },
     {
@@ -47,7 +47,7 @@ export default function TechBanner() {
       subtitle: 'Embedded Wallets',
       ascii: `
   ┌───┐
-  │ C │
+  │ ⓒ │
   └───┘
       `
     },
@@ -55,24 +55,35 @@ export default function TechBanner() {
       name: 'Phantom',
       subtitle: 'Browser Wallet',
       ascii: `
-  👻
-  PWA
+   👻
+  PWLT
       `
     },
     {
       name: 'Vercel',
       subtitle: 'Frontend Hosting',
       ascii: `
-  ▲
-  Deploy
+   ▲
+  ───
+  FE
       `
     },
     {
       name: 'Railway',
-      subtitle: 'Backend API',
+      subtitle: 'Backend Server & APIs',
       ascii: `
   ━━━━
+  ┃  ┃
   API
+      `
+    },
+    {
+      name: 'Claude Code',
+      subtitle: 'AI Coding Assistant',
+      ascii: `
+  ╔══╗
+  ║AI║
+  ╚══╝
       `
     }
   ]

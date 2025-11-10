@@ -426,13 +426,15 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { name: 'Solana x402', desc: 'Payment Protocol' },
+                    { name: 'x402', desc: 'Payment Protocol' },
+                    { name: 'Solana', desc: 'Blockchain' },
                     { name: 'Gradient Parallax', desc: 'AI Agent Platform' },
                     { name: 'gpt-oss-120b', desc: 'Open Source Model' },
                     { name: 'Coinbase CDP', desc: 'Embedded Wallets' },
                     { name: 'Phantom', desc: 'Browser Wallet' },
                     { name: 'Vercel', desc: 'Frontend Hosting' },
-                    { name: 'Railway', desc: 'Backend API' }
+                    { name: 'Railway', desc: 'Backend Server' },
+                    { name: 'Claude Code', desc: 'AI Coding Assistant' }
                   ].map(tech => (
                     <div key={tech.name} className="group">
                       <Badge variant="secondary" className="font-mono text-xs hover:bg-white/20 transition-colors cursor-default">

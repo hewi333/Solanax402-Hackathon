@@ -739,15 +739,30 @@ function App() {
             {/* Hero Section */}
             <div className="text-center space-y-8 mb-16">
               <div className="space-y-6">
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                {/* ASCII Art Header */}
+                <div className="mb-6">
+                  <pre className="text-xs md:text-sm font-mono text-solana-purple/50 leading-tight">
+{`╔════════════════════════════════════════════╗
+║                                            ║
+║   LEARN → EARN → REPEAT                    ║
+║                                            ║
+╚════════════════════════════════════════════╝`}
+                  </pre>
+                </div>
+
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight font-mono">
                   <span className="bg-gradient-to-r from-solana-purple via-purple-400 to-solana-green bg-clip-text text-transparent">
-                    Learn AI Agents
+                    [ Learn AI Agents ]
                   </span>
                   <br />
-                  Earn SOL
+                  <span className="text-solana-green">
+                    [ Earn SOL ]
+                  </span>
                 </h2>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  Answer 3 questions. Earn back your deposit. Simple.
+                <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-mono">
+                  <span className="text-solana-purple">&gt;</span> Answer 3 questions.
+                  <span className="text-solana-green"> &gt;</span> Earn back your deposit.
+                  <span className="text-solana-purple"> &gt;</span> Simple.
                 </p>
               </div>
 
