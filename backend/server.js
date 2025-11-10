@@ -20,7 +20,7 @@ const openai = new OpenAI({
 // Gradient Cloud API Configuration
 const GRADIENT_API_KEY = process.env.GRADIENT_API_KEY
 const GRADIENT_API_ENDPOINT = process.env.GRADIENT_API_ENDPOINT || 'https://apis.gradient.network/api/v1/ai'
-const GRADIENT_MODEL = process.env.GRADIENT_MODEL || 'Qwen3-235B-A22B-Instruct-2507-FP8'
+const GRADIENT_MODEL = process.env.GRADIENT_MODEL || 'openai/gpt-oss-120b'
 const USE_GRADIENT_PRIMARY = process.env.USE_GRADIENT_PRIMARY !== 'false' // Default: enabled
 
 console.log('\n🔧 AI Provider Configuration:')
