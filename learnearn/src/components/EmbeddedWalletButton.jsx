@@ -141,19 +141,19 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
   const hasExistingWallet = !!localStorage.getItem('cdp_user_id') && !!localStorage.getItem('cdp_wallet_address')
 
   return (
-    <div className="embedded-wallet-container w-full">
+    <div className="embedded-wallet-container w-full md:max-w-none max-w-[280px] mx-auto">
       {!walletInfo ? (
         <button
           onClick={createEmbeddedWallet}
           disabled={loading}
-          className="wallet-button embedded-wallet-button group relative w-full"
+          className="wallet-button embedded-wallet-button group relative w-full text-sm md:text-base"
           style={{
             backgroundColor: '#14F195',
             color: '#0a0a0a',
-            padding: '10px 20px',
+            padding: window.innerWidth < 768 ? '8px 16px' : '10px 20px',
             borderRadius: '8px',
             border: '2px solid #14F195',
-            fontSize: '15px',
+            fontSize: window.innerWidth < 768 ? '14px' : '15px',
             fontWeight: '700',
             cursor: loading ? 'not-allowed' : 'pointer',
             opacity: loading ? 0.7 : 1,
@@ -199,13 +199,13 @@ export default function EmbeddedWalletButton({ onWalletCreated }) {
           backgroundColor: 'rgba(20, 241, 149, 0.1)',
           border: '2px solid rgba(20, 241, 149, 0.3)',
           borderRadius: '8px',
-          padding: '12px 16px'
+          padding: window.innerWidth < 768 ? '10px 12px' : '12px 16px'
         }}>
-          <div style={{ fontWeight: '600', color: '#14F195', marginBottom: '4px', fontSize: '14px' }}>
+          <div style={{ fontWeight: '600', color: '#14F195', marginBottom: '4px', fontSize: window.innerWidth < 768 ? '13px' : '14px' }}>
             Coinbase Wallet Connected
           </div>
-          <div style={{ fontSize: '12px', color: '#888', fontFamily: 'monospace' }}>
-            {walletInfo.address.slice(0, 8)}...{walletInfo.address.slice(-8)}
+          <div style={{ fontSize: window.innerWidth < 768 ? '11px' : '12px', color: '#888', fontFamily: 'monospace' }}>
+            {walletInfo.address.slice(0, window.innerWidth < 768 ? 6 : 8)}...{walletInfo.address.slice(window.innerWidth < 768 ? -6 : -8)}
           </div>
         </div>
       )}

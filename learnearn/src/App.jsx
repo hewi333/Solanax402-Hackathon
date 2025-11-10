@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction, PublicKey } from '@solana/web3.js'
 import ChatInterface from './components/ChatInterface'
 import RewardsModal from './components/RewardsModal'
 import EmbeddedWalletButton from './components/EmbeddedWalletButton'
+import TechBanner from './components/TechBanner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
-import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play } from 'lucide-react'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play, ChevronRight } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction, wallet, disconnect } = useWallet()
@@ -95,16 +96,19 @@ function App() {
     return null
   }
 
-  const getBalance = async () => {
+  // Auto-refreshing balance function with useCallback
+  const getBalance = useCallback(async () => {
     try {
       if (publicKey) {
         const bal = await connection.getBalance(publicKey)
         setBalance(bal / LAMPORTS_PER_SOL)
+        console.log('💰 Balance refreshed (external wallet):', bal / LAMPORTS_PER_SOL)
       } else if (embeddedWallet?.address) {
         // Get balance for embedded wallet
         const embeddedPublicKey = new PublicKey(embeddedWallet.address)
         const bal = await connection.getBalance(embeddedPublicKey)
         setBalance(bal / LAMPORTS_PER_SOL)
+        console.log('💰 Balance refreshed (embedded wallet):', bal / LAMPORTS_PER_SOL)
       }
     } catch (error) {
       console.error('Error fetching balance:', error)
@@ -113,7 +117,7 @@ function App() {
         technical: error.message
       })
     }
-  }
+  }, [publicKey, embeddedWallet, connection])
 
   // X402 Protocol: Verify access and get 402 status if payment required
   const verifyX402Access = async () => {
@@ -493,7 +497,11 @@ function App() {
       console.log('Payment successful:', signature)
       console.log('View on Solana Explorer:', `https://explorer.solana.com/tx/${signature}?cluster=devnet`)
       setHasPaid(true)
-      getBalance()
+
+      // Auto-refresh balance after payment (wait a moment for network propagation)
+      setTimeout(() => {
+        getBalance()
+      }, 1500)
 
       // Show success message with clickable link in console
       alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 3 learning modules to earn it back!\n\nTransaction Hash: ${signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
@@ -531,7 +539,11 @@ function App() {
         console.log('Embedded wallet payment successful:', data.signature)
         console.log('View on Solana Explorer:', `https://explorer.solana.com/tx/${data.signature}?cluster=devnet`)
         setHasPaid(true)
-        getBalance()
+
+        // Auto-refresh balance after payment (wait a moment for network propagation)
+        setTimeout(() => {
+          getBalance()
+        }, 1500)
 
         alert(`Payment successful! ✅\n\nYou paid ${PAYMENT_AMOUNT} SOL to unlock the Solana x402 learning platform.\nComplete 3 learning modules to earn it back!\n\nTransaction Hash: ${data.signature}\n\nView on Solana Explorer:\nhttps://explorer.solana.com/tx/${data.signature}?cluster=devnet\n\n(Check your browser console for a clickable link)`)
       }
@@ -576,7 +588,12 @@ function App() {
     setRewardHistory(prev => [rewardEntry, ...prev])
     setCurrentReward(moduleResult)
     setShowRewardModal(true)
-    console.log(`Would send ${moduleResult.reward} SOL for completing: ${moduleResult.module}`)
+    console.log(`Reward sent: ${moduleResult.reward} SOL for completing: ${moduleResult.module}`)
+
+    // Auto-refresh balance after reward (wait a moment for network propagation)
+    setTimeout(() => {
+      getBalance()
+    }, 2000)
   }
 
   return (
@@ -584,14 +601,24 @@ function App() {
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo - Simplified for mobile */}
+            {/* Logo - ASCII art styling */}
             <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-solana-purple to-solana-green flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="w-4 h-4 md:w-6 md:h-6 text-white" />
+              {/* ASCII bracket decoration - hidden on mobile */}
+              <span className="hidden md:inline text-xl font-mono text-solana-purple">
+                [
+              </span>
+
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-solana-green" />
+                <h1 className="text-base md:text-xl font-mono font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent truncate">
+                  learnearn.xyz
+                </h1>
               </div>
-              <h1 className="text-base md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent truncate">
-                learnearn.xyz
-              </h1>
+
+              {/* ASCII bracket decoration - hidden on mobile */}
+              <span className="hidden md:inline text-xl font-mono text-solana-green">
+                ]
+              </span>
             </div>
 
             {/* Wallet Connection - Responsive layout */}
@@ -755,20 +782,48 @@ function App() {
               </div>
             </div>
 
-            {/* Wallet Connection Cards - Horizontal on desktop, stacked on mobile */}
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {/* Embedded Wallet Card */}
-              <Card className="border-2 border-solana-green/30 hover:border-solana-green/50 transition-all duration-300 hover:shadow-lg hover:shadow-solana-green/10 hover:-translate-y-1">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-solana-green/20 to-green-600/20 flex items-center justify-center mx-auto mb-4 border-2 border-solana-green/30">
-                    <Sparkles className="w-8 h-8 text-solana-green" />
+            {/* Subtle recommendation badge */}
+            <div className="text-center mb-6">
+              <Badge variant="secondary" className="font-mono text-xs px-3 py-1">
+                <Sparkles className="w-3 h-3 mr-1.5 inline text-solana-green" />
+                New to crypto? Try Embedded Wallet (easier setup)
+              </Badge>
+            </div>
+
+            {/* Wallet Connection Cards - Seamless design */}
+            <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+              {/* Embedded Wallet - Emphasized */}
+              <button
+                onClick={() => {
+                  // Trigger the embedded wallet button click
+                  document.querySelector('[data-embedded-wallet-button]')?.click()
+                }}
+                className="group relative p-8 rounded-2xl border border-solana-green/30 bg-gradient-to-br from-solana-green/5 to-transparent hover:from-solana-green/10 transition-all duration-300 text-left overflow-hidden"
+              >
+                {/* Subtle glow effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-solana-green/0 via-solana-green/10 to-solana-green/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <Wallet className="w-8 h-8 text-solana-green" />
+                    <Badge className="bg-solana-green/20 text-solana-green border-solana-green/30 font-mono text-xs">
+                      Recommended
+                    </Badge>
                   </div>
-                  <CardTitle className="text-xl">Embedded Wallet</CardTitle>
-                  <CardDescription className="text-base mt-2">
-                    Create a new wallet instantly with Coinbase CDP - no extension needed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
+
+                  <h3 className="text-xl font-bold mb-2">Embedded Wallet</h3>
+                  <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                    Email sign-in • No extension needed • Mobile-friendly
+                  </p>
+
+                  <div className="flex items-center text-solana-green text-sm font-mono group-hover:translate-x-1 transition-transform">
+                    Get Started
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </div>
+                </div>
+
+                {/* Hidden actual button */}
+                <div className="hidden">
                   <EmbeddedWalletButton
                     key={embeddedWallet?.userId || 'no-wallet'}
                     onWalletCreated={(wallet) => {
@@ -780,37 +835,40 @@ function App() {
                         getBalance()
                       }
                     }}
+                    dataAttribute="embedded-wallet-button"
                   />
-                  <p className="text-xs text-muted-foreground mt-3">Perfect for first-time users</p>
-                </CardContent>
-              </Card>
+                </div>
+              </button>
 
-              {/* Browser Wallet Card */}
-              <Card className="border-2 border-purple-500/30 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500/20 to-purple-600/20 flex items-center justify-center mx-auto mb-4 border-2 border-purple-500/30">
-                    <Wallet className="w-8 h-8 text-purple-400" />
+              {/* Browser Wallet - Standard option */}
+              <button
+                onClick={() => {
+                  // Trigger the wallet multi button
+                  document.querySelector('.wallet-adapter-button')?.click()
+                }}
+                className="group relative p-8 rounded-2xl border border-solana-purple/30 bg-gradient-to-br from-solana-purple/5 to-transparent hover:from-solana-purple/10 transition-all duration-300 text-left overflow-hidden"
+              >
+                <div className="relative z-10">
+                  <Wallet className="w-8 h-8 text-solana-purple mb-4" />
+
+                  <h3 className="text-xl font-bold mb-2">Browser Wallet</h3>
+                  <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                    Phantom • Coinbase • Solflare • Advanced users
+                  </p>
+
+                  <div className="flex items-center text-solana-purple text-sm font-mono group-hover:translate-x-1 transition-transform">
+                    Connect Wallet
+                    <ChevronRight className="w-4 h-4 ml-1" />
                   </div>
-                  <CardTitle className="text-xl">Browser Wallet</CardTitle>
-                  <CardDescription className="text-base mt-2">
-                    Connect with Phantom, Coinbase Wallet, or other extensions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
-                    <div className="w-5 h-5 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
-                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
-                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
-                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
-                      </svg>
-                    </div>
-                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '15px', fontWeight: '600' }} />
+                </div>
+
+                {/* Hidden actual button */}
+                <div className="hidden">
+                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg">
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0 }} />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-3">Recommended for existing wallet users</p>
-                </CardContent>
-              </Card>
+                </div>
+              </button>
             </div>
           </div>
         ) : (
@@ -1059,47 +1117,43 @@ function App() {
         )}
       </main>
 
-      <footer className="border-t bg-card py-6 mt-12">
-        <div className="container mx-auto px-4 text-center space-y-4">
-          {/* Educational Project Banner */}
-          <div className="flex items-center justify-center gap-2 text-sm pb-2 border-b border-border/50">
-            <Info className="w-4 h-4 text-solana-purple" />
-            <span className="text-muted-foreground">
-              <strong className="text-solana-purple">Educational Project</strong> - Solana x402 Hackathon submission using Devnet (test network)
+      {/* Technology Showcase Banner */}
+      <TechBanner />
+
+      <footer className="border-t border-white/10 bg-black/40 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Left: Disclaimer */}
+            <div className="text-sm text-gray-400 font-mono text-center md:text-left">
+              <span className="text-solana-purple">[ </span>
+              Educational Project
+              <span className="text-solana-green"> ]</span>
+              <span className="mx-2">·</span>
+              Solana x402 DevNet Submission
+            </div>
+
+            {/* Right: Links */}
+            <div className="flex items-center gap-6 text-sm">
               <a
-                href="https://github.com/heyhewi/Solanax402-Hackathon"
+                href="https://github.com/hewi333/Solanax402-Hackathon"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-2 text-solana-green hover:underline"
+                className="flex items-center gap-2 text-gray-400 hover:text-solana-purple transition-colors font-mono"
               >
-                View Source Code
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                </svg>
+                Source Code
               </a>
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Built for Solana x402 Hackathon
-            </p>
-            <p className="text-sm text-muted-foreground space-x-2">
               <a
                 href="https://solana.com/x402/hackathon"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-solana-purple transition-colors"
+                className="text-gray-400 hover:text-solana-green transition-colors font-mono"
               >
-                About Hackathon
+                About x402 Hackathon
               </a>
-              <span>•</span>
-              <a
-                href="https://github.com/heyhewi/Solanax402-Hackathon"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-solana-green transition-colors"
-              >
-                GitHub
-              </a>
-            </p>
+            </div>
           </div>
         </div>
       </footer>
