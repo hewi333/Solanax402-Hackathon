@@ -21,7 +21,6 @@ const openai = new OpenAI({
 const GRADIENT_API_KEY = process.env.GRADIENT_API_KEY
 const GRADIENT_API_ENDPOINT = process.env.GRADIENT_API_ENDPOINT || 'https://apis.gradient.network/api/v1/ai'
 const GRADIENT_MODEL = process.env.GRADIENT_MODEL || 'Qwen3-235B-A22B-Instruct-2507-FP8'
-const GRADIENT_FALLBACK_MODEL = process.env.GRADIENT_FALLBACK_MODEL || 'openai/gpt-oss-120b'
 const USE_GRADIENT_PRIMARY = process.env.USE_GRADIENT_PRIMARY !== 'false' // Default: enabled
 
 console.log('\n🔧 AI Provider Configuration:')
@@ -84,52 +83,7 @@ async function callAIProvider(messages, options = {}) {
 
     } catch (gradientError) {
       console.warn(`⚠️  Gradient Cloud failed: ${gradientError.message}`)
-
-      // If primary model failed, try fallback model before going to OpenAI
-      if (GRADIENT_MODEL !== GRADIENT_FALLBACK_MODEL) {
-        try {
-          console.log(`🟣 Trying Gradient fallback model (${GRADIENT_FALLBACK_MODEL})...`)
-          const startTime = Date.now()
-
-          const response = await fetch(`${GRADIENT_API_ENDPOINT}/chat/completions`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${GRADIENT_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: GRADIENT_FALLBACK_MODEL,
-              messages,
-              temperature,
-              max_tokens,
-              stream: false
-            }),
-            signal: AbortSignal.timeout(10000)
-          })
-
-          if (!response.ok) {
-            throw new Error(`Gradient fallback model error ${response.status}`)
-          }
-
-          const data = await response.json()
-          const latency = Date.now() - startTime
-
-          console.log(`✅ Gradient Cloud fallback model succeeded (${latency}ms)`)
-
-          return {
-            data: {
-              choices: data.choices || [{ message: data.message }],
-              usage: data.usage
-            },
-            provider: 'gradient-fallback',
-            model: GRADIENT_FALLBACK_MODEL,
-            latency
-          }
-        } catch (fallbackError) {
-          console.warn(`⚠️  Gradient fallback model also failed: ${fallbackError.message}`)
-          // Continue to OpenAI
-        }
-      }
+      // Fall through to OpenAI
     }
   }
 
@@ -194,7 +148,7 @@ function getUsageStats() {
     }
   }
 
-  const gradientCount = usageLogs.filter(l => l.provider === 'gradient' || l.provider === 'gradient-fallback').length
+  const gradientCount = usageLogs.filter(l => l.provider === 'gradient').length
   const openaiCount = usageLogs.filter(l => l.provider === 'openai').length
   const avgLatency = usageLogs.reduce((sum, l) => sum + l.latency, 0) / usageLogs.length
 
