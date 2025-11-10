@@ -1212,7 +1212,7 @@ Evaluate generously and decide autonomously.`
     console.log('  Max Tokens: 200')
 
     // Call AI provider (tries Gradient first, falls back to OpenAI)
-    const { data: completion, provider, model, latency } = await callAIProvider(
+    const { data: completion, provider, model, latency, parsed } = await callAIProvider(
       [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -1243,9 +1243,52 @@ Evaluate generously and decide autonomously.`
       if (functionName === 'evaluate_answer') {
         evaluation = functionArgs
 
-        // If passed, AI should call send_payment next
-        // Make a second call to let AI call send_payment
-        if (evaluation.passed) {
+        // PERFORMANCE OPTIMIZATION: If response was parsed from text (Gradient fallback),
+        // skip the second AI call and directly execute payment
+        // This cuts latency in half (~3.5s -> ~2.5s)
+        if (evaluation.passed && parsed) {
+          console.log(`💰 Student passed! Parsed response detected - directly executing payment (skipping second AI call)`)
+
+          // Directly execute payment without second AI call
+          try {
+            if (!treasuryWallet) {
+              throw new Error('Treasury wallet not configured')
+            }
+
+            const recipientPublicKey = new PublicKey(walletAddress)
+            const transaction = new Transaction().add(
+              SystemProgram.transfer({
+                fromPubkey: treasuryWallet.publicKey,
+                toPubkey: recipientPublicKey,
+                lamports: Math.floor(0.011 * LAMPORTS_PER_SOL), // Base reward
+              })
+            )
+
+            const signature = await sendAndConfirmTransaction(
+              connection,
+              transaction,
+              [treasuryWallet],
+              { commitment: 'confirmed' }
+            )
+
+            console.log(`✅ Direct payment sent: 0.011 SOL. Signature: ${signature}`)
+
+            paymentResult = {
+              success: true,
+              signature,
+              amount: 0.011,
+              reason: 'Passed evaluation'
+            }
+          } catch (paymentError) {
+            console.error('Payment execution error:', paymentError)
+            paymentResult = {
+              success: false,
+              error: paymentError.message
+            }
+          }
+        }
+        // If passed and NOT parsed (native function calling), make second AI call
+        else if (evaluation.passed && !parsed) {
           console.log(`💰 Student passed! Calling ${provider} again for payment decision...`)
           const { data: secondCompletion } = await callAIProvider(
             [

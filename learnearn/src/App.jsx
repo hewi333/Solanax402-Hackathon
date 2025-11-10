@@ -296,6 +296,51 @@ function App() {
     }
   }, [isWalletConnected, hasPaid, hasClickedStart])
 
+  // Persist payment state to localStorage keyed by wallet address
+  // This allows users to close the browser and return without losing progress
+  useEffect(() => {
+    if (currentWalletAddress && hasPaid) {
+      const paymentKey = `payment_${currentWalletAddress}`
+      localStorage.setItem(paymentKey, JSON.stringify({
+        paid: true,
+        timestamp: new Date().toISOString(),
+        amount: PAYMENT_AMOUNT
+      }))
+      console.log(`💾 Payment state saved for wallet ${currentWalletAddress.slice(0, 8)}...`)
+    }
+  }, [hasPaid, currentWalletAddress])
+
+  // Load payment state from localStorage when wallet connects
+  // This restores payment state if user closes browser and returns
+  useEffect(() => {
+    if (currentWalletAddress && !hasPaid) {
+      const paymentKey = `payment_${currentWalletAddress}`
+      const savedPayment = localStorage.getItem(paymentKey)
+
+      if (savedPayment) {
+        try {
+          const paymentData = JSON.parse(savedPayment)
+
+          // Check if payment is recent (within 24 hours for demo purposes)
+          const paymentTime = new Date(paymentData.timestamp)
+          const hoursSincePayment = (Date.now() - paymentTime.getTime()) / (1000 * 60 * 60)
+
+          if (hoursSincePayment < 24 && paymentData.paid) {
+            setHasPaid(true)
+            console.log(`✅ Payment state restored for wallet ${currentWalletAddress.slice(0, 8)}... (${hoursSincePayment.toFixed(1)}h ago)`)
+          } else {
+            // Payment too old, clear it
+            localStorage.removeItem(paymentKey)
+            console.log(`🗑️ Payment state expired for wallet ${currentWalletAddress.slice(0, 8)}...`)
+          }
+        } catch (error) {
+          console.error('Error loading payment state:', error)
+          localStorage.removeItem(paymentKey)
+        }
+      }
+    }
+  }, [currentWalletAddress])
+
   // Development debugging helper - exposes wallet state to console
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -315,7 +360,8 @@ function App() {
           // Storage
           localStorage: {
             cdp_user_id: localStorage.getItem('cdp_user_id'),
-            cdp_wallet_address: localStorage.getItem('cdp_wallet_address')
+            cdp_wallet_address: localStorage.getItem('cdp_wallet_address'),
+            payment_state: currentWalletAddress ? localStorage.getItem(`payment_${currentWalletAddress}`) : 'no wallet'
           },
           sessionStorage: {
             active_wallet_type: sessionStorage.getItem('active_wallet_type')
@@ -498,6 +544,13 @@ function App() {
   }
 
   const handleSessionComplete = () => {
+    // Clear payment state from localStorage so user can start fresh
+    if (currentWalletAddress) {
+      const paymentKey = `payment_${currentWalletAddress}`
+      localStorage.removeItem(paymentKey)
+      console.log(`🗑️ Payment state cleared for wallet ${currentWalletAddress.slice(0, 8)}... (session complete)`)
+    }
+
     setHasPaid(false)
     setModulesCompleted(0)
     setTotalEarned(0)
