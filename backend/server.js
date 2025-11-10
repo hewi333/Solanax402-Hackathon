@@ -33,6 +33,69 @@ if (GRADIENT_API_KEY) {
 }
 console.log('🔧 AI Provider Configuration Complete\n')
 
+// Helper function to parse text responses into structured function calls
+// This is a fallback when the AI model doesn't support function calling
+function parseTextResponseToFunctionCall(content, functions) {
+  console.log('🔍 Parsing text response into function call format...')
+  console.log('Content to parse:', content)
+
+  // Try to extract JSON from the response
+  const jsonMatch = content.match(/\{[\s\S]*\}/)
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0])
+      // Check if it looks like an evaluation response
+      if ('passed' in parsed || 'score' in parsed) {
+        console.log('✅ Found JSON evaluation in text:', parsed)
+        return {
+          name: 'evaluate_answer',
+          arguments: JSON.stringify({
+            passed: parsed.passed ?? false,
+            score: parsed.score ?? 0,
+            feedback: parsed.feedback || content.substring(0, 200)
+          })
+        }
+      }
+    } catch (e) {
+      console.log('JSON parse attempt failed:', e.message)
+    }
+  }
+
+  // Fallback: Intelligent text analysis
+  const contentLower = content.toLowerCase()
+
+  // Determine if answer passed
+  const passIndicators = ['correct', 'pass', 'good', 'yes', 'right', 'excellent', 'great', 'well done']
+  const failIndicators = ['incorrect', 'fail', 'no', 'wrong', 'not quite', 'missing', 'insufficient']
+
+  const hasPassIndicator = passIndicators.some(word => contentLower.includes(word))
+  const hasFailIndicator = failIndicators.some(word => contentLower.includes(word))
+
+  // Default to passing if unclear (lenient evaluation for hackathon demo)
+  const passed = hasPassIndicator || (!hasFailIndicator && contentLower.length > 10)
+
+  // Extract score if mentioned
+  let score = 0
+  const scoreMatch = content.match(/score[:\s]+(\d+)/i) || content.match(/(\d+)\s*\/\s*100/)
+  if (scoreMatch) {
+    score = parseInt(scoreMatch[1])
+  } else {
+    // Estimate score based on sentiment
+    score = passed ? 75 : 35
+  }
+
+  console.log(`📊 Parsed evaluation: passed=${passed}, score=${score}`)
+
+  return {
+    name: 'evaluate_answer',
+    arguments: JSON.stringify({
+      passed,
+      score,
+      feedback: content.trim().substring(0, 200) // Use first 200 chars as feedback
+    })
+  }
+}
+
 // Dual-Provider AI Completion Function
 // Tries Gradient Cloud first, falls back to OpenAI on any error
 async function callAIProvider(messages, options = {}) {
@@ -44,19 +107,34 @@ async function callAIProvider(messages, options = {}) {
       console.log(`🟣 Attempting Gradient Cloud inference (${GRADIENT_MODEL})...`)
       const startTime = Date.now()
 
+      // Build request body with function calling support
+      const requestBody = {
+        model: GRADIENT_MODEL,
+        messages,
+        temperature,
+        max_tokens,
+        stream: false // Disable streaming for cleaner responses
+      }
+
+      // Add function calling if provided (Gradient may or may not support this)
+      if (functions) {
+        requestBody.functions = functions
+        requestBody.function_call = function_call || 'auto'
+        console.log('📎 Including function calling in Gradient request')
+      }
+
+      console.log('📤 Gradient request:', JSON.stringify({
+        ...requestBody,
+        messages: messages.map(m => ({ role: m.role, content: m.content?.substring(0, 100) + '...' }))
+      }, null, 2))
+
       const response = await fetch(`${GRADIENT_API_ENDPOINT}/chat/completions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${GRADIENT_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          model: GRADIENT_MODEL,
-          messages,
-          temperature,
-          max_tokens,
-          stream: false // Disable streaming for cleaner responses
-        }),
+        body: JSON.stringify(requestBody),
         signal: AbortSignal.timeout(10000) // 10 second timeout
       })
 
@@ -69,20 +147,67 @@ async function callAIProvider(messages, options = {}) {
       const latency = Date.now() - startTime
 
       console.log(`✅ Gradient Cloud succeeded (${latency}ms)`)
+      console.log('📥 Gradient response structure:', JSON.stringify({
+        hasChoices: !!data.choices,
+        messageKeys: data.choices?.[0]?.message ? Object.keys(data.choices[0].message) : [],
+        hasFunctionCall: !!data.choices?.[0]?.message?.function_call,
+        hasContent: !!data.choices?.[0]?.message?.content
+      }))
 
-      // Convert Gradient response to OpenAI-compatible format if needed
-      return {
-        data: {
-          choices: data.choices || [{ message: data.message }],
-          usage: data.usage
-        },
-        provider: 'gradient',
-        model: GRADIENT_MODEL,
-        latency
+      // Check if response has function_call (native function calling support)
+      const message = data.choices?.[0]?.message || data.message
+
+      if (message?.function_call) {
+        console.log('✅ Gradient returned native function_call')
+        // Native function calling worked!
+        return {
+          data: {
+            choices: data.choices || [{ message: data.message }],
+            usage: data.usage
+          },
+          provider: 'gradient',
+          model: GRADIENT_MODEL,
+          latency
+        }
+      } else if (message?.content && functions) {
+        console.log('⚙️ Gradient returned text content, parsing into function_call...')
+        // No function_call, but we have content - parse it intelligently
+        const parsedFunctionCall = parseTextResponseToFunctionCall(message.content, functions)
+
+        // Inject the parsed function call into the response
+        return {
+          data: {
+            choices: [{
+              message: {
+                role: 'assistant',
+                content: message.content,
+                function_call: parsedFunctionCall
+              }
+            }],
+            usage: data.usage
+          },
+          provider: 'gradient',
+          model: GRADIENT_MODEL,
+          latency,
+          parsed: true // Flag to indicate we parsed the response
+        }
+      } else {
+        console.log('✅ Gradient returned standard response (no function calling needed)')
+        // Standard response without function calling
+        return {
+          data: {
+            choices: data.choices || [{ message: data.message }],
+            usage: data.usage
+          },
+          provider: 'gradient',
+          model: GRADIENT_MODEL,
+          latency
+        }
       }
 
     } catch (gradientError) {
       console.warn(`⚠️  Gradient Cloud failed: ${gradientError.message}`)
+      console.warn(`⚠️  Falling back to OpenAI...`)
       // Fall through to OpenAI
     }
   }
