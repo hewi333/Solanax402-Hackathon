@@ -12,10 +12,157 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3001
 
-// Initialize OpenAI
+// Initialize OpenAI (fallback provider)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
+
+// Gradient Cloud API Configuration
+const GRADIENT_API_KEY = process.env.GRADIENT_API_KEY
+const GRADIENT_API_ENDPOINT = process.env.GRADIENT_API_ENDPOINT || 'https://apis.gradient.network/api/v1/ai'
+const GRADIENT_MODEL = process.env.GRADIENT_MODEL || 'Qwen3-235B-A22B-Instruct-2507-FP8'
+const USE_GRADIENT_PRIMARY = process.env.USE_GRADIENT_PRIMARY !== 'false' // Default: enabled
+
+console.log('\n🔧 AI Provider Configuration:')
+console.log(`  Gradient Cloud: ${GRADIENT_API_KEY ? '✅ Enabled' : '❌ Disabled (no API key)'}`)
+console.log(`  OpenAI Fallback: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Not configured'}`)
+if (GRADIENT_API_KEY) {
+  console.log(`  Gradient Model: ${GRADIENT_MODEL}`)
+  console.log(`  Gradient Endpoint: ${GRADIENT_API_ENDPOINT}`)
+  console.log(`  Use as Primary: ${USE_GRADIENT_PRIMARY}`)
+}
+console.log('🔧 AI Provider Configuration Complete\n')
+
+// Dual-Provider AI Completion Function
+// Tries Gradient Cloud first, falls back to OpenAI on any error
+async function callAIProvider(messages, options = {}) {
+  const { temperature = 0.3, max_tokens = 200, functions, function_call } = options
+
+  // Try Gradient Cloud first (if enabled and configured)
+  if (USE_GRADIENT_PRIMARY && GRADIENT_API_KEY) {
+    try {
+      console.log(`🟣 Attempting Gradient Cloud inference (${GRADIENT_MODEL})...`)
+      const startTime = Date.now()
+
+      const response = await fetch(`${GRADIENT_API_ENDPOINT}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GRADIENT_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: GRADIENT_MODEL,
+          messages,
+          temperature,
+          max_tokens,
+          stream: false // Disable streaming for cleaner responses
+        }),
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Gradient API error ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+      const latency = Date.now() - startTime
+
+      console.log(`✅ Gradient Cloud succeeded (${latency}ms)`)
+
+      // Convert Gradient response to OpenAI-compatible format if needed
+      return {
+        data: {
+          choices: data.choices || [{ message: data.message }],
+          usage: data.usage
+        },
+        provider: 'gradient',
+        model: GRADIENT_MODEL,
+        latency
+      }
+
+    } catch (gradientError) {
+      console.warn(`⚠️  Gradient Cloud failed: ${gradientError.message}`)
+      // Fall through to OpenAI
+    }
+  }
+
+  // Fallback to OpenAI
+  try {
+    console.log('🔵 Using OpenAI inference (fallback)...')
+    const startTime = Date.now()
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages,
+      temperature,
+      max_tokens,
+      functions,
+      function_call
+    })
+
+    const latency = Date.now() - startTime
+    console.log(`✅ OpenAI succeeded (${latency}ms)`)
+
+    return {
+      data: completion,
+      provider: 'openai',
+      model: 'gpt-3.5-turbo',
+      latency
+    }
+
+  } catch (openaiError) {
+    console.error('❌ OpenAI also failed:', openaiError.message)
+    throw new Error(`All AI providers failed. Last error: ${openaiError.message}`)
+  }
+}
+
+// Usage logging for analytics
+const usageLogs = []
+
+function logEvaluation({ provider, model, latency, success, moduleId, walletAddress }) {
+  const log = {
+    timestamp: new Date().toISOString(),
+    provider,
+    model,
+    latency,
+    success,
+    moduleId,
+    wallet: walletAddress ? walletAddress.slice(0, 8) + '...' : 'unknown'
+  }
+
+  usageLogs.push(log)
+  console.log('📊 Evaluation logged:', JSON.stringify(log))
+
+  // Keep only last 1000 logs in memory
+  if (usageLogs.length > 1000) {
+    usageLogs.shift()
+  }
+}
+
+function getUsageStats() {
+  if (usageLogs.length === 0) {
+    return {
+      total: 0,
+      message: 'No evaluations logged yet'
+    }
+  }
+
+  const gradientCount = usageLogs.filter(l => l.provider === 'gradient').length
+  const openaiCount = usageLogs.filter(l => l.provider === 'openai').length
+  const avgLatency = usageLogs.reduce((sum, l) => sum + l.latency, 0) / usageLogs.length
+
+  return {
+    total: usageLogs.length,
+    providers: {
+      gradient: gradientCount,
+      openai: openaiCount
+    },
+    fallbackRate: usageLogs.length > 0 ? ((openaiCount / usageLogs.length) * 100).toFixed(1) + '%' : '0%',
+    avgLatency: avgLatency.toFixed(0) + 'ms',
+    recentLogs: usageLogs.slice(-10)
+  }
+}
 
 // Initialize Solana connection (Devnet)
 const connection = new Connection(
@@ -115,7 +262,16 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     message: 'Solana x402 Learn & Earn API is running',
     openaiConfigured: !!process.env.OPENAI_API_KEY,
+    gradientConfigured: !!GRADIENT_API_KEY,
     solanaConnected: true
+  })
+})
+
+// Usage statistics endpoint
+app.get('/api/stats', (req, res) => {
+  res.json({
+    ...getUsageStats(),
+    timestamp: new Date().toISOString()
   })
 })
 
@@ -926,24 +1082,25 @@ Evaluate generously and decide autonomously.`
 
     const userPrompt = `Student's answer: "${userAnswer}"`
 
-    console.log('📞 Calling OpenAI API...')
-    console.log('  Model: gpt-3.5-turbo')
+    console.log('📞 Calling AI Provider (Gradient Cloud → OpenAI fallback)...')
     console.log('  Temperature: 0.3')
+    console.log('  Max Tokens: 200')
 
-    // Call OpenAI with function calling (use gpt-3.5-turbo for speed)
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
+    // Call AI provider (tries Gradient first, falls back to OpenAI)
+    const { data: completion, provider, model, latency } = await callAIProvider(
+      [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      functions: functions,
-      function_call: 'auto',
-      temperature: 0.3, // Lower temperature for consistent evaluations
-      max_tokens: 200
-    })
+      {
+        functions: functions,
+        function_call: 'auto',
+        temperature: 0.3,
+        max_tokens: 200
+      }
+    )
 
-    console.log('✅ OpenAI API responded successfully!')
+    console.log(`✅ AI evaluation completed by ${provider} (${model}) in ${latency}ms`)
     const responseMessage = completion.choices[0].message
     console.log('🤖 AI response:', JSON.stringify(responseMessage, null, 2))
 
@@ -964,10 +1121,9 @@ Evaluate generously and decide autonomously.`
         // If passed, AI should call send_payment next
         // Make a second call to let AI call send_payment
         if (evaluation.passed) {
-          console.log('💰 Student passed! Calling OpenAI again for payment decision...')
-          const secondCompletion = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: [
+          console.log(`💰 Student passed! Calling ${provider} again for payment decision...`)
+          const { data: secondCompletion } = await callAIProvider(
+            [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userPrompt },
               responseMessage,
@@ -977,13 +1133,15 @@ Evaluate generously and decide autonomously.`
                 content: JSON.stringify({ success: true, evaluation })
               }
             ],
-            functions: functions,
-            function_call: 'auto',
-            temperature: 0.3,
-            max_tokens: 200
-          })
+            {
+              functions: functions,
+              function_call: 'auto',
+              temperature: 0.3,
+              max_tokens: 200
+            }
+          )
 
-          console.log('✅ OpenAI payment decision received!')
+          console.log('✅ AI payment decision received!')
           const secondResponse = secondCompletion.choices[0].message
           console.log('💸 AI second response:', JSON.stringify(secondResponse, null, 2))
 
@@ -1032,6 +1190,16 @@ Evaluate generously and decide autonomously.`
       }
     }
 
+    // Log evaluation for analytics
+    logEvaluation({
+      provider,
+      model,
+      latency,
+      success: evaluation?.passed || false,
+      moduleId,
+      walletAddress
+    })
+
     // Return evaluation and payment result
     const response = {
       aiEvaluated: true,
@@ -1039,7 +1207,9 @@ Evaluate generously and decide autonomously.`
       score: evaluation?.score || 0,
       feedback: evaluation?.feedback || 'Unable to evaluate answer.',
       payment: paymentResult,
-      moduleId
+      moduleId,
+      provider,  // Include provider info in response
+      model      // Include model info in response
     }
 
     console.log('\n✅ ========== SENDING RESPONSE ==========')

@@ -519,8 +519,9 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-solana-green">Excellent! You got it!</p>
                       {evaluationMethod === 'ai' && (
-                        <Badge variant="outline" className="text-xs bg-solana-purple/20 text-solana-purple border-solana-purple/30">
-                          🤖 AI Evaluated
+                        <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-300 border-purple-400/30 flex items-center gap-1">
+                          <img src="/gradient-icon.svg" alt="" className="inline w-3 h-3" />
+                          Powered by Gradient
                         </Badge>
                       )}
                     </div>
@@ -555,8 +556,9 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold">Not quite there yet!</p>
                       {evaluationMethod === 'ai' && (
-                        <Badge variant="outline" className="text-xs bg-solana-purple/20 text-solana-purple border-solana-purple/30">
-                          🤖 AI Evaluated
+                        <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-300 border-purple-400/30 flex items-center gap-1">
+                          <img src="/gradient-icon.svg" alt="" className="inline w-3 h-3" />
+                          Powered by Gradient
                         </Badge>
                       )}
                     </div>
@@ -610,7 +612,12 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                 >
                   {isLoading ? (
                     <>
-                      <span className="mr-2">🤖 AI Evaluating</span>
+                      <img
+                        src="/gradient-icon.svg"
+                        alt=""
+                        className="inline-block w-4 h-4 mr-2 opacity-90"
+                      />
+                      <span className="mr-2">AI Evaluating</span>
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -618,14 +625,21 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                       </div>
                     </>
                   ) : (
-                    'Submit Answer'
+                    <>
+                      <img
+                        src="/gradient-icon.svg"
+                        alt=""
+                        className="inline-block w-4 h-4 mr-2 opacity-70"
+                      />
+                      Submit Answer
+                    </>
                   )}
                 </Button>
               </div>
 
               <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                <Lightbulb className="w-4 h-4" />
-                Answer in your own words - AI agent will evaluate and send payment
+                <img src="/gradient-icon.svg" alt="" className="inline w-4 h-4 opacity-60" />
+                Powered by Gradient Cloud - AI evaluates and sends rewards automatically
               </p>
             </div>
           </CardContent>
