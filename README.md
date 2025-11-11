@@ -1,6 +1,6 @@
 # Learn Earn
 
-**An autonomous AI agent that teaches Web3 concepts and rewards learners with real SOL on Solana**
+**An autonomous AI agent that teaches Web3 concepts and rewards learners with SOL on Solana devnet**
 
 Built for **Solana x402 Hackathon** | **Track 5: x402 Agent Application**
 
@@ -16,10 +16,10 @@ See Learn Earn in action: AI-powered education meets autonomous blockchain payme
 
 ## What Makes This Special
 
-Learn Earn delivers production-ready integrations across **three sponsor tracks**:
+Learn Earn demonstrates the **x402 protocol** with production-ready integrations across **two sponsor technologies**:
 
-### 🤖 Gradient Parallax AI Integration
-**Primary AI Provider** powering autonomous learning evaluation
+### 🤖 Gradient Parallax Inference Integration
+**Distributed inference platform** powering autonomous learning evaluation
 - 120B parameter model (`gpt-oss-120b`) evaluates student answers
 - Solved Gradient API function calling limitation through custom text parsing
 - Makes autonomous payment decisions without human approval
@@ -57,25 +57,27 @@ Traditional educational platforms suffer from:
 
 An AI agent that **autonomously**:
 1. Delivers educational content about x402 and Solana
-2. Evaluates student answers using Gradient AI (120B parameter model)
+2. Evaluates student answers using Gradient Parallax inference (120B parameter model)
 3. Decides when to issue rewards (0.01 SOL per correct answer)
 4. Executes blockchain transactions to distribute SOL
 5. Tracks progress and manages session economics
 
-**Payment Flow** (Break-Even Model):
+**Payment Flow** (Hackathon Demonstration):
+
+This closed-loop payment system demonstrates technical feasibility of autonomous agent economics:
 - Treasury airdrops **0.04 SOL** to new users
 - Users pay **0.03 SOL** to unlock 3 learning modules
 - AI agent rewards **0.01 SOL** per completed module
 - Total earned: **0.03 SOL** (break even, net +0.01 SOL from airdrop)
 
-**Result**: Users learn about Web3 and finish with more SOL than they started with.
+**Result**: Proof-of-concept for autonomous payment loops. See [Use Cases](#use-cases) for real-world applications.
 
 ---
 
 ## Key Features
 
 **AI-Powered Evaluation**
-- Gradient Parallax AI evaluates natural language answers
+- Gradient Parallax distributed inference evaluates natural language answers
 - Progressive hint system for incorrect responses
 - OpenAI fallback ensures 99.9% uptime
 - Session state management with persistent storage
@@ -90,7 +92,6 @@ An AI agent that **autonomously**:
 - Coinbase CDP embedded wallets (zero-extension)
 - Phantom wallet (browser extension)
 - Coinbase Wallet (browser extension)
-- Solana Mobile Wallet Adapter (deep linking)
 
 **On-Chain Transparency**
 - All transactions verifiable on Solana Explorer
@@ -105,12 +106,12 @@ An AI agent that **autonomously**:
 ```
 ┌─────────────────────────────────────────────────────┐
 │         Frontend (React + Solana Wallet Adapter)    │
-│    Multi-Wallet Support: Phantom | CDP | Mobile     │
+│    Multi-Wallet Support: Phantom | CDP | Coinbase  │
 └────────────────────┬────────────────────────────────┘
                      │ REST API
 ┌────────────────────▼────────────────────────────────┐
 │       Backend AI Agent (Node.js + Express)          │
-│  • Gradient AI (primary): gpt-oss-120b             │
+│  • Gradient Parallax (primary): gpt-oss-120b       │
 │  • OpenAI (fallback): gpt-3.5-turbo                │
 │  • Payment decision logic                           │
 │  • Session management                               │
@@ -137,7 +138,7 @@ An AI agent that **autonomously**:
 
 **Backend**
 - Node.js + Express REST API
-- Gradient AI API (gpt-oss-120b, 120B params)
+- Gradient Parallax inference (gpt-oss-120b, 120B params)
 - OpenAI API (fallback)
 - Solana Web3.js
 - Coinbase CDP SDK v2
@@ -187,21 +188,22 @@ npm run dev                  # Terminal 2: Frontend (port 5173)
 
 ## Use Cases
 
-**Immediate (Hackathon Demo)**
-- Web3 education with instant gratification rewards
-- Demonstrating autonomous AI agent payments on Solana
-- Showcasing x402 protocol in consumer-facing application
+**Immediate (Hackathon Demonstration)**
+- **Proof-of-concept**: Closed-loop payment system demonstrates technical feasibility
+- **x402 Protocol**: HTTP 402 implementation with autonomous agent authority
+- **Educational demo**: Web3 concepts taught with instant SOL rewards
 
-**Near-Term (Post-Hackathon)**
-- Blockchain project onboarding (sponsored learning modules)
-- Developer education with certification NFTs
-- Community engagement and retention tool
+**Real-World Applications (Post-Hackathon)**
+- **Sponsored Learning**: Blockchain projects fund educational modules, learners earn tokens
+- **Corporate Training**: Companies pay for courses, employees earn rewards for completion
+- **Developer Onboarding**: Protocols reward developers for learning their tech stack
+- **Certification NFTs**: On-chain credentials proving skill mastery
 
 **Long-Term Vision**
-- Corporate blockchain training programs (B2B)
 - DAO-governed curriculum with community course creation
 - Multi-chain expansion with x402 protocol
-- Target: 100,000+ learners with on-chain credentials
+- Target: 100,000+ learners with verifiable on-chain credentials
+- Sustainable economics: Sponsors fund rewards, not closed-loop demonstration
 
 ---
 
@@ -214,15 +216,15 @@ npm run dev                  # Terminal 2: Frontend (port 5173)
 - Consumer-facing application (judges can relate)
 
 **Technical Achievement**
-- Solved Gradient API limitation (no native function calling)
-- Dual-provider AI architecture (99.9% uptime)
+- Solved Gradient Parallax limitation (no native function calling)
+- Dual-provider inference architecture (99.9% uptime)
 - Production-ready CDP integration (zero-extension onboarding)
-- 120B parameter model makes autonomous decisions
+- 120B parameter distributed model makes autonomous decisions
 
 **Ecosystem Advancement**
 - Lowers barrier for crypto newcomers (embedded wallets)
-- Creates sustainable payment loop (break-even economics)
-- Demonstrates x402 protocol value proposition clearly
+- Demonstrates autonomous agent payment loops (technical feasibility)
+- Shows x402 protocol value proposition clearly
 - Fully open source for community building
 
 **Differentiation**
@@ -235,14 +237,14 @@ npm run dev                  # Terminal 2: Frontend (port 5173)
 ## For Judges
 
 **3-Minute Demo Flow**:
-1. Show wallet options (Phantom, Coinbase, CDP embedded)
+1. Show wallet options (Phantom, Coinbase extension, CDP embedded)
 2. Create embedded wallet (no extension needed)
-3. Request 0.04 SOL airdrop from treasury
+3. Request 0.04 SOL airdrop from treasury (devnet)
 4. Pay 0.03 SOL to unlock learning platform
 5. Complete module 1, receive instant 0.01 SOL reward
 6. Show transaction on Solana Explorer (devnet)
-7. Explain autonomous AI agent decision-making
-8. Demonstrate break-even economics (0.03 paid, 0.03 earned)
+7. Explain autonomous AI agent decision-making via Gradient Parallax
+8. Demonstrate closed-loop payment system (proof-of-concept)
 
 **Track 5 Alignment**:
 - ✅ AI agent makes autonomous payment decisions
@@ -288,7 +290,7 @@ Solanax402-Hackathon/
 - [backend/README.md](backend/README.md) - Backend API reference
 
 **Sponsor Integration Deep Dives**
-- [Gradient AI Integration](docs/gradient-integration.md) - 120B model, autonomous decisions
+- [Gradient Parallax Integration](docs/gradient-integration.md) - Distributed inference, autonomous decisions
 - [Coinbase CDP Integration](docs/coinbase-integration.md) - Embedded wallets, zero-friction onboarding
 - [x402 Protocol Integration](docs/x402-integration.md) - HTTP 402, autonomous agent payments
 
