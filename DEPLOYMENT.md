@@ -73,7 +73,18 @@ This is the easiest setup for hackathons.
    CDP_WALLET_SECRET=<your-wallet-secret>
    ```
 
-   **Note**: Generate treasury wallet using `node generate-treasury-wallet.js` locally, then add the Base58 private key here. See [CDP_SETUP.md](CDP_SETUP.md) for embedded wallet credentials.
+   **Note**: Generate treasury wallet using `node generate-treasury-wallet.js` locally, then add the Base58 private key here. See [docs/coinbase-integration.md](docs/coinbase-integration.md) for embedded wallet credentials.
+
+   **For Gradient AI:**
+   ```
+   GRADIENT_API_KEY=<your-gradient-api-key>
+   USE_GRADIENT_PRIMARY=true
+   ```
+
+   **For OpenAI Fallback:**
+   ```
+   OPENAI_API_KEY=<your-openai-api-key>
+   ```
 
 6. **Generate a public domain:**
    - Railway will give you a URL like: `https://your-app.railway.app`
@@ -194,13 +205,21 @@ VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
 
 ### Backend (.env)
 ```env
+# Solana Configuration
 TREASURY_WALLET_KEYPAIR=<base58-encoded-private-key>
 SOLANA_NETWORK=devnet
 MAX_REWARD_AMOUNT=0.5
 PORT=3001
 NODE_ENV=production
 
-# Optional: For Coinbase CDP embedded wallets
+# Gradient AI (Primary)
+GRADIENT_API_KEY=<your-gradient-api-key>
+USE_GRADIENT_PRIMARY=true
+
+# OpenAI (Fallback)
+OPENAI_API_KEY=<your-openai-api-key>
+
+# Coinbase CDP (Optional - for embedded wallets)
 CDP_API_KEY_ID=<your-key-id>
 CDP_API_KEY_SECRET=<your-secret>
 CDP_WALLET_SECRET=<your-wallet-secret>
@@ -291,13 +310,15 @@ For production, set `FRONTEND_URL` env var to your Vercel domain.
 - **Vercel**: Free for personal projects (100 GB bandwidth/month)
 - **Railway**: $5 credit free, then ~$5-10/month
 - **Render**: Free tier available (sleeps after 15 min inactivity)
-- **OpenAI API**: Pay-per-use (~$0.002 per request with GPT-4)
+- **Gradient AI**: Free tier available for development
+- **OpenAI API**: Pay-per-use (only as fallback)
 
 ### For Hackathon Demo:
-- Total cost: **$0-5** (mostly OpenAI API usage)
+- Total cost: **$0-5**
 - Vercel: Free
 - Railway/Render: Free tier or $5
-- OpenAI: ~$1-2 for testing
+- Gradient: Free tier
+- OpenAI: ~$0-1 (minimal, only fallback)
 
 ## Quick Deploy Script
 
@@ -332,9 +353,14 @@ git push origin main
 # 6. Test your live app!
 ```
 
-## Support
+## Additional Documentation
 
-Need help with deployment?
+**Integration Guides**:
+- [Gradient AI Integration](docs/gradient-integration.md) - Primary AI provider setup
+- [Coinbase CDP Integration](docs/coinbase-integration.md) - Embedded wallets setup
+- [x402 Protocol Integration](docs/x402-integration.md) - Protocol implementation details
+
+**Deployment Support**:
 - **Vercel Docs**: [vercel.com/docs](https://vercel.com/docs)
 - **Railway Docs**: [docs.railway.app](https://docs.railway.app)
 - **Render Docs**: [render.com/docs](https://render.com/docs)

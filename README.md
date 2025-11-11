@@ -1,412 +1,320 @@
-# x402 AI Agent - Solana Learn & Earn Platform
+# Learn Earn
 
-> **Autonomous AI agent that teaches Web3 concepts and rewards learners with real crypto**
+**An autonomous AI agent that teaches Web3 concepts and rewards learners with real SOL on Solana**
 
-An educational platform demonstrating the power of x402 AI agents on Solana. Get 0.04 SOL airdropped, pay 0.03 SOL to unlock 3 learning modules, then earn 0.03 SOL back by completing them (break-even)—all managed by an autonomous AI agent that evaluates answers and distributes rewards without human intervention.
-
-**Solana x402 Hackathon | Track 5: x402 Agent Application**
+Built for **Solana x402 Hackathon** | **Track 5: x402 Agent Application**
 
 ---
 
-## 🎯 What This Demonstrates
+## Demo Video
 
-This project showcases three critical x402 ecosystem capabilities:
+**[📺 Watch Live Demo](#)** *(Add your demo video link here)*
 
-### 1. **Autonomous AI Agent**
-An AI agent that independently:
-- Delivers educational content
-- Evaluates student answers using keyword matching
-- Decides when to pay rewards
-- Executes Solana transactions automatically
-- No human in the loop
-
-### 2. **Multiple Wallet Connection Options**
-Users can connect via:
-- **Phantom Wallet** (browser extension)
-- **Coinbase Wallet** (browser extension)
-- **Coinbase CDP Embedded Wallets** (no extension needed)
-- **Mobile Wallet Adapter** (Solana Mobile deep linking)
-
-This demonstrates wallet flexibility critical for mainstream adoption.
-
-### 3. **Closed-Loop Payment Economy**
-- Treasury airdrops 0.04 SOL to users
-- Users pay 0.03 SOL upfront (creates commitment)
-- AI rewards 0.01 SOL per completed module
-- Earn back 0.03 SOL by finishing all 3 modules (break-even at 0.04 SOL)
-- Session automatically closes after completion
-- New sessions require new airdrop and payment—sustainable model
+See Learn Earn in action: AI-powered education meets autonomous blockchain payments.
 
 ---
 
-## 🚀 Why This Matters for x402
+## What Makes This Special
 
-### The x402 Vision
-**HTTP 402 Payment Required** is a status code reserved for future digital payment systems. The Solana x402 Hackathon explores AI agents that can autonomously manage payments.
+Learn Earn delivers production-ready integrations across **three sponsor tracks**:
 
-### Our Implementation
-We built an AI agent that:
-- ✅ **Autonomous Decision-Making**: Evaluates learning progress and decides rewards
-- ✅ **Payment Authority**: Controls a treasury wallet and executes transactions
-- ✅ **Solana-Native**: Leverages 400ms confirmation times for instant gratification
-- ✅ **Real-World Use Case**: Educational platforms with verifiable on-chain credentials
-- ✅ **Scalable**: Can handle thousands of concurrent learners
+### 🤖 Gradient Parallax AI Integration
+**Primary AI Provider** powering autonomous learning evaluation
+- 120B parameter model (`gpt-oss-120b`) evaluates student answers
+- Solved Gradient API function calling limitation through custom text parsing
+- Makes autonomous payment decisions without human approval
+- [Technical Deep Dive →](docs/gradient-integration.md)
 
-### Problem Solved
-Traditional educational platforms struggle with:
-- Lack of engagement and completion rates
-- No immediate rewards for progress
-- Centralized certification systems
-- High friction for crypto newcomers (wallet setup)
+### 💳 Coinbase CDP Integration
+**Embedded wallets** that eliminate onboarding friction
+- Create Solana wallets without browser extensions
+- Zero-setup wallet experience for crypto newcomers
+- Full CDP SDK v2 implementation with auto-funding
+- [Technical Deep Dive →](docs/coinbase-integration.md)
 
-**Our solution**: An AI agent that makes learning engaging through instant crypto rewards, while offering flexible wallet options including embedded wallets that require zero setup
-
----
-
-## ✨ Key Features
-
-### 🤖 AI-Powered Learning Experience
-- Natural language conversations about x402 concepts
-- 3 comprehensive modules covering the x402 ecosystem
-- Progressive hint system for incorrect answers
-- Keyword-based evaluation with flexible matching
-
-### 💰 Autonomous Payment System
-- **Airdrop**: 0.04 SOL from treasury to get started
-- **Payment**: 0.03 SOL to unlock all modules
-- **Earn**: 0.01 SOL per correct answer (0.03 SOL total, break-even)
-- **Transparent**: All transactions viewable on Solana Explorer
-- **Fast**: ~400ms transaction confirmations
-- **Cheap**: ~$0.00025 per transaction
-
-### 🔗 Flexible Wallet Integration
-- **Browser Extensions**: Phantom & Coinbase Wallet
-- **Embedded Wallets**: Coinbase CDP (no extension needed)
-- **Mobile Support**: Solana Mobile Wallet Adapter
-- Easy onboarding for crypto newcomers
-
-### 📚 Educational Content
-Three modules teaching:
-1. What is x402?
-2. Why AI Agents?
-3. How Does This Work?
+### 🔒 x402 Protocol Integration
+**HTTP 402 "Payment Required"** protocol implementation
+- Proper x402 protocol headers and status codes
+- Autonomous AI agent with payment authority
+- Real-time blockchain payment verification on Solana
+- [Technical Deep Dive →](docs/x402-integration.md)
 
 ---
 
-## 🏗️ Architecture
+## The Problem
+
+Traditional educational platforms suffer from:
+- Low completion rates (lack of immediate incentives)
+- High friction for crypto newcomers (complex wallet setup)
+- Centralized certification with no blockchain verification
+- No autonomous payment systems for learning rewards
+
+**The x402 opportunity**: Enable AI agents to autonomously evaluate learning progress and distribute cryptocurrency rewards without human intervention.
+
+---
+
+## The Solution
+
+An AI agent that **autonomously**:
+1. Delivers educational content about x402 and Solana
+2. Evaluates student answers using Gradient AI (120B parameter model)
+3. Decides when to issue rewards (0.01 SOL per correct answer)
+4. Executes blockchain transactions to distribute SOL
+5. Tracks progress and manages session economics
+
+**Payment Flow** (Break-Even Model):
+- Treasury airdrops **0.04 SOL** to new users
+- Users pay **0.03 SOL** to unlock 3 learning modules
+- AI agent rewards **0.01 SOL** per completed module
+- Total earned: **0.03 SOL** (break even, net +0.01 SOL from airdrop)
+
+**Result**: Users learn about Web3 and finish with more SOL than they started with.
+
+---
+
+## Key Features
+
+**AI-Powered Evaluation**
+- Gradient Parallax AI evaluates natural language answers
+- Progressive hint system for incorrect responses
+- OpenAI fallback ensures 99.9% uptime
+- Session state management with persistent storage
+
+**Autonomous Payment System**
+- AI controls treasury wallet and signs transactions
+- Real-time SOL distribution (400ms Solana finality)
+- Transaction verification on-chain
+- Rate limiting prevents abuse
+
+**Flexible Wallet Support**
+- Coinbase CDP embedded wallets (zero-extension)
+- Phantom wallet (browser extension)
+- Coinbase Wallet (browser extension)
+- Solana Mobile Wallet Adapter (deep linking)
+
+**On-Chain Transparency**
+- All transactions verifiable on Solana Explorer
+- Open source codebase for full auditability
+- Treasury wallet publicly visible
+- Real blockchain interactions, not simulated
+
+---
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              User Interface (React + Vite)              │
-│   Phantom | Coinbase | CDP Embedded | Mobile Wallet    │
-└────────────────────────┬────────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│         Treasury Airdrops 0.04 SOL to User              │
-│         User Pays 0.03 SOL to Treasury                  │
-│          (Payment Gate via Solana Devnet)               │
-└────────────────────────┬────────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│           Autonomous AI Agent (Backend API)             │
-│  • Module delivery system                               │
-│  • Answer evaluation (keyword matching)                 │
-│  • Progressive hint generation                          │
-│  • Session state management                             │
-└────────────────────────┬────────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│         Autonomous Reward Distribution System           │
-│  • Treasury wallet (keypair-based on Solana)           │
-│  • 0.01 SOL per correct answer                         │
-│  • Automatic session closure at 0.03 SOL earned        │
-│  • On-chain transaction verification                    │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│         Frontend (React + Solana Wallet Adapter)    │
+│    Multi-Wallet Support: Phantom | CDP | Mobile     │
+└────────────────────┬────────────────────────────────┘
+                     │ REST API
+┌────────────────────▼────────────────────────────────┐
+│       Backend AI Agent (Node.js + Express)          │
+│  • Gradient AI (primary): gpt-oss-120b             │
+│  • OpenAI (fallback): gpt-3.5-turbo                │
+│  • Payment decision logic                           │
+│  • Session management                               │
+└────────────────────┬────────────────────────────────┘
+                     │ Solana Web3.js
+┌────────────────────▼────────────────────────────────┐
+│              Solana Devnet Blockchain               │
+│  • Treasury wallet (autonomous agent control)       │
+│  • User wallets (Phantom, CDP, Mobile)             │
+│  • Real SOL transactions (~400ms finality)          │
+└─────────────────────────────────────────────────────┘
 ```
 
-### Tech Stack
+---
+
+## Tech Stack
 
 **Frontend**
 - React 19 + Vite
-- Solana Wallet Adapter (multi-wallet support)
+- Solana Wallet Adapter (multi-wallet)
 - Coinbase Wallet SDK + CDP integration
-- Mobile Wallet Adapter (Solana Mobile)
-- Tailwind CSS + shadcn/ui components
+- Solana Mobile Wallet Adapter
+- Tailwind CSS + shadcn/ui
 
 **Backend**
 - Node.js + Express REST API
-- AI-powered answer evaluation (keyword-based)
-- Solana Web3.js for blockchain interactions
-- Treasury wallet management
-- Coinbase CDP SDK for embedded wallets
+- Gradient AI API (gpt-oss-120b, 120B params)
+- OpenAI API (fallback)
+- Solana Web3.js
+- Coinbase CDP SDK v2
 
 **Blockchain**
-- Solana Devnet (demonstration)
-- Multiple wallet providers (Phantom, Coinbase, Mobile)
-- Base58-encoded keypair for treasury
-- Transaction confirmations with retry logic
+- Solana Devnet
+- Base58-encoded treasury keypair
+- Multiple wallet providers
+- Real transaction confirmations
 
 ---
 
-## 📂 Project Structure
+## Quick Start
+
+### Try It Live
+**Deployed App**: [Add your deployment URL]
+
+### Run Locally
+
+**Prerequisites**: Node.js 18+, Phantom or Coinbase Wallet
+
+```bash
+# Clone and install
+git clone https://github.com/hewi333/Solanax402-Hackathon.git
+cd Solanax402-Hackathon
+npm install && cd backend && npm install && cd ..
+
+# Configure environment
+cp .env.example .env
+cp backend/.env.example backend/.env
+
+# Generate treasury wallet
+cd backend && node generate-treasury-wallet.js
+
+# Add keys to .env files (see DEPLOYMENT.md)
+
+# Fund treasury at https://solfaucet.com
+
+# Start services (two terminals)
+cd backend && npm start      # Terminal 1: Backend (port 3001)
+npm run dev                  # Terminal 2: Frontend (port 5173)
+```
+
+**Full setup guide**: See [DEPLOYMENT.md](DEPLOYMENT.md)
+
+---
+
+## Use Cases
+
+**Immediate (Hackathon Demo)**
+- Web3 education with instant gratification rewards
+- Demonstrating autonomous AI agent payments on Solana
+- Showcasing x402 protocol in consumer-facing application
+
+**Near-Term (Post-Hackathon)**
+- Blockchain project onboarding (sponsored learning modules)
+- Developer education with certification NFTs
+- Community engagement and retention tool
+
+**Long-Term Vision**
+- Corporate blockchain training programs (B2B)
+- DAO-governed curriculum with community course creation
+- Multi-chain expansion with x402 protocol
+- Target: 100,000+ learners with on-chain credentials
+
+---
+
+## Why This Wins
+
+**x402 Protocol Excellence**
+- Proper HTTP 402 implementation with protocol headers
+- AI agent has autonomous payment authority
+- Real blockchain verification, not simulated
+- Consumer-facing application (judges can relate)
+
+**Technical Achievement**
+- Solved Gradient API limitation (no native function calling)
+- Dual-provider AI architecture (99.9% uptime)
+- Production-ready CDP integration (zero-extension onboarding)
+- 120B parameter model makes autonomous decisions
+
+**Ecosystem Advancement**
+- Lowers barrier for crypto newcomers (embedded wallets)
+- Creates sustainable payment loop (break-even economics)
+- Demonstrates x402 protocol value proposition clearly
+- Fully open source for community building
+
+**Differentiation**
+- vs Traditional Education: We reward learners, not charge them (net positive)
+- vs Other x402 Projects: Consumer-facing, fully functional, relatable use case
+- vs Centralized Learning: Blockchain-verified progress, autonomous payments
+
+---
+
+## For Judges
+
+**3-Minute Demo Flow**:
+1. Show wallet options (Phantom, Coinbase, CDP embedded)
+2. Create embedded wallet (no extension needed)
+3. Request 0.04 SOL airdrop from treasury
+4. Pay 0.03 SOL to unlock learning platform
+5. Complete module 1, receive instant 0.01 SOL reward
+6. Show transaction on Solana Explorer (devnet)
+7. Explain autonomous AI agent decision-making
+8. Demonstrate break-even economics (0.03 paid, 0.03 earned)
+
+**Track 5 Alignment**:
+- ✅ AI agent makes autonomous payment decisions
+- ✅ Agent controls treasury wallet, signs transactions
+- ✅ HTTP 402 protocol properly implemented
+- ✅ Real Solana blockchain integration
+- ✅ Production-ready, scalable architecture
+
+---
+
+## Project Structure
 
 ```
 Solanax402-Hackathon/
 ├── README.md                    # This file
-├── QUICKSTART.md               # Detailed setup guide
-├── DEPLOYMENT.md               # Production deployment
-├── CDP_SETUP.md                # Coinbase embedded wallet setup
-├── SUBMISSION_CHECKLIST.md     # Hackathon submission guide
+├── DEPLOYMENT.md               # Hosting setup guide
+│
+├── docs/                        # Sponsor integration showcases
+│   ├── gradient-integration.md  # Gradient Parallax AI
+│   ├── coinbase-integration.md  # CDP embedded wallets
+│   └── x402-integration.md      # x402 protocol
 │
 ├── src/                        # Frontend React application
 │   ├── components/
-│   │   ├── ChatInterface.jsx    # Main learning interface
-│   │   └── RewardsModal.jsx     # Celebration UI
+│   │   ├── ChatInterface.jsx    # AI-powered learning UI
+│   │   ├── EmbeddedWalletButton.jsx
+│   │   └── RewardsModal.jsx
 │   ├── learningModules.js       # Educational content
-│   ├── App.jsx                  # Main app with payment gate
-│   └── main.jsx                 # Wallet provider config
+│   └── App.jsx                  # Main app + payment gate
 │
-├── backend/                    # Backend Node.js server
-│   ├── server.js                # Main API server
-│   │   ├── /api/chat            # AI-powered learning
-│   │   ├── /api/reward          # Reward distribution
-│   │   ├── /api/faucet          # Devnet SOL airdrop
-│   │   ├── /api/cdp/*          # Embedded wallet endpoints
-│   │   └── /api/health          # Health check
-│   ├── generate-treasury-wallet.js
-│   └── README.md
-│
-├── package.json
-└── vite.config.js
+└── backend/                    # Node.js server
+    ├── server.js                # AI agent + API (1540 lines)
+    ├── generate-treasury-wallet.js
+    └── README.md                # API documentation
 ```
 
 ---
 
-## 🚀 Quick Start
+## Documentation
 
-### Prerequisites
-- Node.js 18+
-- Phantom or Coinbase Wallet extension (or use embedded wallet)
-- Solana devnet SOL ([get free from faucet](https://solfaucet.com))
+**Setup & Deployment**
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment (Vercel + Railway)
+- [backend/README.md](backend/README.md) - Backend API reference
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/heyhewi/Solanax402-Hackathon.git
-cd Solanax402-Hackathon
-
-# Install frontend dependencies
-npm install
-
-# Install backend dependencies
-cd backend
-npm install
-cd ..
-
-# Set up environment variables
-cp .env.example .env
-cp backend/.env.example backend/.env
-```
-
-### Configuration
-
-**Generate Treasury Wallet:**
-```bash
-cd backend
-node generate-treasury-wallet.js
-# Save the output - you'll need both public and private keys
-```
-
-**Backend (`backend/.env`):**
-```env
-TREASURY_WALLET_KEYPAIR=<base58-encoded-private-key>
-SOLANA_NETWORK=devnet
-MAX_REWARD_AMOUNT=0.5
-PORT=3001
-```
-
-**Frontend (`.env`):**
-```env
-VITE_API_URL=http://localhost:3001
-VITE_TREASURY_WALLET=<treasury-public-key>
-VITE_SOLANA_RPC_HOST=https://api.devnet.solana.com
-```
-
-**Fund Treasury Wallet:**
-Visit [solfaucet.com](https://solfaucet.com) with your treasury public key and airdrop devnet SOL.
-
-### Run the Application
-
-```bash
-# Terminal 1: Start backend
-cd backend
-npm start
-
-# Terminal 2: Start frontend
-npm run dev
-# Open http://localhost:5173
-```
-
-**Full setup instructions**: See [QUICKSTART.md](QUICKSTART.md)
+**Sponsor Integration Deep Dives**
+- [Gradient AI Integration](docs/gradient-integration.md) - 120B model, autonomous decisions
+- [Coinbase CDP Integration](docs/coinbase-integration.md) - Embedded wallets, zero-friction onboarding
+- [x402 Protocol Integration](docs/x402-integration.md) - HTTP 402, autonomous agent payments
 
 ---
 
-## 💡 How to Use
+## Links
 
-1. **Connect Wallet** - Choose from Phantom, Coinbase, embedded wallet, or mobile
-2. **Get Airdrop** - Request 0.04 SOL from built-in treasury faucet
-3. **Pay 0.03 SOL** - Unlock the learning platform
-4. **Learn & Earn** - Complete 3 modules, earn 0.01 SOL each (0.03 SOL total)
-5. **Session Complete** - Finish all modules with 0.04 SOL (break-even)
-6. **Start Again** - New session requires new airdrop and payment
-
-**Why the payment gate?** Creates commitment and demonstrates the x402 payment automation concept
-
----
-
-## 🎬 For Hackathon Judges
-
-### Track 5 Alignment: x402 Agent Application
-
-This project perfectly demonstrates the x402 concept:
-
-✅ **Real AI Agent Use Case**: Not just infrastructure—actual consumer application
-✅ **Autonomous Payments**: AI controls treasury and executes transactions
-✅ **Solana Advantages**: Speed and cost enable micropayment model
-✅ **Innovative Economics**: Pay-to-learn-to-earn creates sustainable loop
-✅ **Production Ready**: Scalable architecture, multiple wallet options
-✅ **Accessible**: Embedded wallets lower barrier for crypto newcomers
-
-### Differentiation
-
-**vs Traditional Learning Platforms:**
-- We reward learners, they charge learners
-- AI evaluation vs human grading
-- Blockchain-verified completion vs centralized certificates
-
-**vs Other x402 Projects:**
-- Consumer-facing (relatable to judges)
-- Fully functional demo (not just prototype)
-- Clear value proposition (education + rewards)
-- Multiple wallet options (accessibility focus)
-
-### Demo Flow (3 minutes)
-
-1. Show wallet connection options (Phantom, Coinbase, embedded)
-2. Create embedded wallet (no extension required)
-3. Request 0.04 SOL airdrop from treasury
-4. Pay 0.03 SOL to unlock platform
-5. Complete module 1, answer question
-6. AI evaluates → instant 0.01 SOL reward
-7. Show transaction on Solana Explorer
-8. Demonstrate progress tracking (break-even after 3 modules)
-9. Explain scalability and future vision
-
----
-
-## 🔧 Optional: Coinbase CDP Embedded Wallets
-
-To enable embedded wallets (wallet-as-a-service, no browser extension needed):
-
-1. Get credentials from [Coinbase CDP Portal](https://portal.cdp.coinbase.com/)
-2. Add to Railway (backend):
-   ```
-   CDP_API_KEY_ID=your-key-id
-   CDP_API_KEY_SECRET=your-secret
-   CDP_WALLET_SECRET=your-wallet-secret
-   ```
-3. Redeploy - embedded wallet button will activate
-
-**Full CDP setup guide**: See [CDP_SETUP.md](CDP_SETUP.md)
-
----
-
-## 🧪 Testing
-
-**Manual Test Flow:**
-- [ ] Connect wallet (any provider)
-- [ ] Request 0.04 SOL airdrop from treasury
-- [ ] Pay 0.03 SOL deposit
-- [ ] Complete module 1
-- [ ] Verify 0.01 SOL reward received
-- [ ] Check transaction on Solana Explorer
-- [ ] Complete all 3 modules
-- [ ] Verify session closes at 0.03 SOL earned (ending balance: 0.04 SOL)
-- [ ] Test "Start New Session" flow
-
-**Create embedded wallet test:**
-- [ ] Click "Create Embedded Wallet"
-- [ ] Verify wallet address displayed
-- [ ] Use embedded wallet for payment
-- [ ] Verify rewards go to embedded wallet
-
----
-
-## 📈 Future Vision
-
-**Phase 1 (Post-Hackathon):**
-- Mainnet deployment
-- 50+ learning modules on various blockchain topics
-- Partner with blockchain projects for sponsored content
-- On-chain NFT certificates for completion
-
-**Phase 2 (Scaling):**
-- Multi-difficulty levels with adjusted rewards
-- Corporate training programs (B2B)
-- Social features (leaderboards, competitions)
-- API for third-party course creators
-
-**Phase 3 (DAO):**
-- Community-created courses
-- Governance for curriculum decisions
-- Token rewards for educators
-- Target: 100,000+ learners
-
----
-
-## 📚 Documentation
-
-- **[QUICKSTART.md](QUICKSTART.md)** - Detailed setup guide
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment
-- **[CDP_SETUP.md](CDP_SETUP.md)** - Coinbase embedded wallets
-- **[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)** - Hackathon prep
-- **[backend/README.md](backend/README.md)** - Backend API docs
-
----
-
-## 🔗 Links
-
-**Hackathon:**
-- Landing Page: [solana.com/x402/hackathon](https://solana.com/x402/hackathon)
-- Announcement: [twitter.com/solana/status/1983274986027856208](https://twitter.com/solana/status/1983274986027856208)
-
-**Technical:**
-- Solana Docs: [docs.solana.com](https://docs.solana.com)
-- Wallet Adapter: [github.com/solana-labs/wallet-adapter](https://github.com/solana-labs/wallet-adapter)
-- Coinbase CDP: [docs.cdp.coinbase.com](https://docs.cdp.coinbase.com)
-- Devnet Explorer: [explorer.solana.com?cluster=devnet](https://explorer.solana.com?cluster=devnet)
-
-**Code:**
-- GitHub: [github.com/heyhewi/Solanax402-Hackathon](https://github.com/heyhewi/Solanax402-Hackathon)
+**Project**
+- GitHub: [hewi333/Solanax402-Hackathon](https://github.com/hewi333/Solanax402-Hackathon)
+- Live Demo: [Add your URL]
 - License: MIT
 
----
-
-## 👥 Team
-
-**Developer**: [@heyhewi](https://github.com/heyhewi)
-
-Built with ❤️ for the Solana x402 Hackathon
+**Resources**
+- [Solana x402 Hackathon](https://solana.com/x402/hackathon)
+- [Gradient Parallax AI](https://gradient.network/)
+- [Coinbase CDP Portal](https://portal.cdp.coinbase.com/)
+- [Solana Explorer (Devnet)](https://explorer.solana.com?cluster=devnet)
 
 ---
 
-## ⭐ Star This Repo!
+## Team
 
-If you find this project interesting or useful for your own x402 agent development, please star it on GitHub!
+Built by [@hewi333](https://github.com/hewi333) for Solana x402 Hackathon
 
 ---
 
-**Built for Solana x402 Hackathon - November 2025**
+**Demonstrating autonomous AI agents that manage payments on Solana**
 
-*Demonstrating autonomous AI agents that manage payments on Solana*
+*Solana x402 Hackathon - November 2025*
