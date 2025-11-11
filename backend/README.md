@@ -1,14 +1,20 @@
-# Backend API - x402 Learn & Earn Platform
+# Backend API - Learn Earn Platform
 
-This is the backend server for the Solana x402 Learn & Earn platform. It handles AI-powered learning, autonomous reward distribution, and payment verification on Solana.
+Backend server for the Solana x402 Learn & Earn platform. Powers AI-driven evaluation, autonomous reward distribution, and blockchain payment verification.
 
 ## Overview
 
-The backend provides a REST API that powers three critical x402 hackathon features:
+The backend provides a REST API integrating three sponsor technologies:
 
-1. **AI-Powered Learning** - Evaluates student answers and provides hints
-2. **Autonomous Payments** - Controls treasury wallet and distributes SOL rewards
-3. **Wallet Services** - Manages embedded wallets via Coinbase CDP
+1. **Gradient Parallax AI** - Primary AI provider (gpt-oss-120b, 120B params) for autonomous evaluation
+2. **Coinbase CDP** - Embedded wallet creation and management
+3. **x402 Protocol** - HTTP 402 payment gates with autonomous agent authority
+
+### Core Capabilities
+
+- **AI-Powered Learning** - Gradient AI evaluates answers, OpenAI fallback ensures uptime
+- **Autonomous Payments** - AI controls treasury wallet, signs Solana transactions
+- **Embedded Wallets** - Create Solana wallets via Coinbase CDP SDK v2
 
 ## Key Features
 
@@ -180,13 +186,23 @@ MAX_REWARD_AMOUNT=0.5
 PORT=3001
 NODE_ENV=development
 
+# Gradient AI (Primary)
+GRADIENT_API_KEY=<your-gradient-api-key>
+USE_GRADIENT_PRIMARY=true
+
+# OpenAI (Fallback)
+OPENAI_API_KEY=<your-openai-api-key>
+
 # Coinbase CDP (Optional - for embedded wallets)
 CDP_API_KEY_ID=<your-api-key-id>
 CDP_API_KEY_SECRET=<your-api-key-secret>
 CDP_WALLET_SECRET=<your-wallet-secret>
 ```
 
-**Get CDP credentials:** [Coinbase CDP Portal](https://portal.cdp.coinbase.com/)
+**Get credentials:**
+- Gradient: [gradient.network](https://gradient.network/)
+- OpenAI: [platform.openai.com](https://platform.openai.com/)
+- CDP: [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com/)
 
 ### 4. Fund Treasury Wallet
 
@@ -203,9 +219,10 @@ Server runs on `http://localhost:3001`
 ## Tech Stack
 
 - **Node.js + Express** - REST API server
+- **Gradient AI API** - Primary AI provider (gpt-oss-120b)
+- **OpenAI API** - Fallback AI provider (gpt-3.5-turbo, gpt-4)
 - **Solana Web3.js** - Blockchain interactions
-- **Coinbase CDP SDK** - Embedded wallet management
-- **Keyword-based AI** - Answer evaluation (can be replaced with OpenAI)
+- **Coinbase CDP SDK v2** - Embedded wallet management
 
 ## Development
 
@@ -263,11 +280,19 @@ Add rate limiting for:
 ### Environment Variables for Production
 
 ```env
+# Solana
 TREASURY_WALLET_KEYPAIR=<base58-key>
 SOLANA_NETWORK=devnet
 MAX_REWARD_AMOUNT=0.5
 PORT=3001
 NODE_ENV=production
+
+# AI Providers
+GRADIENT_API_KEY=<gradient-key>
+USE_GRADIENT_PRIMARY=true
+OPENAI_API_KEY=<openai-key>
+
+# Coinbase CDP
 CDP_API_KEY_ID=<key-id>
 CDP_API_KEY_SECRET=<secret>
 CDP_WALLET_SECRET=<wallet-secret>
@@ -330,10 +355,14 @@ To deploy on mainnet:
 
 ## Documentation
 
-- **Main README**: [../README.md](../README.md)
-- **CDP Setup**: [../CDP_SETUP.md](../CDP_SETUP.md)
-- **Deployment Guide**: [../DEPLOYMENT.md](../DEPLOYMENT.md)
-- **x402 Integration**: [../X402_INTEGRATION.md](../X402_INTEGRATION.md)
+**Main Docs**:
+- [README](../README.md) - Project overview
+- [DEPLOYMENT](../DEPLOYMENT.md) - Production deployment guide
+
+**Integration Deep Dives**:
+- [Gradient AI Integration](../docs/gradient-integration.md) - 120B model, autonomous decisions
+- [Coinbase CDP Integration](../docs/coinbase-integration.md) - Embedded wallets
+- [x402 Protocol Integration](../docs/x402-integration.md) - HTTP 402, autonomous agent
 
 ## License
 
