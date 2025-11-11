@@ -67,3 +67,29 @@
 .animate-scanline {
   animation: scanline 8s linear infinite;
 }
+
+/* Swiper pagination custom styles */
+.tech-carousel .swiper-pagination {
+  bottom: 0 !important;
+}
+
+.tech-carousel .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.tech-carousel .swiper-pagination-bullet-active {
+  background: hsl(var(--primary));
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* Hide pagination on desktop */
+@media (min-width: 768px) {
+  .tech-carousel .swiper-pagination {
+    display: none;
+  }
+}

@@ -1,15 +1,16 @@
 import { useRef, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay } from 'swiper/modules'
+import { Pagination } from 'swiper/modules'
 
 // Import Swiper styles
 import 'swiper/css'
+import 'swiper/css/pagination'
 
 /**
  * TechBanner Component
- * Displays a scrolling technology showcase with monochromatic SVG logos
- * Mobile: Swipeable with touch gestures
- * Desktop: Auto-scrolling with pause-on-hover
+ * Displays a static technology showcase with monochromatic SVG logos
+ * Mobile: Swipeable with touch gestures and pagination dots
+ * Desktop: Static display of all technologies
  */
 export default function TechBanner() {
   const technologies = [
@@ -91,39 +92,36 @@ export default function TechBanner() {
       {/* Swiper Carousel */}
       <div className="relative">
         <Swiper
-          modules={[Autoplay]}
+          modules={[Pagination]}
           spaceBetween={48}
           slidesPerView="auto"
-          loop={true}
-          speed={3000}
-          autoplay={{
-            delay: 0,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-            reverseDirection: false,
-          }}
-          loopAdditionalSlides={3}
+          loop={false}
+          speed={300}
           allowTouchMove={true}
+          centeredSlides={false}
+          pagination={{
+            clickable: true,
+            dynamicBullets: true,
+          }}
           breakpoints={{
             320: {
+              spaceBetween: 24,
+              slidesPerView: 1.5,
+              centeredSlides: true,
+            },
+            480: {
               spaceBetween: 32,
-              autoplay: {
-                delay: 0,
-                disableOnInteraction: false,
-              },
+              slidesPerView: 2,
+              centeredSlides: false,
             },
             768: {
               spaceBetween: 48,
-              autoplay: {
-                delay: 0,
-                disableOnInteraction: false,
-              },
+              slidesPerView: 'auto',
             },
           }}
-          className="tech-carousel"
+          className="tech-carousel pb-12"
         >
-          {/* Render technologies multiple times for seamless loop */}
-          {[...technologies, ...technologies, ...technologies].map((tech, i) => (
+          {technologies.map((tech, i) => (
             <SwiperSlide key={i} style={{ width: 'auto' }}>
               <div className="flex-shrink-0 group">
                 <div className="flex flex-col items-center gap-3">
@@ -152,10 +150,10 @@ export default function TechBanner() {
         </Swiper>
       </div>
 
-      {/* Mobile/Desktop instruction */}
-      <div className="text-center mt-6">
-        <p className="text-[10px] text-gray-600 font-mono">
-          <span className="md:hidden">Swipe to explore all technologies</span>
+      {/* Mobile instruction */}
+      <div className="text-center mt-2">
+        <p className="text-[10px] text-gray-600 font-mono md:hidden">
+          Swipe to explore all technologies
         </p>
       </div>
     </div>
