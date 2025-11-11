@@ -40,14 +40,9 @@ export default function TechBanner() {
       name: 'Gradient',
       subtitle: 'Distributed AI Inference',
       logo: (
-        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Gradient Network logo - simplified version */}
-          <path d="M30 35L50 20L70 35L70 65L50 80L30 65Z" stroke="currentColor" strokeWidth="2.5" fill="none"/>
-          <circle cx="50" cy="35" r="4" fill="currentColor"/>
-          <circle cx="50" cy="50" r="4" fill="currentColor"/>
-          <circle cx="50" cy="65" r="4" fill="currentColor"/>
-          <line x1="35" y1="42" x2="65" y2="42" stroke="currentColor" strokeWidth="1.5"/>
-          <line x1="35" y1="58" x2="65" y2="58" stroke="currentColor" strokeWidth="1.5"/>
+        <svg width="80" height="80" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 19H4V22H7V19Z" fill="currentColor"/>
+          <path d="M22 6V8.85011L12.9475 22H10V19.1499L19.0521 6H22Z" fill="currentColor"/>
         </svg>
       )
     },
