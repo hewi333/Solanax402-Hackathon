@@ -123,7 +123,7 @@ export default function TechBanner() {
               allowTouchMove: false,
             },
           }}
-          className="tech-carousel pb-12"
+          className="tech-carousel pb-14 md:pb-12"
         >
           {technologies.map((tech, i) => (
             <SwiperSlide key={i}>
@@ -155,7 +155,7 @@ export default function TechBanner() {
       </div>
 
       {/* Mobile instruction */}
-      <div className="text-center mt-2">
+      <div className="text-center mt-4 md:mt-2">
         <p className="text-[10px] text-gray-600 font-mono md:hidden">
           Swipe to explore all technologies
         </p>

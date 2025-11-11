@@ -71,6 +71,7 @@
 /* Swiper pagination custom styles */
 .tech-carousel .swiper-pagination {
   bottom: 0 !important;
+  padding-bottom: 4px;
 }
 
 .tech-carousel .swiper-pagination-bullet {
