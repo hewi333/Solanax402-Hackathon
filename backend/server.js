@@ -39,15 +39,15 @@ function parseTextResponseToFunctionCall(content, functions) {
   console.log('🔍 Parsing text response into function call format...')
   console.log('Content to parse:', content)
 
-  // Handle empty or very short content (likely a Gradient API issue)
-  if (!content || content.trim().length === 0) {
-    console.warn('⚠️ Empty content received from Gradient - using lenient default evaluation')
+  // Handle empty or very short content - DEFAULT TO FAIL (critical bug fix)
+  if (!content || content.trim().length < 20) {
+    console.error('❌ Empty or truncated content received from Gradient - FAILING by default')
     return {
       name: 'evaluate_answer',
       arguments: JSON.stringify({
-        passed: true,  // Be lenient - this is likely an API issue, not user's fault
-        score: 70,     // Give a passing score
-        feedback: 'Your answer demonstrates understanding of the concept. (AI evaluation completed with limited response data)'
+        passed: false,  // CHANGED: Default to FAIL on empty/truncated responses
+        score: 0,       // CHANGED: Give failing score
+        feedback: 'Error: Unable to evaluate answer due to incomplete AI response. Please try again.'
       })
     }
   }
@@ -74,18 +74,19 @@ function parseTextResponseToFunctionCall(content, functions) {
     }
   }
 
-  // Fallback: Intelligent text analysis
+  // Fallback: STRICT text analysis (changed from lenient to strict)
   const contentLower = content.toLowerCase()
 
-  // Determine if answer passed
-  const passIndicators = ['correct', 'pass', 'good', 'yes', 'right', 'excellent', 'great', 'well done']
-  const failIndicators = ['incorrect', 'fail', 'no', 'wrong', 'not quite', 'missing', 'insufficient']
+  // Determine if answer passed - MUST have explicit pass indicators
+  const passIndicators = ['correct', 'pass', 'good answer', 'demonstrates understanding', 'shows knowledge', 'excellent', 'great job', 'well done']
+  const failIndicators = ['incorrect', 'fail', 'no', 'wrong', 'not quite', 'missing', 'insufficient', 'does not', 'doesn\'t']
 
   const hasPassIndicator = passIndicators.some(word => contentLower.includes(word))
   const hasFailIndicator = failIndicators.some(word => contentLower.includes(word))
 
-  // Default to passing if unclear (lenient evaluation for hackathon demo)
-  const passed = hasPassIndicator || (!hasFailIndicator && contentLower.length > 10)
+  // CHANGED: Default to FAIL unless there's a clear pass indicator
+  // This prevents "making pizza" from being accepted as correct
+  const passed = hasPassIndicator && !hasFailIndicator
 
   // Extract score if mentioned
   let score = 0
@@ -93,8 +94,9 @@ function parseTextResponseToFunctionCall(content, functions) {
   if (scoreMatch) {
     score = parseInt(scoreMatch[1])
   } else {
-    // Estimate score based on sentiment
-    score = passed ? 75 : 35
+    // CHANGED: Be strict with score estimation
+    // Only give passing score if we detected pass indicators
+    score = passed ? 70 : 0
   }
 
   console.log(`📊 Parsed evaluation: passed=${passed}, score=${score}`)
@@ -104,7 +106,7 @@ function parseTextResponseToFunctionCall(content, functions) {
     arguments: JSON.stringify({
       passed,
       score,
-      feedback: content.trim().substring(0, 200) || 'Answer received.'
+      feedback: content.trim().substring(0, 200) || 'Unable to evaluate answer properly.'
     })
   }
 }
@@ -120,7 +122,8 @@ async function callAIProvider(messages, options = {}) {
       console.log(`🟣 Attempting Gradient Cloud inference (${GRADIENT_MODEL})...`)
       const startTime = Date.now()
 
-      // Build request body with function calling support
+      // Build request body WITHOUT function calling
+      // Gradient API does NOT support function calling - it will be parsed from text response
       const requestBody = {
         model: GRADIENT_MODEL,
         messages,
@@ -129,12 +132,9 @@ async function callAIProvider(messages, options = {}) {
         stream: false // Disable streaming for cleaner responses
       }
 
-      // Add function calling if provided (Gradient may or may not support this)
-      if (functions) {
-        requestBody.functions = functions
-        requestBody.function_call = function_call || 'auto'
-        console.log('📎 Including function calling in Gradient request')
-      }
+      // NOTE: Gradient does NOT support function calling - do not include functions/function_call
+      // The response will be parsed as text instead
+      console.log('📎 Gradient request configured (function calling will be parsed from text)')
 
       console.log('📤 Gradient request:', JSON.stringify({
         ...requestBody,
@@ -148,7 +148,7 @@ async function callAIProvider(messages, options = {}) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        signal: AbortSignal.timeout(8000) // 8 second timeout (optimized for speed)
       })
 
       if (!response.ok) {
@@ -1195,37 +1195,30 @@ app.post('/api/evaluate-with-ai', async (req, res) => {
       }
     ]
 
-    // System prompt for the AI agent
-    const systemPrompt = `You are an AI agent that evaluates learning answers and autonomously makes payment decisions.
-
-EVALUATION CRITERIA:
-- Be VERY LENIENT - this is for hackathon demo, not a strict exam
-- Does the answer show ANY understanding of the concept?
-- Accept answers that mention key concepts even if not perfectly explained
-- Accept answers that are close to correct or show the right direction
-- ONLY FAIL if answer is completely off-topic or nonsensical
-- If unsure, PASS the student
-
-PAYMENT DECISIONS:
-- Base reward: 0.011 SOL per module
-- If score >= 40: MUST call send_payment with 0.011 SOL
-- If score < 40: Do NOT call send_payment (only for completely wrong answers)
-
-WORKFLOW:
-1. Call evaluate_answer() to assess the response
-2. If passed (score >= 40), immediately call send_payment() with 0.011 SOL
-3. Be encouraging and supportive in feedback
+    // System prompt for the AI agent - OPTIMIZED for strict evaluation
+    const systemPrompt = `You are an AI evaluator for a learning platform. Evaluate if the student's answer demonstrates understanding of the concepts.
 
 Question: "${question}"
-Expected concepts: ${expectedConcepts?.join(', ')}
+Expected concepts: ${expectedConcepts?.join(', ') || 'General understanding of the topic'}
 
-Evaluate generously and decide autonomously.`
+STRICT EVALUATION RULES:
+1. The answer MUST relate to the question and expected concepts
+2. FAIL answers that are completely off-topic, nonsensical, or irrelevant (e.g., "making pizza" for a Solana question)
+3. PASS answers that mention relevant concepts, even if explanation is brief
+4. Be fair but strict - wrong topic = automatic fail
+
+RESPONSE FORMAT (be concise):
+- If PASS: Start with "CORRECT" or "PASS" and briefly explain why (1 sentence)
+- If FAIL: Start with "INCORRECT" or "FAIL" and briefly explain why (1 sentence)
+- Include a score 0-100
+
+Evaluate now:`
 
     const userPrompt = `Student's answer: "${userAnswer}"`
 
     console.log('📞 Calling AI Provider (Gradient Cloud → OpenAI fallback)...')
-    console.log('  Temperature: 0.3')
-    console.log('  Max Tokens: 200')
+    console.log('  Temperature: 0.2 (lower = more consistent)')
+    console.log('  Max Tokens: 150 (optimized for speed)')
 
     // Call AI provider (tries Gradient first, falls back to OpenAI)
     const { data: completion, provider, model, latency, parsed } = await callAIProvider(
@@ -1236,8 +1229,8 @@ Evaluate generously and decide autonomously.`
       {
         functions: functions,
         function_call: 'auto',
-        temperature: 0.3,
-        max_tokens: 200
+        temperature: 0.2,  // Lower temperature for more consistent/strict evaluation
+        max_tokens: 150    // Reduced from 200 for faster responses
       }
     )
 
