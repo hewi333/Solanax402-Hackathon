@@ -94,7 +94,7 @@ export default function TechBanner() {
         <Swiper
           modules={[Pagination]}
           spaceBetween={48}
-          slidesPerView="auto"
+          slidesPerView={5}
           loop={false}
           speed={300}
           allowTouchMove={true}
@@ -108,21 +108,24 @@ export default function TechBanner() {
               spaceBetween: 24,
               slidesPerView: 1.5,
               centeredSlides: true,
+              allowTouchMove: true,
             },
             480: {
               spaceBetween: 32,
               slidesPerView: 2,
               centeredSlides: false,
+              allowTouchMove: true,
             },
             768: {
               spaceBetween: 48,
-              slidesPerView: 'auto',
+              slidesPerView: 5,
+              allowTouchMove: false,
             },
           }}
           className="tech-carousel pb-12"
         >
           {technologies.map((tech, i) => (
-            <SwiperSlide key={i} style={{ width: 'auto' }}>
+            <SwiperSlide key={i}>
               <div className="flex-shrink-0 group">
                 <div className="flex flex-col items-center gap-3">
                   {/* SVG Logo */}
