@@ -670,9 +670,7 @@ function App() {
                   {/* Browser Wallet Button - Desktop */}
                   <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
                     <GraduationCap className="w-5 h-5 text-solana-green" />
-                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }}>
-                      learn_earn
-                    </WalletMultiButton>
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }} />
                   </div>
                 </>
               )}

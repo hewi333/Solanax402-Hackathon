@@ -1,10 +1,9 @@
 import { useRef, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, FreeMode } from 'swiper/modules'
+import { Autoplay } from 'swiper/modules'
 
 // Import Swiper styles
 import 'swiper/css'
-import 'swiper/css/free-mode'
 
 /**
  * TechBanner Component
@@ -138,22 +137,19 @@ export default function TechBanner() {
       {/* Swiper Carousel */}
       <div className="relative">
         <Swiper
-          modules={[Autoplay, FreeMode]}
+          modules={[Autoplay]}
           spaceBetween={48}
           slidesPerView="auto"
           loop={true}
-          speed={3000}
+          speed={5000}
           autoplay={{
             delay: 0,
             disableOnInteraction: false,
             pauseOnMouseEnter: false,
+            reverseDirection: false,
           }}
-          freeMode={{
-            enabled: true,
-            momentum: true,
-            momentumRatio: 0.5,
-            momentumVelocityRatio: 0.5,
-          }}
+          loopAdditionalSlides={3}
+          allowTouchMove={true}
           breakpoints={{
             320: {
               spaceBetween: 32,
@@ -197,7 +193,6 @@ export default function TechBanner() {
       {/* Mobile/Desktop instruction */}
       <div className="text-center mt-6">
         <p className="text-[10px] text-gray-600 font-mono">
-          <span className="hidden md:inline">Hover to pause</span>
           <span className="md:hidden">Swipe to explore all technologies</span>
         </p>
       </div>
