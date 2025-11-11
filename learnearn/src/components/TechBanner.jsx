@@ -72,52 +72,6 @@ export default function TechBanner() {
           <path d="M56 68C56 68 60 72 64 72C68 72 72 68 72 68" stroke="#000" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       )
-    },
-    {
-      name: 'Vercel',
-      subtitle: 'Frontend Hosting',
-      logo: (
-        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 20L80 75H20L50 20Z" fill="currentColor"/>
-        </svg>
-      )
-    },
-    {
-      name: 'Railway',
-      subtitle: 'Backend Server & APIs',
-      logo: (
-        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Train locomotive */}
-          {/* Train body */}
-          <rect x="25" y="40" width="50" height="25" rx="3" fill="currentColor"/>
-          {/* Cabin */}
-          <rect x="55" y="30" width="15" height="10" fill="currentColor"/>
-          {/* Smokestack */}
-          <rect x="32" y="32" width="6" height="8" fill="currentColor"/>
-          {/* Smoke */}
-          <circle cx="35" cy="28" r="2" fill="currentColor" opacity="0.6"/>
-          <circle cx="37" cy="24" r="1.5" fill="currentColor" opacity="0.4"/>
-          {/* Wheels */}
-          <circle cx="35" cy="68" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
-          <circle cx="35" cy="68" r="2" fill="currentColor"/>
-          <circle cx="55" cy="68" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
-          <circle cx="55" cy="68" r="2" fill="currentColor"/>
-          {/* Rails */}
-          <line x1="15" y1="75" x2="85" y2="75" stroke="currentColor" strokeWidth="1.5"/>
-          <line x1="15" y1="78" x2="85" y2="78" stroke="currentColor" strokeWidth="1.5"/>
-        </svg>
-      )
-    },
-    {
-      name: 'Claude Code',
-      subtitle: 'AI Coding Assistant',
-      logo: (
-        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="3"/>
-          <path d="M40 40L35 50L40 60M60 40L65 50L60 60" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-          <line x1="52" y1="38" x2="48" y2="62" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-        </svg>
-      )
     }
   ]
 
@@ -141,11 +95,11 @@ export default function TechBanner() {
           spaceBetween={48}
           slidesPerView="auto"
           loop={true}
-          speed={5000}
+          speed={3000}
           autoplay={{
             delay: 0,
             disableOnInteraction: false,
-            pauseOnMouseEnter: false,
+            pauseOnMouseEnter: true,
             reverseDirection: false,
           }}
           loopAdditionalSlides={3}
@@ -153,9 +107,17 @@ export default function TechBanner() {
           breakpoints={{
             320: {
               spaceBetween: 32,
+              autoplay: {
+                delay: 0,
+                disableOnInteraction: false,
+              },
             },
             768: {
               spaceBetween: 48,
+              autoplay: {
+                delay: 0,
+                disableOnInteraction: false,
+              },
             },
           }}
           className="tech-carousel"
