@@ -1,15 +1,16 @@
 import { useRef, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay } from 'swiper/modules'
+import { Pagination } from 'swiper/modules'
 
 // Import Swiper styles
 import 'swiper/css'
+import 'swiper/css/pagination'
 
 /**
  * TechBanner Component
- * Displays a scrolling technology showcase with monochromatic SVG logos
- * Mobile: Swipeable with touch gestures
- * Desktop: Auto-scrolling with pause-on-hover
+ * Displays a static technology showcase with monochromatic SVG logos
+ * Mobile: Swipeable with touch gestures and pagination dots
+ * Desktop: Static display of all technologies
  */
 export default function TechBanner() {
   const technologies = [
@@ -61,15 +62,21 @@ export default function TechBanner() {
       )
     },
     {
-      name: 'Phantom',
-      subtitle: 'Browser Wallet',
+      name: 'Solana Wallet Adapter',
+      subtitle: 'Multi-Wallet Support',
       logo: (
-        <svg width="80" height="80" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Phantom wallet logo - ghost shape */}
-          <path d="M64 25C45 25 30 40 30 59V85C30 92 35 98 42 98C49 98 54 92 54 85V75C54 75 54 70 60 70C66 70 66 75 66 75V85C66 92 71 98 78 98C85 98 90 92 90 85V59C90 40 75 25 64 25Z" fill="currentColor"/>
-          <ellipse cx="52" cy="58" rx="4" ry="6" fill="#000"/>
-          <ellipse cx="76" cy="58" rx="4" ry="6" fill="#000"/>
-          <path d="M56 68C56 68 60 72 64 72C68 72 72 68 72 68" stroke="#000" strokeWidth="2" strokeLinecap="round"/>
+        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Multiple wallet icons connected - representing adapter */}
+          <rect x="15" y="20" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          <rect x="55" y="20" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          <rect x="15" y="58" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          <rect x="55" y="58" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          {/* Connection lines from wallets to center point */}
+          <circle cx="50" cy="50" r="6" fill="currentColor"/>
+          <line x1="35" y1="42" x2="48" y2="48" stroke="currentColor" strokeWidth="2"/>
+          <line x1="65" y1="42" x2="52" y2="48" stroke="currentColor" strokeWidth="2"/>
+          <line x1="35" y1="58" x2="48" y2="52" stroke="currentColor" strokeWidth="2"/>
+          <line x1="65" y1="58" x2="52" y2="52" stroke="currentColor" strokeWidth="2"/>
         </svg>
       )
     }
@@ -91,40 +98,40 @@ export default function TechBanner() {
       {/* Swiper Carousel */}
       <div className="relative">
         <Swiper
-          modules={[Autoplay]}
+          modules={[Pagination]}
           spaceBetween={48}
-          slidesPerView="auto"
-          loop={true}
-          speed={3000}
-          autoplay={{
-            delay: 0,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-            reverseDirection: false,
-          }}
-          loopAdditionalSlides={3}
+          slidesPerView={5}
+          loop={false}
+          speed={300}
           allowTouchMove={true}
+          centeredSlides={false}
+          pagination={{
+            clickable: true,
+            dynamicBullets: true,
+          }}
           breakpoints={{
             320: {
+              spaceBetween: 24,
+              slidesPerView: 1.5,
+              centeredSlides: true,
+              allowTouchMove: true,
+            },
+            480: {
               spaceBetween: 32,
-              autoplay: {
-                delay: 0,
-                disableOnInteraction: false,
-              },
+              slidesPerView: 2,
+              centeredSlides: false,
+              allowTouchMove: true,
             },
             768: {
               spaceBetween: 48,
-              autoplay: {
-                delay: 0,
-                disableOnInteraction: false,
-              },
+              slidesPerView: 5,
+              allowTouchMove: false,
             },
           }}
-          className="tech-carousel"
+          className="tech-carousel pb-12"
         >
-          {/* Render technologies multiple times for seamless loop */}
-          {[...technologies, ...technologies, ...technologies].map((tech, i) => (
-            <SwiperSlide key={i} style={{ width: 'auto' }}>
+          {technologies.map((tech, i) => (
+            <SwiperSlide key={i}>
               <div className="flex-shrink-0 group">
                 <div className="flex flex-col items-center gap-3">
                   {/* SVG Logo */}
@@ -137,8 +144,8 @@ export default function TechBanner() {
                   </div>
 
                   {/* Name and subtitle */}
-                  <div className="text-center max-w-[140px]">
-                    <p className="text-xs font-mono font-semibold text-gray-300 group-hover:text-white transition-colors truncate">
+                  <div className="text-center max-w-[180px]">
+                    <p className="text-xs font-mono font-semibold text-gray-300 group-hover:text-white transition-colors">
                       {tech.name}
                     </p>
                     <p className="text-[10px] text-gray-600 font-mono mt-0.5">
@@ -152,10 +159,10 @@ export default function TechBanner() {
         </Swiper>
       </div>
 
-      {/* Mobile/Desktop instruction */}
-      <div className="text-center mt-6">
-        <p className="text-[10px] text-gray-600 font-mono">
-          <span className="md:hidden">Swipe to explore all technologies</span>
+      {/* Mobile instruction */}
+      <div className="text-center mt-2">
+        <p className="text-[10px] text-gray-600 font-mono md:hidden">
+          Swipe to explore all technologies
         </p>
       </div>
     </div>
