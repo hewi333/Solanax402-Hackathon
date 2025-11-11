@@ -142,11 +142,11 @@ export default function TechBanner() {
           spaceBetween={48}
           slidesPerView="auto"
           loop={true}
-          speed={2000}
+          speed={3000}
           autoplay={{
             delay: 0,
             disableOnInteraction: false,
-            pauseOnMouseEnter: true,
+            pauseOnMouseEnter: false,
           }}
           freeMode={{
             enabled: true,

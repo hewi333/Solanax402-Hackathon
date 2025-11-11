@@ -603,20 +603,19 @@ function App() {
           <div className="flex items-center justify-between gap-4">
             {/* Logo - ASCII art styling */}
             <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink">
-              {/* ASCII bracket decoration - hidden on mobile */}
-              <span className="hidden md:inline text-xl font-mono text-solana-purple">
+              <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-solana-green" />
+
+              {/* ASCII bracket decoration */}
+              <span className="text-base md:text-xl font-mono text-solana-purple">
                 [
               </span>
 
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-solana-green" />
-                <h1 className="text-base md:text-xl font-mono font-bold bg-gradient-to-r from-solana-purple to-solana-green bg-clip-text text-transparent truncate">
-                  learnearn.xyz
-                </h1>
-              </div>
+              <h1 className="text-base md:text-xl font-mono font-bold text-solana-green">
+                learn_earn
+              </h1>
 
-              {/* ASCII bracket decoration - hidden on mobile */}
-              <span className="hidden md:inline text-xl font-mono text-solana-green">
+              {/* ASCII bracket decoration */}
+              <span className="text-base md:text-xl font-mono text-solana-purple">
                 ]
               </span>
             </div>
@@ -670,15 +669,10 @@ function App() {
 
                   {/* Browser Wallet Button - Desktop */}
                   <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 transition-colors">
-                    <div className="w-5 h-5 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="64" cy="64" r="64" fill="#AB9FF2"/>
-                        <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="white"/>
-                        <circle cx="76" cy="54" r="4" fill="#AB9FF2"/>
-                        <circle cx="64" cy="54" r="4" fill="#AB9FF2"/>
-                      </svg>
-                    </div>
-                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }} />
+                    <GraduationCap className="w-5 h-5 text-solana-green" />
+                    <WalletMultiButton style={{ background: 'transparent', border: 'none', padding: 0, fontSize: '14px', fontWeight: '600' }}>
+                      learn_earn
+                    </WalletMultiButton>
                   </div>
                 </>
               )}
@@ -751,11 +745,7 @@ function App() {
 
                 {/* Command-line styled subheading - Terminal output style */}
                 <div className="max-w-2xl mx-auto">
-                  <pre className="font-mono text-left text-sm md:text-base leading-relaxed bg-black/30 p-4 md:p-6 rounded-lg border border-white/10">
-<span className="text-solana-green">$</span> <span className="text-gray-400">answer</span> <span className="text-solana-purple">3_questions</span>
-<span className="text-solana-green">$</span> <span className="text-gray-400">earn_back</span> <span className="text-solana-purple">deposit</span>
-<span className="text-solana-green">$</span> <span className="text-gray-400">keep_it</span> <span className="text-solana-purple">simple</span>
-                  </pre>
+                  <pre className="font-mono text-left text-sm md:text-base leading-relaxed bg-black/30 p-4 md:p-6 rounded-lg border border-white/10"><span className="text-solana-green">$</span> <span className="text-gray-400">answer</span> <span className="text-solana-purple">3_questions</span>{'\n'}<span className="text-solana-green">$</span> <span className="text-gray-400">earn_back</span> <span className="text-solana-purple">deposit</span>{'\n'}<span className="text-solana-green">$</span> <span className="text-gray-400">keep_it</span> <span className="text-solana-purple">simple</span></pre>
                 </div>
               </div>
 
@@ -769,7 +759,7 @@ function App() {
 
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/30 rounded text-xs text-muted-foreground pointer-events-none">
                   <Sparkles className="w-3 h-3" />
-                  Test Network (Devnet)
+                  solana devnet (test network)
                 </div>
               </div>
             </div>
