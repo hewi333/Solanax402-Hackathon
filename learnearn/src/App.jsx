@@ -6,6 +6,7 @@ import ChatInterface from './components/ChatInterface'
 import RewardsModal from './components/RewardsModal'
 import EmbeddedWalletButton from './components/EmbeddedWalletButton'
 import TechBanner from './components/TechBanner'
+import TerminalAnimation from './components/TerminalAnimation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
@@ -741,10 +742,8 @@ function App() {
                   </span>
                 </h2>
 
-                {/* Command-line styled subheading - Terminal output style */}
-                <div className="max-w-2xl mx-auto">
-                  <pre className="font-mono text-left text-sm md:text-base leading-relaxed bg-black/30 p-4 md:p-6 rounded-lg border border-white/10"><span className="text-solana-green">$</span> <span className="text-gray-400">answer</span> <span className="text-solana-purple">3_questions</span>{'\n'}<span className="text-solana-green">$</span> <span className="text-gray-400">earn_back</span> <span className="text-solana-purple">deposit</span>{'\n'}<span className="text-solana-green">$</span> <span className="text-gray-400">keep_it</span> <span className="text-solana-purple">simple</span></pre>
-                </div>
+                {/* Command-line styled subheading - Terminal animation */}
+                <TerminalAnimation />
               </div>
 
               {/* CTA Section */}
