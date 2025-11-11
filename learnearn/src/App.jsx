@@ -9,7 +9,7 @@ import TechBanner from './components/TechBanner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
-import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play, ChevronRight } from 'lucide-react'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play, ChevronRight, ArrowLeftRight } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction, wallet, disconnect } = useWallet()
@@ -696,7 +696,7 @@ function App() {
                     className="text-xs md:text-sm px-2 md:px-3 h-8 md:h-9"
                   >
                     <span className="hidden sm:inline">Switch</span>
-                    <span className="sm:hidden">⟳</span>
+                    <ArrowLeftRight className="sm:hidden w-4 h-4" />
                   </Button>
                 </div>
               )}
@@ -739,46 +739,23 @@ function App() {
             {/* Hero Section */}
             <div className="text-center space-y-8 mb-16">
               <div className="space-y-6">
-                {/* ASCII Art Header */}
-                <div className="mb-6">
-                  <pre className="text-xs md:text-sm font-mono text-solana-purple/50 leading-tight">
-{`╔════════════════════════════════════════════╗
-║                                            ║
-║   LEARN → EARN → REPEAT                    ║
-║                                            ║
-╚════════════════════════════════════════════╝`}
-                  </pre>
-                </div>
-
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight font-mono">
                   <span className="bg-gradient-to-r from-solana-purple via-purple-400 to-solana-green bg-clip-text text-transparent">
-                    [ Learn AI Agents ]
+                    Learn AI Agents
                   </span>
                   <br />
                   <span className="text-solana-green">
-                    [ Earn SOL ]
+                    Earn SOL
                   </span>
                 </h2>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-mono">
-                  <span className="text-solana-purple">&gt;</span> Answer 3 questions.
-                  <span className="text-solana-green"> &gt;</span> Earn back your deposit.
-                  <span className="text-solana-purple"> &gt;</span> Simple.
-                </p>
-              </div>
 
-              {/* Value Props - Static info pills */}
-              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-solana-purple/5 pointer-events-none">
-                  <Bot className="w-4 h-4 text-solana-purple" />
-                  <span className="text-xs md:text-sm text-muted-foreground">AI Evaluation</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-solana-green/5 pointer-events-none">
-                  <Zap className="w-4 h-4 text-solana-green" />
-                  <span className="text-xs md:text-sm text-muted-foreground">Earn 0.033 SOL</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/5 pointer-events-none">
-                  <Trophy className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs md:text-sm text-muted-foreground">3 Modules</span>
+                {/* Command-line styled subheading - Terminal output style */}
+                <div className="max-w-2xl mx-auto">
+                  <pre className="font-mono text-left text-sm md:text-base leading-relaxed bg-black/30 p-4 md:p-6 rounded-lg border border-white/10">
+<span className="text-solana-green">$</span> <span className="text-gray-400">answer</span> <span className="text-solana-purple">3_questions</span>
+<span className="text-solana-green">$</span> <span className="text-gray-400">earn_back</span> <span className="text-solana-purple">deposit</span>
+<span className="text-solana-green">$</span> <span className="text-gray-400">keep_it</span> <span className="text-solana-purple">simple</span>
+                  </pre>
                 </div>
               </div>
 
@@ -797,21 +774,13 @@ function App() {
               </div>
             </div>
 
-            {/* Subtle recommendation badge */}
-            <div className="text-center mb-6">
-              <Badge variant="secondary" className="font-mono text-xs px-3 py-1">
-                <Sparkles className="w-3 h-3 mr-1.5 inline text-solana-green" />
-                New to crypto? Try Embedded Wallet (easier setup)
-              </Badge>
-            </div>
-
             {/* Wallet Connection Cards - Seamless design */}
             <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
               {/* Embedded Wallet - Emphasized */}
               <button
                 onClick={() => {
                   // Trigger the embedded wallet button click
-                  document.querySelector('[data-embedded-wallet-button]')?.click()
+                  document.querySelector('.embedded-wallet-button')?.click()
                 }}
                 className="group relative p-8 rounded-2xl border border-solana-green/30 bg-gradient-to-br from-solana-green/5 to-transparent hover:from-solana-green/10 transition-all duration-300 text-left overflow-hidden"
               >
@@ -829,6 +798,10 @@ function App() {
                   <h3 className="text-xl font-bold mb-2">Embedded Wallet</h3>
                   <p className="text-sm text-gray-400 mb-4 leading-relaxed">
                     Email sign-in • No extension needed • Mobile-friendly
+                  </p>
+
+                  <p className="text-xs text-gray-500 mb-4 font-mono">
+                    Powered by Coinbase Developer Platform
                   </p>
 
                   <div className="flex items-center text-solana-green text-sm font-mono group-hover:translate-x-1 transition-transform">
