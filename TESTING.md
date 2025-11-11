@@ -124,7 +124,7 @@ cd learnearn && npm run dev
 - [ ] Connect Phantom wallet
 - [ ] Verify auto-connect priority works
 - [ ] Request faucet (if balance < 0.04 SOL)
-- [ ] Pay 0.04 SOL to unlock platform
+- [ ] Pay 0.03 SOL to unlock platform
 - [ ] Verify BigInt conversion works (no errors)
 - [ ] Complete 5 learning modules
 - [ ] Verify 5 × 0.01 SOL rewards received
@@ -133,7 +133,7 @@ cd learnearn && npm run dev
 #### Test Case 2: Embedded Wallet Flow
 - [ ] Create new embedded wallet (or reuse existing)
 - [ ] Verify auto-funded with 1 SOL
-- [ ] Pay 0.04 SOL to unlock platform
+- [ ] Pay 0.03 SOL to unlock platform
 - [ ] Verify CDP payment API works
 - [ ] Complete 5 learning modules
 - [ ] Verify rewards sent to embedded wallet

@@ -26,7 +26,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
   const [showTechStack, setShowTechStack] = useState(false)
   const inputRef = useRef(null)
 
-  const INITIAL_DEPOSIT = 0.04  // 3 modules x 0.01 SOL each = 0.03 SOL back
+  const INITIAL_DEPOSIT = 0.03  // User pays 0.03 SOL, earns back 0.03 SOL
   const currentModule = getModuleById(currentModuleId)
 
   // Allow disabling fallback for testing (set VITE_DISABLE_FALLBACK=true in .env)

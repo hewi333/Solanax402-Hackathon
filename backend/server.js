@@ -427,7 +427,7 @@ app.post('/api/x402/verify-access', async (req, res) => {
     // Return HTTP 402 Payment Required with x402 protocol headers
     res.status(402)
       .header('X-Payment-Required', 'true')
-      .header('X-Payment-Amount', '0.04 SOL')
+      .header('X-Payment-Amount', '0.03 SOL')
       .header('X-Payment-Recipient', process.env.TREASURY_WALLET || 'treasury')
       .header('X-Payment-Network', 'solana-devnet')
       .header('X-Payment-Description', 'Access to Solana x402 Learn & Earn Platform')
@@ -436,7 +436,7 @@ app.post('/api/x402/verify-access', async (req, res) => {
         statusCode: 402,
         message: 'HTTP 402: Payment Required to access this resource',
         paymentDetails: {
-          amount: '0.04 SOL',
+          amount: '0.03 SOL',
           recipient: process.env.TREASURY_WALLET || 'treasury',
           network: 'solana-devnet',
           description: 'Unlock 3 learning modules about Solana x402 AI agents'
@@ -547,9 +547,9 @@ app.post('/api/faucet', async (req, res) => {
       })
     }
 
-    // Send SOL from treasury wallet (0.1 SOL - enough for testing)
-    console.log(`🚰 Sending 0.1 SOL from treasury to ${walletAddress}`)
-    const airdropAmount = 0.1 * LAMPORTS_PER_SOL
+    // Send SOL from treasury wallet (0.04 SOL - user pays 0.03, earns back 0.03, break-even)
+    console.log(`🚰 Sending 0.04 SOL from treasury to ${walletAddress}`)
+    const airdropAmount = 0.04 * LAMPORTS_PER_SOL
 
     // Create transfer transaction
     const transaction = new Transaction().add(
@@ -578,8 +578,8 @@ app.post('/api/faucet', async (req, res) => {
     res.json({
       success: true,
       signature,
-      amount: 0.1,
-      message: 'Successfully airdropped 0.1 SOL to your wallet!'
+      amount: 0.04,
+      message: 'Successfully airdropped 0.04 SOL to your wallet!'
     })
 
   } catch (error) {

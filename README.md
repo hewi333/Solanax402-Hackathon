@@ -2,7 +2,7 @@
 
 > **Autonomous AI agent that teaches Web3 concepts and rewards learners with real crypto**
 
-An educational platform demonstrating the power of x402 AI agents on Solana. Pay 0.04 SOL to unlock 3 learning modules about the x402 Hackathon, then earn 0.03 SOL back by completing them (net cost: 0.01 SOL)—all managed by an autonomous AI agent that evaluates answers and distributes rewards without human intervention.
+An educational platform demonstrating the power of x402 AI agents on Solana. Get 0.04 SOL airdropped, pay 0.03 SOL to unlock 3 learning modules, then earn 0.03 SOL back by completing them (break-even)—all managed by an autonomous AI agent that evaluates answers and distributes rewards without human intervention.
 
 **Solana x402 Hackathon | Track 5: x402 Agent Application**
 
@@ -30,11 +30,12 @@ Users can connect via:
 This demonstrates wallet flexibility critical for mainstream adoption.
 
 ### 3. **Closed-Loop Payment Economy**
-- Users invest 0.04 SOL upfront (creates commitment)
+- Treasury airdrops 0.04 SOL to users
+- Users pay 0.03 SOL upfront (creates commitment)
 - AI rewards 0.01 SOL per completed module
-- Earn back 0.03 SOL by finishing all 3 modules (net cost: 0.01 SOL)
+- Earn back 0.03 SOL by finishing all 3 modules (break-even at 0.04 SOL)
 - Session automatically closes after completion
-- New sessions require new payment—sustainable model
+- New sessions require new airdrop and payment—sustainable model
 
 ---
 
@@ -71,8 +72,9 @@ Traditional educational platforms struggle with:
 - Keyword-based evaluation with flexible matching
 
 ### 💰 Autonomous Payment System
-- **Deposit**: 0.04 SOL unlocks all modules
-- **Earn**: 0.01 SOL per correct answer (0.03 SOL total)
+- **Airdrop**: 0.04 SOL from treasury to get started
+- **Payment**: 0.03 SOL to unlock all modules
+- **Earn**: 0.01 SOL per correct answer (0.03 SOL total, break-even)
 - **Transparent**: All transactions viewable on Solana Explorer
 - **Fast**: ~400ms transaction confirmations
 - **Cheap**: ~$0.00025 per transaction
@@ -100,8 +102,9 @@ Three modules teaching:
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
-│              Payment Gate (0.04 SOL Deposit)            │
-│          User → Treasury Wallet (Solana Devnet)         │
+│         Treasury Airdrops 0.04 SOL to User              │
+│         User Pays 0.03 SOL to Treasury                  │
+│          (Payment Gate via Solana Devnet)               │
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
@@ -252,11 +255,11 @@ npm run dev
 ## 💡 How to Use
 
 1. **Connect Wallet** - Choose from Phantom, Coinbase, embedded wallet, or mobile
-2. **Get Devnet SOL** - Use the built-in faucet or [solfaucet.com](https://solfaucet.com)
-3. **Pay 0.04 SOL** - Unlock the learning platform
+2. **Get Airdrop** - Request 0.04 SOL from built-in treasury faucet
+3. **Pay 0.03 SOL** - Unlock the learning platform
 4. **Learn & Earn** - Complete 3 modules, earn 0.01 SOL each (0.03 SOL total)
-5. **Session Complete** - Finish all modules and earn back 0.03 SOL (net cost: 0.01 SOL)
-6. **Start Again** - New session requires new payment
+5. **Session Complete** - Finish all modules with 0.04 SOL (break-even)
+6. **Start Again** - New session requires new airdrop and payment
 
 **Why the payment gate?** Creates commitment and demonstrates the x402 payment automation concept
 
@@ -292,12 +295,13 @@ This project perfectly demonstrates the x402 concept:
 
 1. Show wallet connection options (Phantom, Coinbase, embedded)
 2. Create embedded wallet (no extension required)
-3. Pay 0.04 SOL to unlock platform
-4. Complete module 1, answer question
-5. AI evaluates → instant 0.01 SOL reward
-6. Show transaction on Solana Explorer
-7. Demonstrate progress tracking
-8. Explain scalability and future vision
+3. Request 0.04 SOL airdrop from treasury
+4. Pay 0.03 SOL to unlock platform
+5. Complete module 1, answer question
+6. AI evaluates → instant 0.01 SOL reward
+7. Show transaction on Solana Explorer
+8. Demonstrate progress tracking (break-even after 3 modules)
+9. Explain scalability and future vision
 
 ---
 
@@ -322,12 +326,13 @@ To enable embedded wallets (wallet-as-a-service, no browser extension needed):
 
 **Manual Test Flow:**
 - [ ] Connect wallet (any provider)
-- [ ] Pay 0.04 SOL deposit
+- [ ] Request 0.04 SOL airdrop from treasury
+- [ ] Pay 0.03 SOL deposit
 - [ ] Complete module 1
 - [ ] Verify 0.01 SOL reward received
 - [ ] Check transaction on Solana Explorer
 - [ ] Complete all 3 modules
-- [ ] Verify session closes at 0.03 SOL earned
+- [ ] Verify session closes at 0.03 SOL earned (ending balance: 0.04 SOL)
 - [ ] Test "Start New Session" flow
 
 **Create embedded wallet test:**

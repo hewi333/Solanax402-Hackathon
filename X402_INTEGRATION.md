@@ -255,7 +255,7 @@ If deploying to mainnet, see Coinbase's documentation:
 
 3. **Make Payment**
    ```bash
-   # Click "Pay 0.04 SOL" button
+   # Click "Pay 0.03 SOL" button
    # Transaction sent to Solana devnet
    # Payment state updated
    ```

@@ -60,10 +60,10 @@ No human reviews your answers - the AI does it all!`,
 
     lessonContent: `Here's what happened:
 
-1. You paid 0.04 SOL to access this learning platform (x402 protocol!)
+1. You paid 0.03 SOL to access this learning platform (x402 protocol!)
 2. An AI agent evaluates each answer you submit
 3. If you pass, the AI sends 0.01 SOL back to your wallet
-4. Complete all 3 modules to earn back 0.03 SOL (net cost: 0.01 SOL for learning)!
+4. Complete all 3 modules to earn back your full 0.03 SOL (break-even)!
 
 This demonstrates AI agents + payments + Solana all working together.
 
