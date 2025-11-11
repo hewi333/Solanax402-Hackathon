@@ -75,7 +75,7 @@ app.post('/api/x402/verify-access', async (req, res) => {
     // Return HTTP 402 with x402 protocol headers
     res.status(402)
       .header('X-Payment-Required', 'true')
-      .header('X-Payment-Amount', '0.05 SOL')
+      .header('X-Payment-Amount', '0.04 SOL')
       .header('X-Payment-Recipient', process.env.TREASURY_WALLET)
       .header('X-Payment-Network', 'solana-devnet')
       .header('X-Payment-Description', 'Access to Solana x402 Learn & Earn Platform')
@@ -84,10 +84,10 @@ app.post('/api/x402/verify-access', async (req, res) => {
         statusCode: 402,
         message: 'HTTP 402: Payment Required to access this resource',
         paymentDetails: {
-          amount: '0.05 SOL',
+          amount: '0.04 SOL',
           recipient: process.env.TREASURY_WALLET,
           network: 'solana-devnet',
-          description: 'Unlock 5 learning modules about Solana x402 AI agents'
+          description: 'Unlock 3 learning modules about Solana x402 AI agents'
         }
       })
   } else {
@@ -110,7 +110,7 @@ Our implementation uses these custom x402 headers:
 | Header | Purpose | Example Value |
 |--------|---------|---------------|
 | `X-Payment-Required` | Indicates payment is needed | `true` |
-| `X-Payment-Amount` | Required payment amount | `0.05 SOL` |
+| `X-Payment-Amount` | Required payment amount | `0.04 SOL` |
 | `X-Payment-Recipient` | Destination wallet address | `ABC123...` |
 | `X-Payment-Network` | Blockchain network | `solana-devnet` |
 | `X-Payment-Description` | Human-readable description | `Access to platform` |
@@ -161,7 +161,7 @@ When payment is required, users see:
 │                                        │
 │  X402 Protocol Headers:                │
 │  X-Payment-Required: true              │
-│  X-Payment-Amount: 0.05 SOL            │
+│  X-Payment-Amount: 0.04 SOL            │
 │  X-Payment-Network: solana-devnet      │
 └────────────────────────────────────────┘
 ```
@@ -255,7 +255,7 @@ If deploying to mainnet, see Coinbase's documentation:
 
 3. **Make Payment**
    ```bash
-   # Click "Pay 0.05 SOL" button
+   # Click "Pay 0.03 SOL" button
    # Transaction sent to Solana devnet
    # Payment state updated
    ```

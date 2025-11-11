@@ -9,13 +9,14 @@ This document outlines the testing strategy for the Solana x402 hackathon projec
 ## Payment Amount Configuration
 
 **Current Settings (Optimized for Testing):**
-- Entry Payment: **0.05 SOL** (down from 0.5 SOL)
+- Entry Payment: **0.04 SOL** (down from 0.5 SOL)
 - Reward per Module: **0.01 SOL** (down from 0.1 SOL)
-- Total Rewards: **5 modules × 0.01 SOL = 0.05 SOL**
+- Total Rewards: **3 modules × 0.01 SOL = 0.03 SOL**
+- Net Cost: **0.01 SOL per session**
 
 **Benefits:**
-- 10x cheaper testing (0.05 SOL vs 0.5 SOL per test cycle)
-- 1 SOL from faucet = 20 complete test cycles
+- 12.5x cheaper testing (0.04 SOL vs 0.5 SOL per test cycle)
+- 1 SOL from faucet = 25 complete test cycles
 - Treasury wallet funds last much longer
 - Same payment flow validation with minimal cost
 
@@ -50,8 +51,8 @@ curl -X POST http://localhost:3001/api/faucet \
   -H "Content-Type: application/json" \
   -d '{"walletAddress": "YOUR_PHANTOM_ADDRESS"}'
 
-# 2. Test payment flow (0.05 SOL)
-# 3. Complete 5 modules (earn back 0.05 SOL)
+# 2. Test payment flow (0.04 SOL)
+# 3. Complete 3 modules (earn back 0.03 SOL)
 # 4. Repeat as needed
 ```
 
@@ -96,7 +97,7 @@ curl -X POST http://localhost:3001/api/faucet \
 **Process:**
 1. Use single Phantom wallet throughout development
 2. Fund once with 2-3 SOL from faucet
-3. Test payment flows repeatedly (0.05 SOL each)
+3. Test payment flows repeatedly (0.04 SOL each)
 4. Manually refund wallet from treasury if needed
 
 **Commands:**
@@ -122,8 +123,8 @@ cd learnearn && npm run dev
 #### Test Case 1: External Wallet Flow
 - [ ] Connect Phantom wallet
 - [ ] Verify auto-connect priority works
-- [ ] Request faucet (if balance < 0.05 SOL)
-- [ ] Pay 0.05 SOL to unlock platform
+- [ ] Request faucet (if balance < 0.04 SOL)
+- [ ] Pay 0.03 SOL to unlock platform
 - [ ] Verify BigInt conversion works (no errors)
 - [ ] Complete 5 learning modules
 - [ ] Verify 5 × 0.01 SOL rewards received
@@ -132,7 +133,7 @@ cd learnearn && npm run dev
 #### Test Case 2: Embedded Wallet Flow
 - [ ] Create new embedded wallet (or reuse existing)
 - [ ] Verify auto-funded with 1 SOL
-- [ ] Pay 0.05 SOL to unlock platform
+- [ ] Pay 0.03 SOL to unlock platform
 - [ ] Verify CDP payment API works
 - [ ] Complete 5 learning modules
 - [ ] Verify rewards sent to embedded wallet
@@ -256,7 +257,7 @@ Backend endpoint (development only):
 ```
 
 #### 4. Small Payment Amounts
-✅ **Do:** Use 0.05 SOL for testing (current setting)
+✅ **Do:** Use 0.04 SOL for testing (current setting)
 ❌ **Don't:** Use 0.5 SOL unless testing full user flow
 
 ---
@@ -266,7 +267,7 @@ Backend endpoint (development only):
 ### Before Each Test Cycle
 - [ ] Verify backend is running (Railway or localhost)
 - [ ] Verify frontend is running (Vercel or localhost)
-- [ ] Check wallet balance (≥ 0.05 SOL)
+- [ ] Check wallet balance (≥ 0.04 SOL)
 - [ ] Clear browser console for fresh logs
 - [ ] Check network is Solana Devnet
 
@@ -401,7 +402,7 @@ localStorage.clear()
 **For Daily Development:**
 - Use Phantom wallet exclusively
 - Fund once, reuse many times
-- Test with 0.05 SOL payments
+- Test with 0.04 SOL payments
 
 **For Integration Testing:**
 - Create embedded wallet ONCE

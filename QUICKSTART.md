@@ -115,7 +115,7 @@ Your treasury wallet needs devnet SOL to pay out rewards.
 3. **Paste** your public key
 4. **Click "Airdrop"** - You'll receive 1 SOL
 
-**Repeat 2-3 times** to get enough SOL for testing (each session pays out 0.5 SOL maximum).
+**Repeat 2-3 times** to get enough SOL for testing (the treasury airdrops 0.04 SOL per session).
 
 **Verify balance:**
 ```bash
@@ -182,7 +182,7 @@ npm run dev
    - If 0, use the "Get Test SOL" button or visit faucet
 
 4. **Pay to Start**
-   - Click "Pay 0.05 SOL to Start"
+   - Click "Pay 0.03 SOL to Start"
    - Approve the transaction in Phantom
    - Wait for confirmation (~1 second)
 
@@ -192,14 +192,14 @@ npm run dev
    - Submit
 
 6. **Earn Rewards**
-   - Correct answer earns 0.1 SOL
+   - Correct answer earns 0.01 SOL
    - Watch the celebration modal
    - See progress bar update
    - Check your wallet balance increase
 
 7. **Complete All Modules**
-   - Answer all 5 questions correctly
-   - Earn 0.5 SOL total (break even!)
+   - Answer all 3 questions correctly
+   - Earn 0.03 SOL total (break even at 0.04 SOL!)
    - Session automatically closes
    - "Start New Session" button appears
 
@@ -212,12 +212,12 @@ If everything is working, you should see:
 - [x] Backend running on port 3001
 - [x] Frontend running on port 5173
 - [x] Phantom wallet connected (Devnet mode)
-- [x] Payment gate allows 0.05 SOL payment
+- [x] Payment gate allows 0.04 SOL payment
 - [x] Chat interface appears after payment
 - [x] Questions can be answered
 - [x] Correct answers trigger 0.01 SOL rewards
 - [x] Progress bar shows earnings
-- [x] Session closes at 0.05 SOL earned
+- [x] Session closes at 0.03 SOL earned
 - [x] Transactions visible on [Solana Explorer](https://explorer.solana.com?cluster=devnet)
 
 ---
@@ -272,7 +272,7 @@ cat .env | grep TREASURY_WALLET_KEYPAIR
 1. Check treasury balance on [Solana Explorer](https://explorer.solana.com?cluster=devnet)
 2. Visit [solfaucet.com](https://solfaucet.com) with treasury public key
 3. Airdrop more devnet SOL
-4. Each session can pay out max 0.5 SOL, plan accordingly
+4. Each session airdrops 0.04 SOL and pays out 0.03 SOL max, plan accordingly
 
 **Quick fix:**
 ```bash
@@ -304,11 +304,11 @@ grep VITE_TREASURY_WALLET .env
 
 ### "Payment transaction fails"
 
-**Problem:** Cannot complete 0.5 SOL payment.
+**Problem:** Cannot complete 0.03 SOL payment.
 
 **Solutions:**
-1. Check your personal wallet has ≥0.5 SOL
-2. Use faucet to get more devnet SOL
+1. Check your personal wallet has ≥0.03 SOL (or request 0.04 SOL airdrop first)
+2. Use treasury faucet button to get 0.04 SOL
 3. Verify Phantom is on Devnet (not mainnet!)
 4. Check console for specific error
 5. Try refreshing and reconnecting wallet
@@ -375,12 +375,12 @@ npm install
 ### Test 1: Happy Path (Full Flow)
 
 1. Connect wallet ✅
-2. Pay 0.05 SOL ✅
+2. Pay 0.03 SOL ✅
 3. Answer Module 1 correctly ✅
 4. Receive 0.01 SOL reward ✅
 5. Progress bar shows 0.01/0.05 ✅
 6. Repeat for modules 2-5 ✅
-7. Session completes at 0.05 SOL ✅
+7. Session completes at 0.03 SOL ✅
 8. "Start New Session" appears ✅
 
 **Expected time:** 5-10 minutes
@@ -390,7 +390,7 @@ npm install
 ### Test 2: Wrong Answer Flow
 
 1. Connect wallet ✅
-2. Pay 0.05 SOL ✅
+2. Pay 0.03 SOL ✅
 3. Answer Module 1 **incorrectly** ✅
 4. See hint appear ✅
 5. Try again with better answer ✅
@@ -402,10 +402,10 @@ npm install
 
 ### Test 3: Session Reset
 
-1. Complete full session (earn 0.05 SOL) ✅
+1. Complete full session (earn 0.03 SOL) ✅
 2. Click "Start New Session" ✅
 3. Payment gate appears again ✅
-4. Pay another 0.05 SOL ✅
+4. Pay another 0.04 SOL ✅
 5. Modules restart from beginning ✅
 
 **Verifies:** Closed-loop economy works
@@ -459,10 +459,10 @@ Check your Phantom wallet:
 
 For hackathon judges, show:
 
-1. **Payment Gate** - 0.05 SOL entry fee
+1. **Payment Gate** - 0.04 SOL entry fee
 2. **AI Evaluation** - Answer gets evaluated automatically
 3. **Autonomous Rewards** - 0.01 SOL sent without human approval
-4. **Session Closure** - Stops at 0.05 SOL earned
+4. **Session Closure** - Stops at 0.03 SOL earned
 5. **Closed Loop** - Can restart with new payment
 6. **On-Chain Verification** - Transactions on Solana Explorer
 
@@ -539,7 +539,7 @@ If you've completed all steps successfully:
 ✅ You can pay, answer, and earn rewards
 
 **Next steps:**
-- Test all 5 modules
+- Test all 3 modules
 - Try wrong answers to see hints
 - Complete a full session
 - Test the "Start New Session" flow

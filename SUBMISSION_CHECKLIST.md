@@ -10,7 +10,7 @@
 ### 1. Demo Video (3 minutes max)
 - [ ] Video recorded and edited (2:30-3:00 optimal)
 - [ ] Shows wallet connection (both external and embedded)
-- [ ] Demonstrates payment flow (0.05 SOL)
+- [ ] Demonstrates payment flow (0.04 SOL)
 - [ ] Shows AI evaluation and reward distribution
 - [ ] Includes Solana Explorer transaction proof
 - [ ] Clear audio and professional presentation
@@ -106,10 +106,10 @@
 - [ ] Fresh browser test (clear cache)
 - [ ] Phantom wallet connection works
 - [ ] Embedded wallet creation works
-- [ ] Payment transaction succeeds (0.05 SOL)
+- [ ] Payment transaction succeeds (0.04 SOL)
 - [ ] AI evaluates answers correctly
 - [ ] Rewards distribute (0.01 SOL per module)
-- [ ] Session completes at 0.05 SOL earned
+- [ ] Session completes at 0.03 SOL earned
 - [ ] All links work in README
 - [ ] Solana Explorer shows transactions
 
