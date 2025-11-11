@@ -9,7 +9,7 @@ import TechBanner from './components/TechBanner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
-import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play, ChevronRight } from 'lucide-react'
+import { Wallet, Sparkles, TrendingUp, Target, Lock, Droplet, RefreshCw, GraduationCap, Bot, Zap, BarChart3, Trophy, Coins, Info, Play, ChevronRight, ArrowLeftRight } from 'lucide-react'
 
 function App() {
   const { publicKey, connected, sendTransaction, wallet, disconnect } = useWallet()
@@ -696,7 +696,7 @@ function App() {
                     className="text-xs md:text-sm px-2 md:px-3 h-8 md:h-9"
                   >
                     <span className="hidden sm:inline">Switch</span>
-                    <span className="sm:hidden">⟳</span>
+                    <ArrowLeftRight className="sm:hidden w-4 h-4" />
                   </Button>
                 </div>
               )}
@@ -749,29 +749,13 @@ function App() {
                   </span>
                 </h2>
 
-                {/* Command-line styled subheading */}
-                <div className="text-base md:text-lg max-w-3xl mx-auto">
-                  <pre className="font-mono text-left inline-block text-sm md:text-base leading-relaxed">
+                {/* Command-line styled subheading - Terminal output style */}
+                <div className="max-w-2xl mx-auto">
+                  <pre className="font-mono text-left text-sm md:text-base leading-relaxed bg-black/30 p-4 md:p-6 rounded-lg border border-white/10">
 <span className="text-solana-green">$</span> <span className="text-gray-400">answer</span> <span className="text-solana-purple">3_questions</span>
 <span className="text-solana-green">$</span> <span className="text-gray-400">earn_back</span> <span className="text-solana-purple">deposit</span>
 <span className="text-solana-green">$</span> <span className="text-gray-400">keep_it</span> <span className="text-solana-purple">simple</span>
                   </pre>
-                </div>
-              </div>
-
-              {/* Value Props - Static info pills */}
-              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-solana-purple/5 pointer-events-none">
-                  <Bot className="w-4 h-4 text-solana-purple" />
-                  <span className="text-xs md:text-sm text-muted-foreground">AI Evaluation</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-solana-green/5 pointer-events-none">
-                  <Zap className="w-4 h-4 text-solana-green" />
-                  <span className="text-xs md:text-sm text-muted-foreground">Earn 0.033 SOL</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/5 pointer-events-none">
-                  <Trophy className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs md:text-sm text-muted-foreground">3 Modules</span>
                 </div>
               </div>
 

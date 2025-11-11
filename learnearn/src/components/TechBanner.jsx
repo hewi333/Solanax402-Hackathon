@@ -41,15 +41,13 @@ export default function TechBanner() {
       subtitle: 'Distributed AI Inference',
       logo: (
         <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="30" r="8" fill="currentColor"/>
-          <circle cx="30" cy="50" r="8" fill="currentColor"/>
-          <circle cx="70" cy="50" r="8" fill="currentColor"/>
-          <circle cx="50" cy="70" r="8" fill="currentColor"/>
-          <line x1="50" y1="30" x2="30" y2="50" stroke="currentColor" strokeWidth="2"/>
-          <line x1="50" y1="30" x2="70" y2="50" stroke="currentColor" strokeWidth="2"/>
-          <line x1="30" y1="50" x2="50" y2="70" stroke="currentColor" strokeWidth="2"/>
-          <line x1="70" y1="50" x2="50" y2="70" stroke="currentColor" strokeWidth="2"/>
-          <text x="50" y="92" fontSize="10" fill="currentColor" textAnchor="middle" fontFamily="monospace">AI</text>
+          {/* Gradient Network logo - simplified version */}
+          <path d="M30 35L50 20L70 35L70 65L50 80L30 65Z" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+          <circle cx="50" cy="35" r="4" fill="currentColor"/>
+          <circle cx="50" cy="50" r="4" fill="currentColor"/>
+          <circle cx="50" cy="65" r="4" fill="currentColor"/>
+          <line x1="35" y1="42" x2="65" y2="42" stroke="currentColor" strokeWidth="1.5"/>
+          <line x1="35" y1="58" x2="65" y2="58" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       )
     },
@@ -68,9 +66,11 @@ export default function TechBanner() {
       subtitle: 'Browser Wallet',
       logo: (
         <svg width="80" height="80" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M85.5 45.5C85.5 38.5964 79.9036 33 72.9999 33H47.5001C42.5295 33 38.5 37.0294 38.5 42.0001V86C38.5 90.9706 42.5295 95 47.5001 95H80.4999C85.4705 95 89.5 90.9706 89.5 86V59C89.5 51.5442 83.4558 45.5 76 45.5H85.5Z" fill="currentColor"/>
-          <circle cx="76" cy="54" r="4" fill="#000"/>
-          <circle cx="64" cy="54" r="4" fill="#000"/>
+          {/* Phantom wallet logo - ghost shape */}
+          <path d="M64 25C45 25 30 40 30 59V85C30 92 35 98 42 98C49 98 54 92 54 85V75C54 75 54 70 60 70C66 70 66 75 66 75V85C66 92 71 98 78 98C85 98 90 92 90 85V59C90 40 75 25 64 25Z" fill="currentColor"/>
+          <ellipse cx="52" cy="58" rx="4" ry="6" fill="#000"/>
+          <ellipse cx="76" cy="58" rx="4" ry="6" fill="#000"/>
+          <path d="M56 68C56 68 60 72 64 72C68 72 72 68 72 68" stroke="#000" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       )
     },
@@ -88,11 +88,24 @@ export default function TechBanner() {
       subtitle: 'Backend Server & APIs',
       logo: (
         <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="20" y="35" width="60" height="8" fill="currentColor"/>
-          <rect x="20" y="57" width="60" height="8" fill="currentColor"/>
-          <rect x="30" y="25" width="4" height="50" fill="currentColor"/>
-          <rect x="50" y="25" width="4" height="50" fill="currentColor"/>
-          <rect x="66" y="25" width="4" height="50" fill="currentColor"/>
+          {/* Train locomotive */}
+          {/* Train body */}
+          <rect x="25" y="40" width="50" height="25" rx="3" fill="currentColor"/>
+          {/* Cabin */}
+          <rect x="55" y="30" width="15" height="10" fill="currentColor"/>
+          {/* Smokestack */}
+          <rect x="32" y="32" width="6" height="8" fill="currentColor"/>
+          {/* Smoke */}
+          <circle cx="35" cy="28" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="37" cy="24" r="1.5" fill="currentColor" opacity="0.4"/>
+          {/* Wheels */}
+          <circle cx="35" cy="68" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <circle cx="35" cy="68" r="2" fill="currentColor"/>
+          <circle cx="55" cy="68" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <circle cx="55" cy="68" r="2" fill="currentColor"/>
+          {/* Rails */}
+          <line x1="15" y1="75" x2="85" y2="75" stroke="currentColor" strokeWidth="1.5"/>
+          <line x1="15" y1="78" x2="85" y2="78" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       )
     },
