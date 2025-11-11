@@ -79,19 +79,6 @@ export default function TechBanner() {
           <line x1="65" y1="58" x2="52" y2="52" stroke="currentColor" strokeWidth="2"/>
         </svg>
       )
-    },
-    {
-      name: 'Phantom',
-      subtitle: 'Solana Wallet',
-      logo: (
-        <svg width="80" height="80" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Phantom wallet logo - ghost shape */}
-          <path d="M64 25C45 25 30 40 30 59V85C30 92 35 98 42 98C49 98 54 92 54 85V75C54 75 54 70 60 70C66 70 66 75 66 75V85C66 92 71 98 78 98C85 98 90 92 90 85V59C90 40 75 25 64 25Z" fill="currentColor"/>
-          <ellipse cx="52" cy="58" rx="4" ry="6" fill="#000"/>
-          <ellipse cx="76" cy="58" rx="4" ry="6" fill="#000"/>
-          <path d="M56 68C56 68 60 72 64 72C68 72 72 68 72 68" stroke="#000" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      )
     }
   ]
 
@@ -113,7 +100,7 @@ export default function TechBanner() {
         <Swiper
           modules={[Pagination]}
           spaceBetween={48}
-          slidesPerView={6}
+          slidesPerView={5}
           loop={false}
           speed={300}
           allowTouchMove={true}
@@ -137,7 +124,7 @@ export default function TechBanner() {
             },
             768: {
               spaceBetween: 48,
-              slidesPerView: 6,
+              slidesPerView: 5,
               allowTouchMove: false,
             },
           }}
@@ -157,8 +144,8 @@ export default function TechBanner() {
                   </div>
 
                   {/* Name and subtitle */}
-                  <div className="text-center max-w-[140px]">
-                    <p className="text-xs font-mono font-semibold text-gray-300 group-hover:text-white transition-colors truncate">
+                  <div className="text-center max-w-[180px]">
+                    <p className="text-xs font-mono font-semibold text-gray-300 group-hover:text-white transition-colors">
                       {tech.name}
                     </p>
                     <p className="text-[10px] text-gray-600 font-mono mt-0.5">
