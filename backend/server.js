@@ -39,16 +39,56 @@ function parseTextResponseToFunctionCall(content, functions) {
   console.log('🔍 Parsing text response into function call format...')
   console.log('Content to parse:', content)
 
-  // Handle empty or very short content - DEFAULT TO FAIL (critical bug fix)
-  if (!content || content.trim().length < 20) {
-    console.error('❌ Empty or truncated content received from Gradient - FAILING by default')
+  // Handle empty content - DEFAULT TO FAIL
+  if (!content || content.trim().length === 0) {
+    console.error('❌ Empty content received from Gradient - FAILING by default')
     return {
       name: 'evaluate_answer',
       arguments: JSON.stringify({
-        passed: false,  // CHANGED: Default to FAIL on empty/truncated responses
-        score: 0,       // CHANGED: Give failing score
-        feedback: 'Error: Unable to evaluate answer due to incomplete AI response. Please try again.'
+        passed: false,
+        score: 0,
+        feedback: 'Error: Unable to evaluate answer due to empty AI response. Please try again.'
       })
+    }
+  }
+
+  // Handle very short responses - check if they contain clear pass/fail keywords
+  const contentTrimmed = content.trim()
+  if (contentTrimmed.length < 10) {
+    const contentLower = contentTrimmed.toLowerCase()
+
+    // Check for clear pass/fail indicators in short responses
+    if (contentLower.includes('pass') || contentLower.includes('correct')) {
+      console.log('✅ Short response contains PASS indicator')
+      return {
+        name: 'evaluate_answer',
+        arguments: JSON.stringify({
+          passed: true,
+          score: 70,
+          feedback: 'Your answer demonstrates understanding of the key concepts.'
+        })
+      }
+    } else if (contentLower.includes('fail') || contentLower.includes('incorrect') || contentLower.includes('wrong')) {
+      console.log('❌ Short response contains FAIL indicator')
+      return {
+        name: 'evaluate_answer',
+        arguments: JSON.stringify({
+          passed: false,
+          score: 0,
+          feedback: 'Your answer does not demonstrate sufficient understanding.'
+        })
+      }
+    } else {
+      // Very short but unclear - fail by default
+      console.error('❌ Very short and unclear response - FAILING by default')
+      return {
+        name: 'evaluate_answer',
+        arguments: JSON.stringify({
+          passed: false,
+          score: 0,
+          feedback: 'Error: Unable to evaluate answer due to unclear AI response. Please try again.'
+        })
+      }
     }
   }
 
