@@ -674,7 +674,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
                           filter: 'drop-shadow(0 0 8px rgba(153, 69, 255, 0.8))'
                         }}
                       />
-                      <span className="mr-2 font-semibold">Gradient Parallax Evaluating</span>
+                      <span className="mr-2 font-semibold">Parallaxing</span>
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
