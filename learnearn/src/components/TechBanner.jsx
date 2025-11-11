@@ -62,8 +62,27 @@ export default function TechBanner() {
       )
     },
     {
+      name: 'Solana Wallet Adapter',
+      subtitle: 'Multi-Wallet Support',
+      logo: (
+        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Multiple wallet icons connected - representing adapter */}
+          <rect x="15" y="20" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          <rect x="55" y="20" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          <rect x="15" y="58" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          <rect x="55" y="58" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2"/>
+          {/* Connection lines from wallets to center point */}
+          <circle cx="50" cy="50" r="6" fill="currentColor"/>
+          <line x1="35" y1="42" x2="48" y2="48" stroke="currentColor" strokeWidth="2"/>
+          <line x1="65" y1="42" x2="52" y2="48" stroke="currentColor" strokeWidth="2"/>
+          <line x1="35" y1="58" x2="48" y2="52" stroke="currentColor" strokeWidth="2"/>
+          <line x1="65" y1="58" x2="52" y2="52" stroke="currentColor" strokeWidth="2"/>
+        </svg>
+      )
+    },
+    {
       name: 'Phantom',
-      subtitle: 'Browser Wallet',
+      subtitle: 'Solana Wallet',
       logo: (
         <svg width="80" height="80" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Phantom wallet logo - ghost shape */}
@@ -94,7 +113,7 @@ export default function TechBanner() {
         <Swiper
           modules={[Pagination]}
           spaceBetween={48}
-          slidesPerView={5}
+          slidesPerView={6}
           loop={false}
           speed={300}
           allowTouchMove={true}
@@ -118,7 +137,7 @@ export default function TechBanner() {
             },
             768: {
               spaceBetween: 48,
-              slidesPerView: 5,
+              slidesPerView: 6,
               allowTouchMove: false,
             },
           }}
