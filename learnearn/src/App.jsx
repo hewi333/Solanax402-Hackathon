@@ -785,7 +785,7 @@ function App() {
 
                   <h3 className="text-xl font-bold mb-2">Embedded Wallet</h3>
                   <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-                    Email sign-in • No extension needed • Mobile-friendly
+                    No extension needed • Mobile-friendly
                   </p>
 
                   <p className="text-xs text-gray-500 mb-4 font-mono">
@@ -1105,7 +1105,7 @@ function App() {
               Educational Project
               <span className="text-solana-green"> ]</span>
               <span className="mx-2">·</span>
-              Solana x402 DevNet Submission
+              Solana x402 Hackathon Submission
             </div>
 
             {/* Right: Links */}
