@@ -170,11 +170,11 @@ Convert backend to Vercel API routes:
 ### Testing
 - [ ] Frontend loads without errors
 - [ ] Wallet connection works (Phantom, Coinbase, or embedded)
-- [ ] Payment gate accepts 0.05 SOL
+- [ ] Payment gate accepts 0.04 SOL
 - [ ] Learning modules load correctly
 - [ ] AI evaluates answers
 - [ ] Rewards distribute (0.01 SOL per module)
-- [ ] Session completes after 0.05 SOL earned
+- [ ] Session completes after 0.03 SOL earned
 
 ### For Mainnet (Post-Hackathon)
 - [ ] Change `VITE_SOLANA_NETWORK` to `mainnet-beta`

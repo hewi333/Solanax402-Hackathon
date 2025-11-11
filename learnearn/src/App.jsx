@@ -46,7 +46,7 @@ function App() {
   const [walletError, setWalletError] = useState(null)
 
   const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'YOUR_TREASURY_WALLET_ADDRESS'
-  const PAYMENT_AMOUNT = 0.033  // 3 modules x 0.011 SOL each = earn back full amount
+  const PAYMENT_AMOUNT = 0.04  // 3 modules x 0.01 SOL each = 0.03 SOL back
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
   // Single source of truth for wallet connection and address
@@ -919,7 +919,7 @@ function App() {
                       </div>
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                         <TrendingUp className="w-6 h-6 text-solana-green" />
-                        <span className="text-sm">Earn 0.011 SOL per module</span>
+                        <span className="text-sm">Earn 0.01 SOL per module</span>
                       </div>
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                         <Target className="w-6 h-6 text-solana-purple" />
@@ -985,7 +985,7 @@ function App() {
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <TrendingUp className="w-6 h-6 text-solana-green" />
-                      <span className="text-sm">Earn 0.011 SOL per module</span>
+                      <span className="text-sm">Earn 0.01 SOL per module</span>
                     </div>
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
                       <Target className="w-6 h-6 text-solana-purple" />

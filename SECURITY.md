@@ -13,10 +13,11 @@
 
 ### How It Works
 
-1. **Users pay 0.05 SOL on DEVNET** to unlock 5 learning modules about Solana x402 AI agents
+1. **Users pay 0.04 SOL on DEVNET** to unlock 3 learning modules about Solana x402 AI agents
 2. **Complete educational modules** with questions and answers
-3. **Earn back 0.05 SOL** by completing all 5 modules (0.01 SOL per module)
+3. **Earn back 0.03 SOL** by completing all 3 modules (0.01 SOL per module)
 4. **AI agent autonomously evaluates** answers and distributes rewards
+5. **Net cost: 0.01 SOL** for a complete learning session
 
 ### Why This Looks Like Phishing (But Isn't)
 

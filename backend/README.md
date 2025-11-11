@@ -22,7 +22,7 @@ The backend provides a REST API that powers three critical x402 hackathon featur
 - Holds SOL for autonomous reward distribution
 - Executes Solana transactions automatically
 - Pays 0.01 SOL per correct answer
-- Tracks total rewards per session (max 0.05 SOL)
+- Tracks total rewards per session (max 0.03 SOL)
 
 ### 3. Coinbase CDP Integration
 - Creates embedded Solana wallets (no browser extension needed)
@@ -283,7 +283,7 @@ CDP_WALLET_SECRET=<wallet-secret>
 ### "Insufficient funds"
 - Check treasury balance on [Solana Explorer](https://explorer.solana.com?cluster=devnet)
 - Airdrop more devnet SOL from faucet
-- Each session can pay out max 0.05 SOL
+- Each session can pay out max 0.03 SOL
 
 ### "CDP service not configured"
 - Verify all three CDP env vars are set

@@ -427,7 +427,7 @@ app.post('/api/x402/verify-access', async (req, res) => {
     // Return HTTP 402 Payment Required with x402 protocol headers
     res.status(402)
       .header('X-Payment-Required', 'true')
-      .header('X-Payment-Amount', '0.033 SOL')
+      .header('X-Payment-Amount', '0.04 SOL')
       .header('X-Payment-Recipient', process.env.TREASURY_WALLET || 'treasury')
       .header('X-Payment-Network', 'solana-devnet')
       .header('X-Payment-Description', 'Access to Solana x402 Learn & Earn Platform')
@@ -436,7 +436,7 @@ app.post('/api/x402/verify-access', async (req, res) => {
         statusCode: 402,
         message: 'HTTP 402: Payment Required to access this resource',
         paymentDetails: {
-          amount: '0.033 SOL',
+          amount: '0.04 SOL',
           recipient: process.env.TREASURY_WALLET || 'treasury',
           network: 'solana-devnet',
           description: 'Unlock 3 learning modules about Solana x402 AI agents'
@@ -1183,7 +1183,7 @@ app.post('/api/evaluate-with-ai', async (req, res) => {
           properties: {
             amount: {
               type: 'number',
-              description: 'SOL amount to send (base: 0.011)'
+              description: 'SOL amount to send (base: 0.01)'
             },
             reason: {
               type: 'string',
@@ -1269,7 +1269,7 @@ Evaluate now:`
               SystemProgram.transfer({
                 fromPubkey: treasuryWallet.publicKey,
                 toPubkey: recipientPublicKey,
-                lamports: Math.floor(0.011 * LAMPORTS_PER_SOL), // Base reward
+                lamports: Math.floor(0.01 * LAMPORTS_PER_SOL), // Base reward
               })
             )
 
@@ -1280,12 +1280,12 @@ Evaluate now:`
               { commitment: 'confirmed' }
             )
 
-            console.log(`✅ Direct payment sent: 0.011 SOL. Signature: ${signature}`)
+            console.log(`✅ Direct payment sent: 0.01 SOL. Signature: ${signature}`)
 
             paymentResult = {
               success: true,
               signature,
-              amount: 0.011,
+              amount: 0.01,
               reason: 'Passed evaluation'
             }
           } catch (paymentError) {
