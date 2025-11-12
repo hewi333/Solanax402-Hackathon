@@ -1270,7 +1270,7 @@ Evaluate now:`
         functions: functions,
         function_call: 'auto',
         temperature: 0.2,  // Lower temperature for more consistent/strict evaluation
-        max_tokens: 150    // Reduced from 200 for faster responses
+        max_tokens: 300    // Increased to handle longer answers and prevent truncation
       }
     )
 
