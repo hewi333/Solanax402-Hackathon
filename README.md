@@ -8,7 +8,7 @@ Built for **Solana x402 Hackathon** | **Track 5: x402 Agent Application**
 
 ## Demo Video
 
-**[📺 Watch Live Demo](#)** *(Add your demo video link here)*
+**[📺 Watch Live Demo](https://www.loom.com/share/5e0cf5c5200947acbc54ca7a4c1d888c)** 
 
 See Learn Earn in action: AI-powered education meets autonomous blockchain payments.
 
@@ -300,7 +300,7 @@ Solanax402-Hackathon/
 
 **Project**
 - GitHub: [hewi333/Solanax402-Hackathon](https://github.com/hewi333/Solanax402-Hackathon)
-- Live Demo: [Add your URL]
+- Live Demo: [Link](https://www.loom.com/share/5e0cf5c5200947acbc54ca7a4c1d888c)
 - License: MIT
 
 **Resources**
