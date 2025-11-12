@@ -163,9 +163,9 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
     setEvaluationMethod('')
 
     try {
-      // Auto-pass after 2 incorrect attempts
-      if (attemptCount >= 2) {
-        console.log('👍 Auto-passing after 2 attempts')
+      // Auto-pass after 3 incorrect attempts (demo mode)
+      if (attemptCount >= 3) {
+        console.log('👍 Auto-passing after 3 attempts')
         const evaluation = {
           passed: true,
           score: 50,
@@ -262,8 +262,12 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
       setAiFeedback(evaluation.feedback)
 
       if (evaluation.passed) {
-        // Correct answer
+        // Correct answer - ALWAYS send payment (demo mode)
         setFeedbackMessage('correct')
+        console.log('💰 Answer passed - processing payment...')
+        console.log('   Attempt count:', attemptCount)
+        console.log('   Evaluation method:', evaluation.method)
+        console.log('   Payment included in AI response:', !!evaluation.payment)
 
         try {
           let signature = null
@@ -274,6 +278,7 @@ export default function ChatInterface({ onModuleCompleted, onSessionComplete, on
             console.log('✅ AI Agent already sent payment:', signature)
           } else {
             // Otherwise, send reward manually (fallback case)
+            console.log('📤 Payment not included in AI response - sending manually...')
             signature = await sendReward(currentModule.id, currentModule.reward)
             console.log('✅ Manual reward sent:', signature)
           }
