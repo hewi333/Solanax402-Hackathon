@@ -105,7 +105,7 @@ function parseTextResponseToFunctionCall(content, functions) {
           arguments: JSON.stringify({
             passed: parsed.passed ?? false,
             score: parsed.score ?? 0,
-            feedback: parsed.feedback || content.substring(0, 200)
+            feedback: parsed.feedback || content.trim()
           })
         }
       }
@@ -146,7 +146,7 @@ function parseTextResponseToFunctionCall(content, functions) {
     arguments: JSON.stringify({
       passed,
       score,
-      feedback: content.trim().substring(0, 200) || 'Unable to evaluate answer properly.'
+      feedback: content.trim() || 'Unable to evaluate answer properly.'
     })
   }
 }
@@ -228,7 +228,15 @@ async function callAIProvider(messages, options = {}) {
         console.log('⚙️ Gradient did not return function_call, attempting to parse response...')
         console.log(`📝 Content received: "${message?.content || ''}" (length: ${(message?.content || '').length})`)
 
-        const parsedFunctionCall = parseTextResponseToFunctionCall(message?.content || '', functions)
+        // TRUNCATION DETECTION: Check if response appears incomplete
+        const content = message?.content || ''
+        const contentLength = content.length
+        if (contentLength > 50 && !content.trim().match(/[.!?]$/)) {
+          console.warn('⚠️ Gradient response appears truncated (no ending punctuation) - falling back to OpenAI')
+          throw new Error('Response appears truncated - missing sentence ending')
+        }
+
+        const parsedFunctionCall = parseTextResponseToFunctionCall(content, functions)
 
         // Inject the parsed function call into the response
         return {
@@ -1270,7 +1278,7 @@ Evaluate now:`
         functions: functions,
         function_call: 'auto',
         temperature: 0.2,  // Lower temperature for more consistent/strict evaluation
-        max_tokens: 300    // Increased to handle longer answers and prevent truncation
+        max_tokens: 1000   // High limit to eliminate any truncation risk
       }
     )
 
