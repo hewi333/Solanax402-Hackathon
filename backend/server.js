@@ -229,12 +229,14 @@ async function callAIProvider(messages, options = {}) {
         console.log(`📝 Content received: "${message?.content || ''}" (length: ${(message?.content || '').length})`)
 
         // TRUNCATION DETECTION: Check if response appears incomplete
+        // Only flag responses that are genuinely too short to be useful
         const content = message?.content || ''
         const contentLength = content.length
-        if (contentLength > 50 && !content.trim().match(/[.!?]$/)) {
-          console.warn('⚠️ Gradient response appears truncated (no ending punctuation) - falling back to OpenAI')
-          throw new Error('Response appears truncated - missing sentence ending')
+        if (contentLength > 0 && contentLength < 15) {
+          console.warn('⚠️ Gradient response suspiciously short - possible truncation')
+          throw new Error('Response too short - likely truncated')
         }
+        // Note: Removed punctuation requirement - responses ending with scores/numbers are valid
 
         const parsedFunctionCall = parseTextResponseToFunctionCall(content, functions)
 
@@ -1266,7 +1268,7 @@ Evaluate now:`
 
     console.log('📞 Calling AI Provider (Gradient Cloud → OpenAI fallback)...')
     console.log('  Temperature: 0.2 (lower = more consistent)')
-    console.log('  Max Tokens: 150 (optimized for speed)')
+    console.log('  Max Tokens: 1000 (high limit to prevent truncation)')
 
     // Call AI provider (tries Gradient first, falls back to OpenAI)
     const { data: completion, provider, model, latency, parsed } = await callAIProvider(
@@ -1346,16 +1348,25 @@ Evaluate now:`
         }
         // If passed and NOT parsed (native function calling), make second AI call
         else if (evaluation.passed && !parsed) {
-          console.log(`💰 Student passed! Calling ${provider} again for payment decision...`)
+          console.log(`💰 Student passed! Calling AI again for payment decision...`)
+          // Use simple natural language format that works with both Gradient and OpenAI
           const { data: secondCompletion } = await callAIProvider(
             [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt },
-              responseMessage,
               {
-                role: 'function',
-                name: 'evaluate_answer',
-                content: JSON.stringify({ success: true, evaluation })
+                role: 'system',
+                content: `You are a payment decision AI. A student answered a question and PASSED the evaluation with a score of ${evaluation.score}/100.
+
+Feedback given: "${evaluation.feedback}"
+
+Decide if they should receive a payment reward for passing.
+
+RESPONSE FORMAT:
+- If yes: Start with "SEND_PAYMENT: 0.01 SOL" and briefly explain why
+- If no: Start with "NO_PAYMENT" and briefly explain why`
+              },
+              {
+                role: 'user',
+                content: `The student passed the evaluation with score ${evaluation.score}/100. Should we send a payment reward?`
               }
             ],
             {
