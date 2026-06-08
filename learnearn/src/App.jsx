@@ -599,6 +599,21 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Hackathon Award Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-purple-900 via-violet-800 to-green-900 text-white text-center py-2 px-4 text-sm font-mono">
+        <div className="absolute inset-0 bg-gradient-to-r from-solana-purple/30 via-transparent to-solana-green/30 animate-pulse" />
+        <span className="relative z-10 flex items-center justify-center gap-2 flex-wrap">
+          <Trophy className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+          <span className="text-yellow-300 font-semibold">Winner</span>
+          <span className="text-white/80">·</span>
+          <span>Solana x402 Hackathon</span>
+          <span className="text-white/80">·</span>
+          <span className="text-solana-green font-semibold">Gradient Parallax Partner Track</span>
+          <span className="text-white/80">·</span>
+          <span className="text-white/60 text-xs">Built May 2025</span>
+        </span>
+      </div>
+
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
