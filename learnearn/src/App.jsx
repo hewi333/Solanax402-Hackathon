@@ -610,7 +610,7 @@ function App() {
           <span className="text-white/80">·</span>
           <span className="text-solana-green font-semibold">Gradient Parallax Partner Track</span>
           <span className="text-white/80">·</span>
-          <span className="text-white/60 text-xs">Built May 2025</span>
+          <span className="text-white/60 text-xs">Built Nov 2025</span>
         </span>
       </div>
 
