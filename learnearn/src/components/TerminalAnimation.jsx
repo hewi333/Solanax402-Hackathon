@@ -6,16 +6,16 @@ const TerminalAnimation = () => {
 
   const commands = [
     {
-      command: '$ complete_modules --count=3',
-      output: 'ok'
+      command: '$ learn --topic=solana --modules=3',
+      output: 'not as hard as you thought'
     },
     {
-      command: '$ claim_rewards --wallet=<your_address>',
-      output: '0.03 SOL deposited'
+      command: '$ collect_rewards',
+      output: '0.03 SOL incoming'
     },
     {
-      command: '$ verify_transaction',
-      output: 'confirmed on-chain'
+      command: '$ exit',
+      output: 'probably not'
     }
   ]
 
