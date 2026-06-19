@@ -6,16 +6,16 @@ const TerminalAnimation = () => {
 
   const commands = [
     {
-      command: '$ answer_3_questions:',
-      output: 'too easy'
+      command: '$ complete_modules --count=3',
+      output: 'ok'
     },
     {
-      command: '$ earn_back_deposit:',
-      output: 'sweet'
+      command: '$ claim_rewards --wallet=<your_address>',
+      output: '0.03 SOL deposited'
     },
     {
-      command: '$ good_vibes:',
-      output: 'successfully executed'
+      command: '$ verify_transaction',
+      output: 'confirmed on-chain'
     }
   ]
 
